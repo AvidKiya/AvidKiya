@@ -2,80 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+}
+
 :root {
+  --primary: #00FF41;
   --bg: #000000;
-  --terminal-green: #00FF41;
-  --terminal-green-dim: #003b10;
-  --text-main: #FFFFFF;
-  --border-color: rgba(0, 255, 65, 0.2);
 }
 
 body {
   background-color: var(--bg);
-  color: var(--text-main);
+  color: #FFFFFF;
   font-family: 'JetBrains Mono', monospace;
-  cursor: crosshair;
+  margin: 0;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
 }
 
-/* CRT Scanline Effect */
-.crt-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%,
-    rgba(0, 0, 0, 0.1) 50%
-  ),
-  linear-gradient(
-    90deg,
-    rgba(255, 0, 0, 0.02),
-    rgba(0, 255, 0, 0.01),
-    rgba(0, 0, 255, 0.02)
-  );
-  z-index: 9999;
-  background-size: 100% 2px, 3px 100%;
-  pointer-events: none;
-  opacity: 0.3;
-}
-
-.terminal-text {
-  color: var(--terminal-green);
-  text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
-}
-
-.pixel-border {
-  border: 1px solid var(--terminal-green);
-  box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
-}
-
-/* Green Dither Filter for Image */
-.dither-green {
-  filter: grayscale(100%) contrast(1.2) brightness(1.1);
-  mix-blend-mode: screen;
-}
-
-.matrix-bg {
+/* Matrix/Terminal Grid Background */
+.matrix-grid {
   background-image: 
-    linear-gradient(var(--border-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(0, 255, 65, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* CRT Scanline Effect */
+.crt::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+  z-index: 100;
+  background-size: 100% 3px, 3px 100%;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Glowing Borders */
+.glow-border {
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.2), inset 0 0 10px rgba(0, 255, 65, 0.1);
+}
+
+.glow-text {
+  color: var(--primary);
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: #000;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--terminal-green);
+  background: var(--primary);
 }
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+/* Dither Effect for Image */
+.dither-effect {
+  filter: grayscale(100%) contrast(1.4) brightness(1.1);
+}
+
+.pixel-header-box {
+  border: 4px double var(--primary);
+  background: #000;
+  position: relative;
+}
+
+.pixel-header-box::before {
+  content: "";
+  position: absolute;
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  pointer-events: none;
 }
