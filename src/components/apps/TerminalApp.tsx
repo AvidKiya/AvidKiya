@@ -1,18 +1,54 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useOSStore } from '@/store/os-store';
+import { motion } from 'framer-motion';
 
 const COMMANDS = {
-  help: "Available commands: help, about, skills, projects, clear, whoami, neofetch",
-  about: "Avid Kiya: AI Engineer, Linux Enthusiast, Backend Developer, and Graphic Designer.",
-  whoami: "User: Guest\nHost: KiyaOS\nRole: Creative Technologist",
-  skills: "Python: [##########] 100%\nLinux:  [##########] 100%\nAI:     [######### ] 90%\nDesign: [########  ] 80%",
-  neofetch: "      .---.      OS: KiyaOS 1.0\n     /     \\     Host: Portfolio-Workstation\n    | () () |    Kernel: Next.js 15\n     \\  ^  /     Shell: Custom Bash Simulation\n      |||||      UI: Tailwind + Framer Motion\n      |||||      Uptime: 100% Focused",
+  help: [
+    "Available commands:",
+    "  about     - Learn who is @avidkiya",
+    "  skills    - View technical expertise",
+    "  projects  - Show recent work",
+    "  design    - Open Photoshop showcase",
+    "  photo     - Open Camera/Gallery",
+    "  clear     - Wipe the terminal",
+    "  neofetch  - System information",
+    "  contact   - Get in touch"
+  ],
+  about: [
+    "User: @avidkiya",
+    "Role: AI Engineer | Full-Stack Dev | Creative Designer",
+    "Bio: Crafting digital experiences at the intersection of",
+    "     code and art. Obsessed with Linux, AI, and Pixels."
+  ],
+  skills: [
+    "Python     [####################] 100%",
+    "TypeScript [##################  ] 90%",
+    "FastAPI    [#################   ] 85%",
+    "AI/ML      [#################   ] 85%",
+    "Photoshop  [################### ] 95%",
+    "Linux/Bash [####################] 100%"
+  ],
+  neofetch: [
+    "      .---.       AVID KIYA @ ARENA",
+    "     /     \\      -----------------",
+    "    | () () |     OS: KiyaOS v2.0 (Cyberpunk Edition)",
+    "     \\  ^  /      Host: Portfolio.avidkiya.ir",
+    "      |||||       Kernel: Next.js 15 / React 19",
+    "      |||||       Shell: Interactive Zsh Simulation",
+    "                  UI: Tailwind / Framer Motion",
+    "                  Theme: Tiffany & Charcoal"
+  ],
+  contact: [
+    "Telegram:  @avidkiya",
+    "GitHub:    github.com/AvidKiya",
+    "Email:     AvidKiya@gmail.com",
+    "Location:  Tehran/Global"
+  ]
 };
 
 export const TerminalApp = () => {
-  const [history, setHistory] = useState<string[]>(["Welcome to KiyaOS v1.0.0", "Type 'help' to see available commands."]);
+  const [history, setHistory] = useState<string[]>(["KIYA OS [Version 2.0.42]", "(c) 2026 Avid Kiya. All rights reserved.", "", "Type 'help' to begin..."]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -22,38 +58,48 @@ export const TerminalApp = () => {
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-
     const cmd = input.trim().toLowerCase();
-    const newHistory = [...history, `$ ${input}`];
+    if (!cmd) return;
 
+    let response: string[] = [];
     if (cmd === 'clear') {
       setHistory([]);
+      setInput("");
+      return;
     } else if (COMMANDS[cmd as keyof typeof COMMANDS]) {
-      newHistory.push(COMMANDS[cmd as keyof typeof COMMANDS]);
-      setHistory(newHistory);
+      response = COMMANDS[cmd as keyof typeof COMMANDS];
     } else {
-      newHistory.push(`Command not found: ${cmd}`);
-      setHistory(newHistory);
+      response = [`Command not found: ${cmd}. Type 'help' for assistance.`];
     }
 
+    setHistory([...history, `> ${input}`, ...response, ""]);
     setInput("");
   };
 
   return (
-    <div className="bg-charcoal text-primary p-4 font-mono text-sm h-full flex flex-col scanlines" ref={scrollRef}>
-      <div className="flex-1 whitespace-pre-wrap">
+    <div className="flex flex-col h-full font-mono text-sm md:text-base p-4 overflow-hidden bg-[#121212] text-[#21F1A8] crt shadow-inner">
+      <div className="flex-1 overflow-y-auto mb-4 custom-scrollbar" ref={scrollRef}>
         {history.map((line, i) => (
-          <div key={i} className="mb-1">{line}</div>
+          <motion.div 
+            initial={{ opacity: 0, x: -10 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ duration: 0.2 }}
+            key={i} 
+            className="mb-1 leading-relaxed whitespace-pre-wrap"
+          >
+            {line}
+          </motion.div>
         ))}
       </div>
-      <form onSubmit={handleCommand} className="flex mt-2">
-        <span className="mr-2">$</span>
+      <form onSubmit={handleCommand} className="flex items-center gap-2 border-t border-[#21F1A8]/20 pt-4">
+        <span className="text-[#21F1A8] animate-pulse">➜</span>
+        <span className="text-[#F0EDE4]/50">~/@avidkiya</span>
         <input
           autoFocus
-          className="bg-transparent border-none outline-none flex-1 text-primary"
+          className="bg-transparent border-none outline-none flex-1 text-[#F0EDE4] caret-[#21F1A8]"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          spellCheck={false}
         />
       </form>
     </div>
