@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F0EDE4;
+  --foreground: #171717;
+}
+
+[class~="dark"] {
+  --background: #171717;
+  --foreground: #F0EDE4;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden; /* OS feel */
+}
+
+/* CRT Scanline Effect */
+.scanlines {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanlines::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 2;
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+}
+
+/* Pixel Border */
+.pixel-border {
+  border: 2px solid currentColor;
+  box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+}
+
+.dark .pixel-border {
+  box-shadow: 2px 2px 0px 0px rgba(255,255,255,0.05);
+}
