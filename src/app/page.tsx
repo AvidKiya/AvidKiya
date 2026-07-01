@@ -1,15 +1,10 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { GithubRepos } from '../components/GithubRepos';
+import React, { useEffect, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useAudio } from '../hooks/useAudio';
 import { AdminPanel } from '../components/AdminPanel';
-
-const ASCII_LOGO = `
-   ▄▀█ █░█ █ █▀▄   █▄▀ █ █▄█ ▄▀█
-   █▀█ ▀▄▀ █ █▄▀   █░█ █ ░█░ █▀█
-   ░░░ A V I D   D E V H U B ░░░
-`;
+import { GithubRepos } from '../components/GithubRepos';
 
 const ASCII_BANNER = `
 ╔────────────────────────────────────────────────────────────╗
@@ -23,110 +18,109 @@ const ASCII_BANNER = `
 `;
 
 export default function Home() {
-  const handlePrint = () => window.print();
+  const { playHover, playClick } = useAudio();
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], [0, -200]);
+  
+  const [siteData, setSiteData] = useState({
+    name: "AVID KIYA",
+    title: "Senior AI Engineer",
+    bio: "Architecting high-performance systems with Python and Node.js. Obsessed with clean code and distributed intelligence."
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('kiya_site_data');
+    if (saved) setSiteData(JSON.parse(saved));
+  }, []);
 
   return (
-    <div className="min-h-screen selection:bg-accent-python selection:text-white pb-32">
+    <div className="min-h-screen relative selection:bg-[#00FF41] selection:text-black overflow-x-hidden">
+      <div className="mesh-gradient" />
       <AdminPanel />
-      
-      {/* Header Section */}
-      <header className="max-w-5xl mx-auto px-6 py-12 space-y-8">
-        <div className="flex justify-between items-start">
-           <pre className="ascii-header text-accent-python text-[10px] md:text-sm">
-             {ASCII_LOGO}
-           </pre>
-           <button 
-             onClick={handlePrint}
-             className="no-print bg-[#161b22] border border-[#30363d] px-6 py-3 rounded text-[10px] font-bold uppercase tracking-widest hover:border-accent-python transition-all"
-           >
-             Download CV [PDF]
-           </button>
-        </div>
 
-        <div className="overflow-x-auto">
-          <pre className="ascii-header text-white/90 text-[7px] md:text-xs tracking-tighter md:tracking-normal">
-            {ASCII_BANNER}
-          </pre>
-        </div>
-      </header>
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-[100] px-12 py-8 flex justify-between items-center mix-blend-difference">
+         <div className="font-black text-xl tracking-tighter hover:scale-110 transition-transform cursor-pointer" onMouseEnter={playHover}>AK.</div>
+         <div className="flex gap-12 text-[10px] uppercase font-bold tracking-[0.4em]">
+            <a href="#work" className="hover:text-[#00FF41] transition-colors" onMouseEnter={playHover}>Work</a>
+            <a href="#about" className="hover:text-[#00FF41] transition-colors" onMouseEnter={playHover}>About</a>
+            <button onClick={() => window.print()} className="no-print opacity-40 hover:opacity-100">PRINT</button>
+         </div>
+      </nav>
 
-      {/* Main Info */}
-      <main className="max-w-5xl mx-auto px-6 space-y-32">
+      <main className="relative pt-40">
         
-        {/* Intro */}
-        <section className="grid md:grid-cols-[1fr_300px] gap-12 items-center">
-           <div className="space-y-8">
-              <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#3776ab1a] border border-[#3776ab33] rounded-full">
-                 <div className="w-2 h-2 rounded-full bg-accent-python animate-pulse"></div>
-                 <span className="text-accent-python text-[10px] font-bold uppercase tracking-widest font-mono">Senior Software Architect</span>
-              </div>
-              <h2 className="text-5xl font-black text-white leading-tight">Building scalable<br/>intelligent systems.</h2>
-              <p className="text-white/50 text-base font-mono leading-relaxed max-w-xl">
-                 Expert in <span className="text-accent-python">Python (FastAPI/Django)</span> and <span className="text-accent-node">Node.js</span>. 
-                 Specializing in high-concurrency architectures, AI orchestration, and cloud-native solutions. 
-                 Driven by clean code and the zen of development.
-              </p>
-              <div className="flex gap-12 pt-4">
-                 <div className="space-y-1">
-                    <div className="text-[10px] text-white/30 uppercase tracking-widest">Experience</div>
-                    <div className="text-white font-bold font-mono">6+ Years</div>
-                 </div>
-                 <div className="space-y-1">
-                    <div className="text-[10px] text-white/30 uppercase tracking-widest">Completed</div>
-                    <div className="text-white font-bold font-mono">42+ Projects</div>
+        {/* Huge Hero Section */}
+        <section className="px-12 mb-60">
+           <motion.div 
+             initial={{ opacity: 0, y: 100 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
+             className="space-y-4"
+           >
+              <pre className="ascii-header text-[#00FF41] text-[6px] md:text-xs no-print">
+                {ASCII_BANNER}
+              </pre>
+              <h1 className="text-huge uppercase mt-12">{siteData.name.split(' ')[0]}<br/>{siteData.name.split(' ')[1]}</h1>
+              <div className="flex justify-between items-end mt-12">
+                 <p className="max-w-md text-white/40 font-mono text-sm leading-relaxed italic">
+                   {siteData.bio}
+                 </p>
+                 <div className="text-right space-y-2">
+                    <div className="text-[#00FF41] text-xs font-black uppercase tracking-widest">Available // 2026</div>
+                    <div className="text-white/20 text-[9px] uppercase font-bold tracking-widest">TEHRAN_TIME {new Date().toLocaleTimeString()}</div>
                  </div>
               </div>
+           </motion.div>
+        </section>
+
+        {/* Video / Visual Section */}
+        <section className="px-6 mb-60 h-[80vh] relative group">
+           <div className="absolute inset-0 bg-[#00FF41]/5 rounded-[3rem] overflow-hidden border border-white/5">
+              <video 
+                autoPlay loop muted playsInline 
+                className="w-full h-full object-cover grayscale brightness-50 opacity-40 group-hover:scale-105 transition-transform duration-[2s]"
+              >
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-details-4431-large.mp4" type="video/mp4" />
+              </video>
            </div>
-           
-           <div className="relative group">
-              <div className="absolute inset-0 bg-accent-python/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative aspect-square rounded-2xl overflow-hidden border-2 border-[#30363d] group-hover:border-accent-python transition-all duration-500">
-                 <img src="/me.png" className="w-full h-full object-cover grayscale brightness-110" />
-              </div>
+           <div className="relative h-full flex flex-col justify-center items-center text-center p-12">
+              <h2 className="text-4xl font-black uppercase tracking-[0.5em] mb-4">Engineering Reality</h2>
+              <div className="w-24 h-1 bg-[#00FF41]" />
            </div>
         </section>
 
-        {/* Tech Stack */}
-        <section className="space-y-12">
-           <div className="flex items-center gap-6">
-              <h3 className="text-white/20 text-xs uppercase tracking-[1em] whitespace-nowrap font-black">Core Stack</h3>
-              <div className="w-full h-[1px] bg-[#30363d]" />
-           </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <TechItem name="Python" level="Master" color="#3776ab" />
-              <TechItem name="Node.js" level="Advanced" color="#68a063" />
-              <TechItem name="PostgreSQL" level="Scalable" color="#336791" />
-              <TechItem name="AI Models" level="Expert" color="#ffffff" />
-           </div>
-        </section>
-
-        {/* GitHub Integration */}
-        <section className="space-y-12">
-           <div className="flex items-center gap-6">
-              <h3 className="text-white/20 text-xs uppercase tracking-[1em] whitespace-nowrap font-black">Live Repositories</h3>
-              <div className="w-full h-[1px] bg-[#30363d]" />
+        {/* GitHub Work */}
+        <section id="work" className="px-12 mb-60 space-y-20">
+           <div className="flex justify-between items-center border-b border-white/10 pb-8">
+              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Selected Artifacts</h2>
+              <span className="text-[10px] uppercase font-bold tracking-[0.5em] text-[#00FF41]">Code_Base</span>
            </div>
            <GithubRepos username="AvidKiya" />
         </section>
 
+        {/* Final CTA */}
+        <section className="px-12 py-60 text-center space-y-12">
+           <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-tight">Ready to build<br/>the future?</h2>
+           <a 
+             href="mailto:AvidKiya@gmail.com" 
+             onMouseEnter={playHover}
+             onClick={playClick}
+             className="inline-block px-12 py-6 border-2 border-white hover:bg-[#00FF41] hover:border-[#00FF41] hover:text-black transition-all rounded-full text-xs font-black uppercase tracking-[0.5em]"
+           >
+             Initialize Protocol
+           </a>
+        </section>
       </main>
 
-      <footer className="max-w-5xl mx-auto px-6 mt-40 pt-12 border-t border-[#30363d] flex flex-col md:flex-row justify-between items-center gap-6 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
-         <div>© 2026 Avid Kiya // Systems Architect</div>
-         <div className="flex gap-8">
-            <a href="https://github.com/AvidKiya" className="hover:text-accent-python transition-colors">Github</a>
-            <a href="https://linkedin.com/in/avidkiya" className="hover:text-accent-python transition-colors">LinkedIn</a>
-            <a href="https://t.me/avidkiya" className="hover:text-accent-python transition-colors">Telegram</a>
+      <footer className="px-12 py-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10 font-mono text-[9px] uppercase tracking-[0.3em] text-white/20">
+         <div>© 2026 AvidDevHub // Optimized for Performance</div>
+         <div className="flex gap-12">
+            <a href="https://github.com/AvidKiya" onMouseEnter={playHover} className="hover:text-white transition-colors">GitHub</a>
+            <a href="https://linkedin.com/in/avidkiya" onMouseEnter={playHover} className="hover:text-white transition-colors">LinkedIn</a>
+            <a href="https://t.me/avidkiya" onMouseEnter={playHover} className="hover:text-white transition-colors">Telegram</a>
          </div>
       </footer>
     </div>
   );
 }
-
-const TechItem = ({ name, level, color }: { name: string, level: string, color: string }) => (
-  <div className="p-6 code-card rounded-xl group relative overflow-hidden">
-     <div className="absolute top-0 left-0 w-1 h-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: color }}></div>
-     <div className="text-white font-bold mb-1">{name}</div>
-     <div className="text-[10px] uppercase tracking-widest opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: color }}>{level}</div>
-  </div>
-);

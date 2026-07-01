@@ -2,76 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+}
+
 :root {
-  --bg: #0d1117;
-  --fg: #c9d1d9;
-  --accent-python: #3776ab;
-  --accent-node: #68a063;
-  --border-color: #30363d;
+  --primary: #00FF41;
+  --bg: #050505;
+  --accent: #3776ab;
 }
 
 body {
   background-color: var(--bg);
-  color: var(--fg);
+  color: #FFFFFF;
   font-family: 'JetBrains Mono', monospace;
-  scroll-behavior: smooth;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Styles for Print */
-@media print {
-  nav, footer, .no-print, button {
-    display: none !important;
-  }
-  body {
-    background-color: white !important;
-    color: black !important;
-  }
-  .print-only {
-    display: block !important;
-  }
-  .container {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .ascii-header {
-    font-size: 8px !important;
-    line-height: 1 !important;
-  }
+/* Henry Jeff Style Background */
+.mesh-gradient {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: 
+    radial-gradient(at 0% 0%, rgba(55, 118, 171, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(104, 160, 99, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 255, 65, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(55, 118, 171, 0.1) 0px, transparent 50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Massive Typography */
+.text-huge {
+  font-size: clamp(3rem, 15vw, 12rem);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  font-weight: 900;
 }
 
 .ascii-header {
-  line-height: 1.2;
+  line-height: 1;
   font-weight: bold;
   white-space: pre;
+  filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.3));
 }
 
-.code-card {
-  background: #161b22;
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
+/* Smooth Interactive Elements */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.code-card:hover {
-  border-color: var(--accent-python);
-  box-shadow: 0 0 20px rgba(55, 118, 171, 0.1);
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--primary);
+  transform: translateY(-5px);
 }
 
-.python-text { color: #ffd343; }
-.node-text { color: #68a063; }
+/* Custom Cursor */
+.custom-cursor {
+  width: 20px; height: 20px;
+  background: var(--primary);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition: transform 0.1s ease;
+}
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0d1117;
-}
-::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
 }
