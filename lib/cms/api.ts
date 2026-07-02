@@ -1,0 +1,101 @@
+/**
+ * Client library for talking to the Cloudflare Pages Functions
+ * that back the CMS.
+ *
+ * When running `npm run dev` locally these calls fail gracefully and the
+ * app falls back to localStorage. In production (Cloudflare Pages) the
+ * Functions in /functions/api/ handle everything.
+ */
+
+import type { CmsState } from "./schema";
+
+const API_BASE = "/api";
+
+function tokenHeaders(token: string | null): HeadersInit {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function fetchRemoteState(): Promise<CmsState | null> {
+  try {
+    const res = await fetch(`${API_BASE}/cms`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data?.state ?? null) as CmsState | null;
+  } catch {
+    return null;
+  }
+}
+
+export async function pushRemoteState(
+  state: CmsState,
+  token: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/cms`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...tokenHeaders(token),
+      },
+      body: JSON.stringify(state),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      return { ok: false, error: `${res.status}: ${t}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
+export async function submitContactMessage(payload: {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+}): Promise<{ ok: boolean; id?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: data?.error ?? `HTTP ${res.status}` };
+    return { ok: true, id: data.id };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
+export async function fetchRemoteMessages(token: string) {
+  try {
+    const res = await fetch(`${API_BASE}/messages`, {
+      headers: tokenHeaders(token),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.messages as any[];
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteRemoteMessage(id: string, token: string) {
+  try {
+    const res = await fetch(`${API_BASE}/messages?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: tokenHeaders(token),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export function isApiAvailable(): Promise<boolean> {
+  return fetch(`${API_BASE}/cms`, { method: "OPTIONS" })
+    .then(() => true)
+    .catch(() => false);
+}

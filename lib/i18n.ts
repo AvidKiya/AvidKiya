@@ -1,0 +1,188 @@
+export type Language = "fa" | "en";
+
+/**
+ * Central translation table.
+ * Add a new key here and it becomes available via `t("...")` in components.
+ */
+export const translations = {
+  // Brand
+  brandName: { fa: "اوید کیا", en: "AVID KIYA" },
+  brandShort: { fa: "AVID KIYA", en: "AVID KIYA" },
+
+  // Nav
+  navWorkspace: { fa: "میز کار", en: "Workspace" },
+  navLab: { fa: "آزمایشگاه", en: "Lab" },
+  navNetwork: { fa: "شبکه", en: "Network" },
+  navProjects: { fa: "پروژه‌ها", en: "Projects" },
+  navAbout: { fa: "درباره من", en: "About" },
+  navContact: { fa: "تماس", en: "Contact" },
+  navAdmin: { fa: "پنل مدیریت", en: "Admin" },
+
+  // Status
+  systemOnline: { fa: "سیستم آنلاین", en: "System Online" },
+  liveFeed: { fa: "پخش زنده", en: "LIVE FEED" },
+
+  // Hero
+  heroTag: { fa: "معمار سیستم‌ها", en: "Systems Architect" },
+  heroTitleA: { fa: "طراحی سیستم‌های", en: "Building resilient" },
+  heroTitleB: { fa: "توزیع‌شدهٔ مقاوم.", en: "Distributed Systems." },
+  heroDescription: {
+    fa: "طراحی زیرساخت‌های در دسترس بالا با تمرکز بر ارکستراسیون کم‌تأخیر و معماری‌های ابری خودترمیم.",
+    en: "Engineering high-availability infrastructures with a focus on low-latency orchestration and self-healing cloud architectures.",
+  },
+
+  // Buttons / CTA
+  viewDetails: { fa: "مشاهده جزئیات", en: "View Details" },
+  viewAll: { fa: "مشاهده همه", en: "View All" },
+  exploreProjects: { fa: "کاوش پروژه‌ها", en: "Explore Projects" },
+  getInTouch: { fa: "تماس بگیرید", en: "Get in Touch" },
+  printCV: { fa: "دریافت رزومه", en: "Print CV" },
+  connect: { fa: "ارتباط", en: "Connect" },
+
+  // Project card labels
+  coreEngine: { fa: "موتور اصلی", en: "Core Engine" },
+  featuredWork: { fa: "کار برجسته", en: "Featured Work" },
+
+  // Cards sample
+  card1Title: { fa: "موتور نکسوس", en: "Nexus Engine" },
+  card1Desc: {
+    fa: "یک لایهٔ ارکستراسیون با عملکرد بالا برای معماری‌های میکروسرویس مقاوم. با Rust و gRPC.",
+    en: "A high-performance orchestration layer designed for resilient microservices architectures. Built with Rust and gRPC.",
+  },
+  card2Title: {
+    fa: "معماری سیستم‌های توزیع شده",
+    en: "Distributed Systems Architecture",
+  },
+  card2Desc: {
+    fa: "طراحی و پیاده‌سازی زیرساخت‌های مقیاس‌پذیر با تمرکز بر پایداری بالا و پاسخ‌دهی در زمان واقعی برای پلتفرم‌های ابری.",
+    en: "Design and implementation of scalable infrastructures focused on high stability and real-time responsiveness for cloud platforms.",
+  },
+
+  // Stats
+  statRequests: { fa: "درخواست/ثانیه", en: "Requests / Sec" },
+  statUptime: { fa: "پایداری", en: "Uptime Metric" },
+  statNodes: { fa: "نودهای جهانی", en: "Global Nodes" },
+  statYears: { fa: "سال تجربه", en: "Years Experience" },
+
+  // Footer
+  footerRights: {
+    fa: "© ۲۰۲۶ اوید کیا | شناسه نشست: 0x48FFB6",
+    en: "© 2026 AVID KIYA | SESSION_ID: 0x48FFB6",
+  },
+
+  // ─── Projects / IDE page ───────────────────────────
+  ideTitle: { fa: "AVIDKIYA_IDE_V1.0", en: "AVIDKIYA_IDE_V1.0" },
+  ideExplorer: { fa: "کاوشگر", en: "EXPLORER" },
+  ideSectionSrc: { fa: "سورس", en: "SRC" },
+  ideSectionProjects: { fa: "پروژه‌ها", en: "PROJECTS" },
+  ideSectionCustom: { fa: "پروژه‌های شخصی", en: "CUSTOM" },
+  ideAbout: { fa: "درباره.md", en: "About.md" },
+  ideSkills: { fa: "مهارت‌ها.json", en: "Skills.json" },
+  ideContact: { fa: "تماس.sh", en: "Contact.sh" },
+  ideTerminal: { fa: "ترمینال", en: "TERMINAL" },
+  ideProblems: { fa: "مشکلات", en: "PROBLEMS" },
+  ideOutput: { fa: "خروجی", en: "OUTPUT" },
+  activeModules: { fa: "ماژول‌های فعال", en: "Active Modules" },
+  modulesListing: { fa: "نمایش پروژه‌ها از", en: "Listing projects from" },
+  loadingRepos: { fa: "در حال بارگذاری مخازن...", en: "Fetching repositories..." },
+  errorLoading: { fa: "خطا در بارگذاری", en: "Failed to load" },
+  retry: { fa: "تلاش دوباره", en: "Retry" },
+  noProjects: { fa: "هیچ پروژه‌ای پیدا نشد", en: "No projects found" },
+  addCustomProject: { fa: "افزودن پروژه شخصی", en: "Add custom project" },
+  projectName: { fa: "نام پروژه", en: "Project name" },
+  projectDesc: { fa: "توضیحات", en: "Description" },
+  projectDescFa: { fa: "توضیحات (فارسی)", en: "Description (Persian)" },
+  projectUrl: { fa: "لینک", en: "URL" },
+  projectLang: { fa: "زبان", en: "Language" },
+  projectTopics: { fa: "برچسب‌ها (جدا شده با کاما)", en: "Topics (comma separated)" },
+  cancel: { fa: "لغو", en: "Cancel" },
+  save: { fa: "ذخیره", en: "Save" },
+  remove: { fa: "حذف", en: "Remove" },
+  stars: { fa: "ستاره", en: "stars" },
+  forks: { fa: "فورک", en: "forks" },
+  updated: { fa: "بروزرسانی", en: "Updated" },
+  view: { fa: "مشاهده", en: "View" },
+  liveDemo: { fa: "دموی زنده", en: "Live Demo" },
+  sourceCode: { fa: "کد منبع", en: "Source" },
+  filterAll: { fa: "همه", en: "All" },
+  filterActive: { fa: "فعال", en: "Active" },
+  filterArchived: { fa: "بایگانی", en: "Archived" },
+  searchRepos: { fa: "جستجو در پروژه‌ها...", en: "Search projects..." },
+  sortBy: { fa: "مرتب‌سازی", en: "Sort by" },
+  sortStars: { fa: "ستاره", en: "Stars" },
+  sortUpdated: { fa: "بروزرسانی", en: "Updated" },
+  sortName: { fa: "نام", en: "Name" },
+  githubStatus: { fa: "متصل به گیت‌هاب", en: "GitHub Connected" },
+
+  // ─── About / Command Center ─────────────────────────
+  commandCenter: { fa: "مرکز فرماندهی", en: "Command Center" },
+  commandCenterVersion: { fa: "COMMAND_CENTER.v3", en: "COMMAND_CENTER.v3" },
+  currentLocation: { fa: "موقعیت فعلی", en: "Current Location" },
+  tehranNode: { fa: "ایران / تهران", en: "IRAN / TEHRAN_NODE" },
+  systemStatus: { fa: "وضعیت سیستم", en: "System Status" },
+  cpuUsage: { fa: "پردازش مرکزی", en: "CPU Usage" },
+  memoryUsage: { fa: "حافظه سیستم", en: "Memory" },
+  bandwidth: { fa: "پهنای باند", en: "Bandwidth" },
+  quickLinks: { fa: "لینک‌های دسترسی سریع", en: "Quick Links" },
+  githubProfile: { fa: "پروفایل گیت‌هاب", en: "GitHub Profile" },
+  downloadCV: { fa: "رزومه کامل (PDF)", en: "Full Resume (PDF)" },
+  directContact: { fa: "ارتباط مستقیم", en: "Direct Contact" },
+  motivationQuote: {
+    fa: "«سیستم‌های توزیع شده نه تنها کد، بلکه هنر تعادل بین آشفتگی و نظم هستند.»",
+    en: "\"Distributed systems are not just code — they are the art of balancing chaos and order.\"",
+  },
+  welcomeToCommand: { fa: "به مرکز فرماندهی خوش آمدید", en: "Welcome to Command Center" },
+  aboutIntro: {
+    fa: "من متخصص طراحی و پیاده‌سازی زیرساخت‌های مقیاس‌پذیر و سیستم‌های توزیع شده با تمرکز بر کارایی بالا و دسترسی همیشگی هستم. در اینجا می‌توانید آخرین پروژه‌ها و وضعیت فعالیت‌های من را مشاهده کنید.",
+    en: "I specialize in designing and implementing scalable infrastructures and distributed systems with a focus on high performance and constant availability. Here you can explore my latest projects and activity.",
+  },
+  initSession: { fa: "راه‌اندازی نشست...", en: "initialize_session.sh --verbose" },
+  loadingKernel: { fa: "بارگذاری هسته مرکزی... [تکمیل]", en: "loading kernel... [OK]" },
+  neuralConnect: { fa: "اتصال به شبکه عصبی... [تکمیل]", en: "connecting neural net... [OK]" },
+  identityVerified: {
+    fa: "تایید هویت کاربر: اوید کیا (معمار ارشد سیستم)",
+    en: "user verified: Avid Kiya (Senior Systems Architect)",
+  },
+  githubActivity: { fa: "فعالیت گیت‌هاب", en: "GitHub Activity" },
+  last30Days: { fa: "(۳۰ روز اخیر)", en: "(last 30 days)" },
+  recentActivity: { fa: "سیاهه فعالیت‌های اخیر", en: "Recent Activity Log" },
+  socialConnect: { fa: "شبکه‌های اجتماعی", en: "Social Networks" },
+  startProject: { fa: "شروع پروژه جدید", en: "Start a New Project" },
+  readyForCommands: { fa: "آماده برای دریافت دستورات جدید...", en: "Ready for new commands..." },
+  connectedTo: { fa: "متصل به سرور مرکزی", en: "Connected to primary server" },
+  latency: { fa: "تاخیر", en: "LATENCY" },
+  admin: { fa: "مدیر", en: "ADMIN" },
+  less: { fa: "کمتر", en: "less" },
+  more: { fa: "بیشتر", en: "more" },
+  techStack: { fa: "پشته فناوری", en: "Tech Stack" },
+  experience: { fa: "تجربه کاری", en: "Experience" },
+  contactMe: { fa: "تماس با من", en: "Contact Me" },
+  yourName: { fa: "نام شما", en: "Your Name" },
+  yourEmail: { fa: "ایمیل شما", en: "Your Email" },
+  subject: { fa: "موضوع", en: "Subject" },
+  message: { fa: "پیام", en: "Message" },
+  sendMessage: { fa: "ارسال پیام", en: "Send Message" },
+  messageSent: { fa: "پیام شما ذخیره شد ✓", en: "Message saved ✓" },
+  or: { fa: "یا مستقیم", en: "or reach out via" },
+  followerCount: { fa: "دنبال‌کننده", en: "followers" },
+  followingCount: { fa: "دنبال شده", en: "following" },
+  reposCount: { fa: "مخزن", en: "repos" },
+  liveNow: { fa: "الان آنلاین", en: "Live now" },
+  viewProfile: { fa: "مشاهده پروفایل", en: "View Profile" },
+  channel: { fa: "کانال", en: "Channel" },
+
+  // Language / Theme toggles
+  toggleLang: { fa: "EN", en: "فا" },
+  toggleThemeDark: { fa: "حالت شب", en: "Dark Mode" },
+  toggleThemeLight: { fa: "حالت روز", en: "Light Mode" },
+  languageLabel: { fa: "زبان", en: "Language" },
+  themeLabel: { fa: "پوسته", en: "Theme" },
+} as const;
+
+export type TranslationKey = keyof typeof translations;
+
+export function getTranslation(key: TranslationKey, lang: Language): string {
+  const entry = translations[key];
+  if (!entry) return key;
+  return entry[lang] ?? entry.en;
+}

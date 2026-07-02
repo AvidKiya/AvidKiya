@@ -1,20 +1,28 @@
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.js
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
+build
+dist
 
-# production
-/build
+# cloudflare
+.vercel
+.wrangler
+
+# env
+.env
+.env*.local
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
 # debug
@@ -22,15 +30,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
-
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# admin data (local only)
-src/data/portfolio-data.json

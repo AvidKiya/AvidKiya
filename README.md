@@ -1,78 +1,195 @@
-# 🚀 Portfolio Website
+# AvidKiya OS — Portfolio
 
-یک وب‌سایت پورتفولیو با تم ترمینال/BIOS با پنل مدیریت کامل.
+A full-stack, bilingual (فارسی / English), dark + light themed portfolio built
+with **Next.js 15** and deployed on **Cloudflare Pages** with a **Cloudflare
+Workers + KV** backend for the admin panel.
+
+Everything on the site is **editable from a built-in CMS** — either through
+the `/admin` panel or via inline ✎ pencils on the live pages.
 
 ---
 
-## ✨ ویژگی‌ها
+## 🚀 Live features
 
-- 🖥️ طراحی CRT Terminal / BIOS (مثل نسخه اصلی)
-- 🌐 دو زبانه: **فارسی** و **انگلیسی** با سوییچ آسان
-- ⚙️ **پنل مدیریت کامل** برای ویرایش همه اطلاعات
-- ☁️ آماده **Cloudflare Pages** با دیپلوی خودکار از GitHub
-- 📱 Responsive
+| Route         | What                                                                                     |
+|---------------|------------------------------------------------------------------------------------------|
+| `/`           | Landing dashboard (Glass Workspace) — hero, feature cards, live stats                    |
+| `/projects`   | IDE-style project explorer — pulls repos live from `github.com/<username>` + custom ones |
+| `/about`      | Command Center — system-status sidebar, terminal welcome, GitHub heatmap, contact form   |
+| `/admin`      | 8-section admin panel — identity, socials, landing, about, projects, messages, settings  |
+| `/api/cms`    | Cloudflare Function → reads/writes site content in KV                                    |
+| `/api/messages` | Cloudflare Function → contact-form inbox in KV                                          |
 
-## 📁 ساختار
+**Bilingual:** switching language flips the ENTIRE layout (RTL for فارسی, LTR
+for English) — not just text. Cards, asides, sidebars, and menus all mirror.
+
+**Dark / light theme:** design tokens live as CSS variables so the whole UI
+retunes instantly.
+
+**Language + theme switcher:** single dropdown on the top nav. In Persian the
+menu opens on the right; in English on the left (as requested).
+
+---
+
+## 🗂 Project structure
 
 ```
-portfolio/
-├── src/
-│   ├── app/           # Next.js App Router
-│   ├── components/    # React Components
-│   │   ├── sections/  # بخش‌های مختلف
-│   │   ├── AdminPanel.tsx    # پنل مدیریت
-│   │   ├── LoadingScreen.tsx # صفحه لودینگ BIOS
-│   │   └── MainUI.tsx        # رابط اصلی
-│   └── lib/           # توابع کمکی
-├── .github/workflows/ # GitHub Actions
-└── next.config.js
+app/                          Next.js App Router
+  layout.tsx                  Wraps everything in AppProvider + CmsProvider
+  page.tsx                    /  → Landing dashboard
+  projects/page.tsx           /projects → IDE view
+  about/page.tsx              /about → Command Center
+  admin/page.tsx              /admin → Admin panel (password-protected)
+components/
+  layout/                     TopNav + Footer
+  dashboard/                  Hero, ProjectGrid, StatsBar, Watermark, FAB
+  projects/                   IdeShell, ProjectCard, CustomProjectModal
+  about/                      CommandCenter (with ContactForm)
+  admin/                      AdminPanel, LoginScreen, section editors
+  cms/                        Editable (✎ pencil), EditableList, EditModeBar
+  ui/                         LangThemeSwitcher
+contexts/
+  AppContext.tsx              Language + theme (localStorage-backed)
+  CmsContext.tsx              Content state (localStorage + Cloudflare KV sync)
+lib/
+  cms/schema.ts               Every editable field on the site, typed
+  cms/api.ts                  Fetch helpers → /api/cms + /api/messages
+  github.ts                   GitHub REST helpers (repos, user)
+  i18n.ts                     Static UI translation strings
+  config.ts                   Fallback identity/socials (superseded by CMS)
+functions/api/
+  cms.ts                      Cloudflare Pages Function → KV read/write
+  messages.ts                 Cloudflare Pages Function → contact inbox
+public/
+  favicon.svg
+preview.html                  Static single-file preview of /  (dashboard)
+preview-projects.html         Static single-file preview of /projects
+preview-about.html            Static single-file preview of /about
+preview-admin.html            Static single-file preview of /admin
+wrangler.toml                 Cloudflare Pages config
+tailwind.config.ts            Tailwind + design tokens
+next.config.mjs
+tsconfig.json
 ```
 
-## 🚀 راه‌اندازی محلی
+---
+
+## 🖥 Local development
 
 ```bash
 npm install
-npm run dev
+npm run dev            # http://localhost:3000
 ```
 
-## ☁️ دیپلوی روی Cloudflare Pages
+The site works fully offline in this mode — all CMS changes save to
+`localStorage`. Log in to `/admin` with the temporary password:
 
-### روش اول: از طریق Git (خودکار)
+```
+avidkiya-2026
+```
 
-1. ریپو را فورک کرده یا بر روی GitHub آپلود کنید
-2. وارد [Cloudflare Pages](https://pages.cloudflare.com) شوید
-3. **Create a project > Connect to Git**
-4. ریپوی خود را انتخاب کنید
-5. تنظیمات Build:
-   - **Framework preset**: Next.js (Static HTML Export)
-   - **Build command**: `npm run build`
-   - **Build output directory**: `out`
-6. کلیک روی **Save and Deploy**
+*(this is defined in `contexts/CmsContext.tsx` as a fallback for local dev)*
 
-### روش دوم: GitHub Actions (خودکار با push)
+---
 
-1. در Cloudflare، یک **API Token** بسازید:
-   - [داشبورد Cloudflare](https://dash.cloudflare.com/profile/api-tokens)
-   - **Create Token > Custom Token**
-   - Permission: `Cloudflare Pages > Edit`
-2. **Account ID** خود را از داشبورد Cloudflare کپی کنید
-3. در GitHub Repo، Settings > Secrets > Actions:
-   - `CLOUDFLARE_API_TOKEN` = توکن API
-   - `CLOUDFLARE_ACCOUNT_ID` = Account ID
-4. هر push به `main/master` به صورت خودکار deploy می‌شود ✅
+## ☁️ Deploy to Cloudflare Pages (step-by-step)
 
-## ⚙️ پنل مدیریت
+### 1. Push to GitHub
 
-- از صفحه اصلی، دکمه **⚙** (گوشه بالا) را بزنید
-- رمز پیش‌فرض: **`admin123`**
-- از پنل می‌توانید:
-  - اطلاعات شخصی (فارسی + انگلیسی)
-  - تنظیمات BIOS
-  - مهارت‌ها
-  - پروژه‌ها
-  - سابقه کاری
-  - تحصیلات
-  - اطلاعات تماس
-  - تغییر رمز عبور
+```bash
+git init
+git add .
+git commit -m "AvidKiya portfolio — initial"
+git branch -M main
+git remote add origin https://github.com/avidkiya/avidkiya-portfolio.git
+git push -u origin main
+```
 
-> **توجه**: اطلاعات در `localStorage` ذخیره می‌شوند. برای ذخیره دائمی، فایل `src/lib/data.ts` را مستقیم ویرایش کنید.
+### 2. Create the KV namespace
+
+Once, from your machine (needs `wrangler` — bundled as a dev dep):
+
+```bash
+npx wrangler login
+npx wrangler kv:namespace create AVIDKIYA_KV
+# → outputs: id = "abc123..."   (copy it)
+```
+
+Uncomment the `[[kv_namespaces]]` block in `wrangler.toml` and paste the ID —
+useful for local `wrangler pages dev`, though it isn't required for production
+(you'll bind it via the dashboard in step 4).
+
+### 3. Connect Cloudflare Pages to your GitHub repo
+
+1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**
+2. Pick `avidkiya-portfolio` and click **Begin setup**
+3. Build settings:
+
+   | Setting                | Value                                    |
+   |------------------------|------------------------------------------|
+   | Framework preset       | Next.js                                  |
+   | Build command          | `npx @cloudflare/next-on-pages@1`        |
+   | Build output directory | `.vercel/output/static`                  |
+   | Node version           | `20`                                     |
+   | Compatibility flag     | `nodejs_compat`                          |
+
+4. **Save and Deploy.** The first build takes ~2 minutes.
+
+### 4. Bind KV + set the admin token
+
+In your new Pages project:
+
+- **Settings → Functions → KV namespace bindings**
+  - Variable name: `AVIDKIYA_KV`
+  - KV namespace: pick the one you created in step 2
+  - Save (both **Production** and **Preview** environments)
+
+- **Settings → Environment variables → Production → Add variable**
+  - Type: **Secret (encrypted)**
+  - Variable name: `ADMIN_TOKEN`
+  - Value: pick a strong random string (this is what you'll enter at `/admin`)
+  - Save
+
+- Trigger a redeploy (**Deployments → ⋯ → Retry deployment**) so the new
+  bindings take effect.
+
+### 5. Log in and edit
+
+Visit `https://<your-project>.pages.dev/admin`, paste the `ADMIN_TOKEN`, and
+you're in. Toggle **Edit mode** to see ✎ pencils on every page.
+
+Any change auto-syncs to KV within ~1 second (there's a debounced push), and
+every subsequent visitor to the site pulls the latest state from KV.
+
+---
+
+## 🔐 Making it your own
+
+- Change the fallback identity in `lib/cms/schema.ts` (`defaultCmsState`) —
+  those defaults are used before an admin has saved anything to KV.
+- Change your GitHub username in the admin panel → Settings, or edit
+  `siteConfig.githubUsername` in `lib/config.ts`.
+- Optionally set `NEXT_PUBLIC_GITHUB_TOKEN` in Cloudflare Pages env vars to
+  raise the 60 req/hr GitHub API limit.
+
+---
+
+## 🛠 Handy scripts
+
+```bash
+npm run dev              # Next.js dev server (localhost:3000)
+npm run build            # production build
+npm run pages:build      # convert build to Cloudflare Pages format
+npm run preview          # run the Pages-format build locally via wrangler
+npm run deploy           # publish current build to Cloudflare Pages
+```
+
+---
+
+## ✨ Credits
+
+- Design tokens & concept — three original CLIfolio mockups
+- Icons — [Material Symbols](https://fonts.google.com/icons)
+- Fonts — [Hanken Grotesk](https://fonts.google.com/specimen/Hanken+Grotesk),
+  [Fira Sans](https://fonts.google.com/specimen/Fira+Sans),
+  [Vazirmatn](https://fonts.google.com/specimen/Vazirmatn)

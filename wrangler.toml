@@ -1,11 +1,22 @@
-# Cloudflare Pages configuration
-name = "portfolio-website"
-compatibility_date = "2024-01-01"
+name = "avidkiya-portfolio"
+compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
 
-[build]
-command = "npm run build"
-cwd = "."
-watch_dir = "."
+# ─── Bindings ─────────────────────────────────────────────────
+# These are DEFAULTS for local `wrangler pages dev` only.
+# In production, configure them in the Cloudflare dashboard:
+#   Pages project → Settings → Functions
+#     → KV namespace bindings: AVIDKIYA_KV
+#     → Environment variables (Secrets): ADMIN_TOKEN
+#
+# Create the KV namespace first (once):
+#   npx wrangler kv:namespace create AVIDKIYA_KV
+# then copy the returned id below.
 
-[env.production]
-name = "portfolio-website"
+# [[kv_namespaces]]
+# binding = "AVIDKIYA_KV"
+# id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# [vars]
+# ADMIN_TOKEN = "change-me-locally-only"
