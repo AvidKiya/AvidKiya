@@ -58,10 +58,10 @@ export default function BgMusic() {
         className="fixed bottom-6 z-40 rounded-full flex items-center gap-2 px-3 py-2 text-xs font-bold border transition-transform hover:scale-105"
         style={{
           insetInlineStart: 24,
-          background: playing ? "var(--primary)" : "var(--surface-container-solid)",
+          background: playing ? "var(--primary)" : "var(--surface)",
           color: playing ? "var(--on-primary)" : "var(--on-surface)",
           borderColor: playing ? "var(--primary)" : "var(--outline-variant)",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+          boxShadow: "var(--glass-shadow)",
         }}
       >
         <Icon

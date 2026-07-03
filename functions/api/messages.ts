@@ -1,11 +1,7 @@
 /**
- * Cloudflare Pages Function — /api/messages
- *
- * POST /api/messages    → append a contact-form message. Public (rate-limited
- *                         by Cloudflare's edge). No auth required.
- * GET  /api/messages    → returns all messages. Requires admin token.
- * DELETE /api/messages/:id → removes one. Requires admin token.
+ * /api/messages — inbox stored in KV.
  */
+import { checkAuth } from "./_auth";
 
 interface Env {
   AVIDKIYA_KV: KVNamespace;
@@ -32,11 +28,8 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function isAuthed(request: Request, env: Env): boolean {
-  const auth = request.headers.get("Authorization") ?? "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  return !!env.ADMIN_TOKEN && token === env.ADMIN_TOKEN;
-}
+// Auth delegates to shared helper that also honours KV-stored override.
+const isAuthed = (r: Request, e: Env) => checkAuth(r, e);
 
 async function loadMessages(env: Env): Promise<any[]> {
   const raw = await env.AVIDKIYA_KV.get(KV_KEY);
@@ -74,13 +67,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 };
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, 401);
   const list = await loadMessages(env);
   return json({ messages: list }, 200);
 };
 
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, 401);
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   if (!id) return json({ error: "Missing id" }, 400);
@@ -95,7 +88,7 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
  * Body: { read?: boolean, reply?: string }
  */
 export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, 401);
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   if (!id) return json({ error: "Missing id" }, 400);

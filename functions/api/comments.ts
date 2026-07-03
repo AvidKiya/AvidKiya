@@ -1,10 +1,7 @@
 /**
- * /api/comments
- * POST — anyone can submit; goes into moderation queue (approved: false)
- * GET  — public reads approved list; admin (with token) gets everything
- * PUT  ?id=xxx — admin: approve / add reply / pin
- * DELETE ?id=xxx — admin
+ * /api/comments — user reviews with moderation queue.
  */
+import { checkAuth } from "./_auth";
 
 interface Env {
   AVIDKIYA_KV: KVNamespace;
@@ -31,11 +28,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function isAuthed(request: Request, env: Env): boolean {
-  const auth = request.headers.get("Authorization") ?? "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  return !!env.ADMIN_TOKEN && token === env.ADMIN_TOKEN;
-}
+const isAuthed = (r: Request, e: Env) => checkAuth(r, e);
 
 async function load(env: Env): Promise<any[]> {
   const raw = await env.AVIDKIYA_KV.get(KV_KEY);
@@ -73,13 +66,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const list = await load(env);
-  if (isAuthed(request, env)) return json({ comments: list });
+  if (await isAuthed(request, env)) return json({ comments: list });
   // Public: only approved
   return json({ comments: list.filter((c) => c.approved) });
 };
 
 export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, 401);
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   if (!id) return json({ error: "Missing id" }, 400);
@@ -102,7 +95,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
 };
 
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, 401);
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   if (!id) return json({ error: "Missing id" }, 400);

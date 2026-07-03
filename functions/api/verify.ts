@@ -1,8 +1,8 @@
 /**
- * Cloudflare Pages Function — /api/verify
- * Simple auth check. Returns 200 if the caller supplies the correct
- * ADMIN_TOKEN, 401 otherwise. Also indicates whether KV is bound.
+ * /api/verify — POST with Bearer token → check it's the current password.
+ * Also returns diagnostic info (kvBound, tokenConfigured).
  */
+import { checkAuth, effectiveToken } from "./_auth";
 
 interface Env {
   AVIDKIYA_KV?: KVNamespace;
@@ -30,34 +30,21 @@ export const onRequestOptions: PagesFunction<Env> = async () =>
   new Response(null, { status: 204, headers: CORS });
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const auth = request.headers.get("Authorization") ?? "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const kvBound = !!env.AVIDKIYA_KV;
-  const tokenConfigured = !!env.ADMIN_TOKEN;
-
+  const tokenConfigured = !!(await effectiveToken(env));
   if (!tokenConfigured) {
     return json(
-      {
-        ok: false,
-        reason: "ADMIN_TOKEN not configured on server",
-        kvBound,
-        tokenConfigured,
-      },
+      { ok: false, reason: "ADMIN_TOKEN not configured on server", kvBound, tokenConfigured },
       503
     );
   }
-  if (!token || token !== env.ADMIN_TOKEN) {
-    return json(
-      { ok: false, reason: "Invalid token", kvBound, tokenConfigured },
-      401
-    );
-  }
-  return json({ ok: true, kvBound, tokenConfigured }, 200);
+  const ok = await checkAuth(request, env);
+  return json({ ok, kvBound, tokenConfigured }, ok ? 200 : 401);
 };
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) =>
   json({
     apiAlive: true,
     kvBound: !!env.AVIDKIYA_KV,
-    tokenConfigured: !!env.ADMIN_TOKEN,
+    tokenConfigured: !!(await effectiveToken(env)),
   });

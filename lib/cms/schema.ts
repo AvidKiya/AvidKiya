@@ -259,9 +259,35 @@ export interface CmsState {
     enabled: boolean;
     autoplay: boolean;
     loop: boolean;
-    volume: number;              // 0..1
-    src: string;                 // https url or data URL
+    volume: number;
+    src: string;
     title?: string;
+  };
+
+  seo: {
+    siteName: I18nText;
+    description: I18nText;
+    keywords: string;
+    ogImage: string;
+    twitterHandle: string;
+  };
+
+  analytics: {
+    enabled: boolean;
+    plausibleDomain: string;
+    googleId: string;
+  };
+
+  newsletter: {
+    enabled: boolean;
+    title: I18nText;
+    subtitle: I18nText;
+    subscribers: { id: string; email: string; at: string }[];
+  };
+
+  stats2: {
+    totalVisits: number;
+    lastVisitAt: string;
   };
 
   // Hero showcase — 3D model / image beside the hero text
@@ -837,6 +863,42 @@ export const defaultCmsState: CmsState = {
     volume: 0.4,
     src: "",
     title: "",
+  },
+
+  // SEO / meta
+  seo: {
+    siteName: t("اوید کیا | معمار سیستم", "AVID KIYA · Systems Architect"),
+    description: t(
+      "پرتفولیو اوید کیا، معمار سیستم‌های توزیع شده و توسعه‌دهنده ارشد بک‌اند.",
+      "Portfolio of Avid Kiya, distributed systems architect and senior backend engineer."
+    ),
+    keywords: "systems architect, backend, rust, go, kubernetes, cloudflare, portfolio",
+    ogImage: "",
+    twitterHandle: "@avidkiya",
+  },
+
+  // Analytics
+  analytics: {
+    enabled: false,
+    plausibleDomain: "",     // e.g. avidkiya.pages.dev
+    googleId: "",             // e.g. G-XXXXXXXX
+  },
+
+  // Newsletter signups (collected via KV)
+  newsletter: {
+    enabled: false,
+    title: t("عضویت در خبرنامه", "Subscribe to newsletter"),
+    subtitle: t(
+      "برای دریافت آخرین اخبار و مطالب.",
+      "Get the latest news and posts."
+    ),
+    subscribers: [] as { id: string; email: string; at: string }[],
+  },
+
+  // Visit counter (incremented server-side)
+  stats2: {
+    totalVisits: 0,
+    lastVisitAt: "",
   },
 
   heroObject: {

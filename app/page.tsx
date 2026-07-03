@@ -6,6 +6,7 @@ import ProjectGrid from "@/components/dashboard/ProjectGrid";
 import StatsBar from "@/components/dashboard/StatsBar";
 import FloatingActions from "@/components/dashboard/FloatingActions";
 import PersianClock from "@/components/ui/PersianClock";
+import Newsletter from "@/components/ui/Newsletter";
 
 export default function DashboardPage() {
   return (
@@ -18,6 +19,7 @@ export default function DashboardPage() {
         <PersianClock />
         <ProjectGrid />
         <StatsBar />
+        <Newsletter />
       </main>
 
       <FloatingActions />

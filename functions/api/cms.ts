@@ -1,16 +1,7 @@
 /**
- * Cloudflare Pages Function — /api/cms
- *
- * GET  /api/cms         → returns current CMS state (public — for anyone
- *                         visiting the site to render the latest content)
- * POST /api/cms         → persists new CMS state. Requires
- *                         Authorization: Bearer <ADMIN_TOKEN>
- * DELETE /api/cms       → wipes state (admin only)
- *
- * Bindings expected (configure in Cloudflare dashboard → Pages project → Settings):
- *   - AVIDKIYA_KV       (KV Namespace binding)
- *   - ADMIN_TOKEN       (secret text) — used to authenticate write requests
+ * /api/cms — GET / POST / DELETE the CMS state stored in KV.
  */
+import { checkAuth } from "./_auth";
 
 interface Env {
   AVIDKIYA_KV: KVNamespace;
@@ -19,37 +10,26 @@ interface Env {
 
 const KV_KEY = "cms:state";
 
-const CORS_HEADERS = {
+const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type,Authorization",
   "Access-Control-Max-Age": "86400",
 };
 
-function json(body: unknown, status = 200, extra: Record<string, string> = {}) {
+function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
-      ...CORS_HEADERS,
-      ...extra,
+      ...CORS,
     },
   });
 }
 
-function unauthorized() {
-  return json({ error: "Unauthorized" }, 401);
-}
-
-function isAuthed(request: Request, env: Env): boolean {
-  const auth = request.headers.get("Authorization") ?? "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  return !!env.ADMIN_TOKEN && token === env.ADMIN_TOKEN;
-}
-
 export const onRequestOptions: PagesFunction<Env> = async () =>
-  new Response(null, { status: 204, headers: CORS_HEADERS });
+  new Response(null, { status: 204, headers: CORS });
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
@@ -62,12 +42,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return unauthorized();
+  if (!(await checkAuth(request, env))) return json({ error: "Unauthorized" }, 401);
   try {
     const body = await request.json<any>();
-    if (!body || typeof body !== "object") {
-      return json({ error: "Invalid body" }, 400);
-    }
+    if (!body || typeof body !== "object") return json({ error: "Invalid body" }, 400);
     await env.AVIDKIYA_KV.put(KV_KEY, JSON.stringify(body));
     return json({ ok: true, at: new Date().toISOString() }, 200);
   } catch (e) {
@@ -76,11 +54,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 };
 
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
-  if (!isAuthed(request, env)) return unauthorized();
-  try {
-    await env.AVIDKIYA_KV.delete(KV_KEY);
-    return json({ ok: true }, 200);
-  } catch (e) {
-    return json({ error: "Failed to delete", detail: String(e) }, 500);
-  }
+  if (!(await checkAuth(request, env))) return json({ error: "Unauthorized" }, 401);
+  await env.AVIDKIYA_KV.delete(KV_KEY);
+  return json({ ok: true }, 200);
 };

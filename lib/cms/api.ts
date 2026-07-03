@@ -177,6 +177,29 @@ export async function deleteComment(id: string, token: string) {
   }
 }
 
+/* ─── Change password ─── */
+
+export async function changePassword(
+  current: string,
+  next: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${current}`,
+      },
+      body: JSON.stringify({ current, next }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: data?.error ?? `HTTP ${res.status}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
 export function isApiAvailable(): Promise<boolean> {
   return fetch(`${API_BASE}/cms`, { method: "OPTIONS" })
     .then(() => true)

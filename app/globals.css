@@ -42,54 +42,72 @@
   --watermark-opacity: 0.05;
 }
 
-/* ─── LIGHT THEME — Cyprus green + Sand palette ─────────────
-   Reference: Cyprus #004741 (deep emerald) + Sand #F0EDE4 (warm cream).
-   Cyprus is used as the PRIMARY accent (buttons, highlights, headings).
-   Sand is the base background. Everything guaranteed high contrast. */
+/* ─── LIGHT THEME — Clean white surfaces + Cyprus green text ────
+   No beige/gray behind text. Cards are pure white, text is dark
+   green (#004741) or near-black. */
 .light {
-  --bg: #f0ede4;
-  --bg-radial-a: #ebe6d8;
-  --bg-radial-b: #f6f2e6;
+  --bg: #ffffff;
+  --bg-radial-a: #f7faf9;
+  --bg-radial-b: #ffffff;
   --surface: #ffffff;
-  --surface-container: rgba(255, 253, 247, 0.92);
-  --surface-container-solid: #fbf7ec;
-  --surface-container-low: #ebe6d8;
-  --surface-container-high: #ddd6c2;
-  --surface-container-highest: #ccc4ac;
+  --surface-container: #ffffff;
+  --surface-container-solid: #ffffff;
+  --surface-container-low: #f7faf9;
+  --surface-container-high: #eef4f2;
+  --surface-container-highest: #e0eae6;
   --surface-bright: #ffffff;
-  --on-surface: #0e2320;         /* very dark green-grey text */
-  --on-surface-variant: #40544f;
-  --outline: #667a75;
-  --outline-variant: rgba(0, 71, 65, 0.25);
+  --on-surface: #0b1a17;         /* near-black with a hint of green */
+  --on-surface-variant: #2e4a44; /* dark green-grey secondary */
+  --outline: #4a615c;
+  --outline-variant: rgba(0, 71, 65, 0.14);
   --primary: #004741;            /* Cyprus */
   --primary-fixed: #006e5c;
   --primary-dim: #002824;
-  --on-primary: #f0ede4;         /* Sand on green */
-  --chip-bg: rgba(0, 71, 65, 0.06);
-  --chip-border: rgba(0, 71, 65, 0.18);
-  --glass-bg: rgba(255, 253, 247, 0.85);
-  --glass-border: rgba(0, 71, 65, 0.20);
-  --glass-border-hover: rgba(0, 71, 65, 0.5);
-  --glass-shadow: 0 6px 24px 0 rgba(0, 71, 65, 0.12);
-  --glass-shadow-hover: 0 8px 30px rgba(0, 71, 65, 0.18);
-  --nav-bg: rgba(240, 237, 228, 0.92);
-  --watermark-opacity: 0.06;
+  --on-primary: #ffffff;
+  --chip-bg: rgba(0, 71, 65, 0.04);
+  --chip-border: rgba(0, 71, 65, 0.12);
+  --glass-bg: #ffffff;
+  --glass-border: rgba(0, 71, 65, 0.12);
+  --glass-border-hover: rgba(0, 71, 65, 0.35);
+  --glass-shadow: 0 4px 20px 0 rgba(0, 71, 65, 0.08);
+  --glass-shadow-hover: 0 8px 30px rgba(0, 71, 65, 0.14);
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --watermark-opacity: 0.04;
 }
 
-/* Light-mode fixes: force text/icon colour on any dark card so it never
-   ends up "black on black". Any admin section, IDE card, terminal chrome
-   in light mode still stays readable. */
+/* Light-mode text/icon overrides: everywhere that had a dark background
+   token hard-coded, force white bg + dark text so nothing is ever
+   "black on black" or "gray behind text". */
 .light .glass-panel {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--on-surface);
 }
-
-/* IDE title-bar in projects page had a hard-coded dark background — override */
-.light [class*="surface-container-lowest"],
-.light .ide-chrome {
-  background: var(--surface-container-solid) !important;
+.light .ide-chrome,
+.light [class*="surface-container-lowest"] {
+  background: #ffffff !important;
   color: var(--on-surface) !important;
+}
+.light input,
+.light textarea,
+.light select {
+  background: #ffffff !important;
+  color: var(--on-surface) !important;
+  border-color: var(--outline-variant) !important;
+}
+/* Remove any translucent-black overlays used for "chips" — replace with
+   Cyprus-tinted subtle chip. */
+.light [style*="rgba(0,0,0,0.2)"],
+.light [style*="rgba(0,0,0,0.25)"],
+.light [style*="rgba(0,0,0,0.3)"],
+.light [style*="rgba(0, 0, 0, 0.2)"],
+.light [style*="rgba(0, 0, 0, 0.25)"],
+.light [style*="rgba(0, 0, 0, 0.3)"] {
+  background: #ffffff !important;
+  color: var(--on-surface) !important;
+}
+.light .glow-text {
+  text-shadow: none;
 }
 
 * {
