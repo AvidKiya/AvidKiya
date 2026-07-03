@@ -35,7 +35,7 @@ export function TopNav(){
   }, [pathname, lang]);
 
   const printResume = ()=> {
-    window.print();
+    window.open('/resume', '_blank');
   };
 
   return (
