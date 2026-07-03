@@ -1,17 +1,11 @@
 /* ─────────────────────────────────────────────────────────────
-   Self-hosted fonts.
+   Self-hosted Persian font — Vazirmatn.
    Bundled with the site so users in regions where Google Fonts is
-   blocked (e.g. Iran) still see icons and text correctly, and so
-   the site never depends on a third-party CDN at runtime.
+   blocked (e.g. Iran) still see proper Persian text.
+   English UI falls back to system Sans-Serif (works everywhere).
+   Icons are now inline SVG (lucide-react + custom brand SVGs) so
+   no external icon font is downloaded at runtime.
    ───────────────────────────────────────────────────────────── */
-
-@font-face {
-  font-family: "Material Symbols Outlined";
-  font-style: normal;
-  font-weight: 400;
-  font-display: block; /* hide raw ligature text while font loads */
-  src: url("/fonts/material-symbols.ttf") format("truetype");
-}
 
 @font-face {
   font-family: "Vazirmatn";
@@ -33,48 +27,4 @@
   font-weight: 700;
   font-display: swap;
   src: url("/fonts/vazirmatn-700.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Hanken Grotesk";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/hanken-400.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Hanken Grotesk";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("/fonts/hanken-500.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Hanken Grotesk";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/hanken-700.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/firasans-400.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("/fonts/firasans-500.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/firasans-700.ttf") format("truetype");
 }

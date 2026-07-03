@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useCms } from "@/contexts/CmsContext";
+import Icon from "@/components/ui/Icon";
 
 interface Props {
   path: string;            // path to list, e.g. "about.metrics"
@@ -84,9 +85,7 @@ export function AddButton({ onClick, label = "Add", compact }: AddProps) {
         borderStyle: "dashed",
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: compact ? 12 : 14 }}>
-        add
-      </span>
+      <Icon name="add" />
       {label}
     </button>
   );
@@ -129,9 +128,7 @@ function ToolbarBtn({
         placeItems: "center",
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-        {icon}
-      </span>
+      <Icon name={icon} size={14} />
     </button>
   );
 }

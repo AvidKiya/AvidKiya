@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { submitContactMessage } from "@/lib/cms/api";
 import { useCms } from "@/contexts/CmsContext";
+import Icon from "@/components/ui/Icon";
 
 /**
  * Compact inline contact form used at the bottom of the terminal.
@@ -70,7 +71,7 @@ export default function ContactForm() {
         className="text-xs font-bold mb-3 flex items-center gap-2 pb-2 border-b"
         style={{ color: "var(--primary)", borderColor: "var(--outline-variant)" }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>mail</span>
+        <Icon name="mail" size={16} />
         {l("ارسال پیام مستقیم", "Send a direct message")}
       </div>
 
@@ -116,9 +117,7 @@ export default function ContactForm() {
           color: "var(--on-primary)",
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-          {busy ? "sync" : sent ? "check_circle" : "send"}
-        </span>
+        <Icon name={busy ? "sync" : sent ? "check_circle" : "send"} size={14} />
         {sent ? l("پیام ارسال شد ✓", "Message sent ✓") : l("ارسال پیام", "Send message")}
       </button>
 

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useCms } from "@/contexts/CmsContext";
 import { EditableText, I18nText, StyleOverride } from "@/lib/cms/schema";
 import { useApp } from "@/contexts/AppContext";
+import Icon from "@/components/ui/Icon";
 
 interface Props {
   path: string;                  // e.g. "about.welcomeTitle"
@@ -102,9 +103,7 @@ export default function Editable({
               boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              edit
-            </span>
+            <Icon name="edit" size={14} />
           </button>
         )}
       </Tag>
@@ -378,7 +377,7 @@ export function ModalShell({
             className="opacity-70 hover:opacity-100"
             style={{ color: "var(--on-surface)" }}
           >
-            <span className="material-symbols-outlined">close</span>
+            <Icon name="close" />
           </button>
         </div>
         <div className="p-5 overflow-y-auto flex-1">{children}</div>

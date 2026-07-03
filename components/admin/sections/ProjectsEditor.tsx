@@ -3,6 +3,7 @@
 import { useCms } from "@/contexts/CmsContext";
 import { Card, Input, Label, ListShell, Section, Textarea } from "../common";
 import type { CustomRepoProject } from "@/lib/cms/schema";
+import ImageUpload from "@/components/ui/ImageUpload";
 
 export default function ProjectsEditor() {
   const { state, update, addToList } = useCms();
@@ -33,6 +34,11 @@ export default function ProjectsEditor() {
           }
           render={(p, i) => (
             <div className="space-y-3">
+              <ImageUpload
+                label="Cover image"
+                value={p.image}
+                onChange={(v) => update(`projects.customProjects.${i}.image`, v)}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <Label>Project name</Label>

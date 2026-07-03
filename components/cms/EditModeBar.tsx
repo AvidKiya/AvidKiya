@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCms } from "@/contexts/CmsContext";
+import Icon from "@/components/ui/Icon";
 
 export default function EditModeBar() {
   const { isAdmin, editMode, setEditMode, logout, syncStatus, lastSyncAt, syncNow } = useCms();
@@ -36,9 +37,7 @@ export default function EditModeBar() {
           color: editMode ? "var(--on-primary)" : "var(--on-surface)",
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-          {editMode ? "check_circle" : "edit"}
-        </span>
+        <Icon name={editMode ? "check_circle" : "edit"} size={14} />
         {editMode ? "Editing" : "Edit mode"}
       </button>
 
@@ -48,15 +47,7 @@ export default function EditModeBar() {
         className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
         style={{ color: m.color, background: "rgba(255,255,255,0.03)" }}
       >
-        <span
-          className="material-symbols-outlined"
-          style={{
-            fontSize: 14,
-            animation: syncStatus === "syncing" ? "spin 1.2s linear infinite" : undefined,
-          }}
-        >
-          {m.icon}
-        </span>
+        <Icon name={m.icon} size={14} />
         <span className="hidden sm:inline">{m.label}</span>
       </button>
 
@@ -65,9 +56,7 @@ export default function EditModeBar() {
         className="text-xs px-3 py-1 rounded-full border inline-flex items-center gap-1"
         style={{ borderColor: "var(--outline-variant)", color: "var(--on-surface)" }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-          dashboard
-        </span>
+        <Icon name="dashboard" size={14} />
         Admin
       </Link>
 
@@ -77,9 +66,7 @@ export default function EditModeBar() {
         style={{ color: "var(--on-surface)" }}
         title="Logout"
       >
-        <span className="material-symbols-outlined align-middle" style={{ fontSize: 14 }}>
-          logout
-        </span>
+        <Icon name="logout" size={14} className="align-middle" />
       </button>
 
       <style jsx>{`

@@ -13,6 +13,7 @@ import AboutEditor from "./sections/AboutEditor";
 import ProjectsEditor from "./sections/ProjectsEditor";
 import MessagesEditor from "./sections/MessagesEditor";
 import SettingsEditor from "./sections/SettingsEditor";
+import Icon from "@/components/ui/Icon";
 
 type SectionId =
   | "overview"
@@ -74,9 +75,7 @@ export default function AdminPanel() {
               border: `1px solid ${editMode ? "var(--primary)" : "var(--outline-variant)"}`,
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              {editMode ? "check_circle" : "edit"}
-            </span>
+            <Icon name={editMode ? "check_circle" : "edit"} size={14} />
             <span className="hidden sm:inline">{editMode ? "Editing ON" : "Edit mode"}</span>
           </button>
           <LangThemeSwitcher />
@@ -88,9 +87,7 @@ export default function AdminPanel() {
               color: "var(--on-surface)",
             }}
           >
-            <span className="material-symbols-outlined align-middle me-1" style={{ fontSize: 14 }}>
-              logout
-            </span>
+            <Icon name="logout" size={14} className="align-middle me-1" />
             <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
@@ -120,9 +117,7 @@ export default function AdminPanel() {
                   color: section === s.id ? "var(--primary)" : "var(--on-surface)",
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-                  {s.icon}
-                </span>
+                <Icon name={s.icon} size={18} />
                 <span>{s.label}</span>
                 {s.id === "messages" && state.messages.filter((m) => !m.read).length > 0 && (
                   <span
@@ -150,7 +145,7 @@ export default function AdminPanel() {
               className="w-full text-xs px-3 py-2 rounded border flex items-center gap-2 justify-center"
               style={{ borderColor: "var(--outline-variant)", color: "var(--on-surface)" }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>download</span>
+              <Icon name="download" size={14} />
               Export JSON
             </button>
             <button
@@ -158,7 +153,7 @@ export default function AdminPanel() {
               className="w-full text-xs px-3 py-2 rounded border flex items-center gap-2 justify-center"
               style={{ borderColor: "var(--outline-variant)", color: "var(--on-surface)" }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>upload</span>
+              <Icon name="upload" size={14} />
               Import JSON
             </button>
             <button
@@ -168,7 +163,7 @@ export default function AdminPanel() {
               className="w-full text-xs px-3 py-2 rounded border flex items-center gap-2 justify-center"
               style={{ borderColor: "rgba(255,180,171,0.5)", color: "#ffb4ab" }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>restart_alt</span>
+              <Icon name="restart_alt" size={14} />
               Reset
             </button>
           </div>
@@ -232,11 +227,9 @@ function Overview({ onGo }: { onGo: (s: SectionId) => void }) {
                   color: c.hot ? "var(--on-primary)" : "var(--primary)",
                 }}
               >
-                <span className="material-symbols-outlined">{c.icon}</span>
+                <Icon name={c.icon} />
               </div>
-              <span className="material-symbols-outlined opacity-40" style={{ color: "var(--on-surface)" }}>
-                arrow_outward
-              </span>
+              <Icon name="arrow_outward" color={"var(--on-surface)"} className="opacity-40" />
             </div>
             <h3 className="font-bold text-lg mb-1" style={{ color: "var(--on-surface)" }}>
               {c.label}
@@ -292,7 +285,7 @@ function ImportModal({
         <div className="p-4 border-b flex justify-between items-center" style={{ borderColor: "var(--outline-variant)" }}>
           <h3 className="font-bold" style={{ color: "var(--primary)" }}>Import CMS JSON</h3>
           <button onClick={onClose}>
-            <span className="material-symbols-outlined">close</span>
+            <Icon name="close" />
           </button>
         </div>
         <div className="p-4 space-y-3">

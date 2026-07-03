@@ -2,6 +2,7 @@
 
 import { useApp } from "@/contexts/AppContext";
 import { languageColor } from "@/lib/github";
+import Icon from "@/components/ui/Icon";
 
 interface Props {
   title: string;
@@ -17,6 +18,8 @@ interface Props {
   updatedAt?: string;
   isCustom?: boolean;
   onRemove?: () => void;
+  /** Optional cover image (data-URL or https). */
+  image?: string;
 }
 
 export default function ProjectCard({
@@ -33,6 +36,7 @@ export default function ProjectCard({
   updatedAt,
   isCustom,
   onRemove,
+  image,
 }: Props) {
   const { t, language: lang } = useApp();
 
@@ -44,7 +48,21 @@ export default function ProjectCard({
   }[status];
 
   return (
-    <article className="glass-panel rounded-lg p-5 transition-all group hover:-translate-y-0.5">
+    <article className="glass-panel rounded-lg overflow-hidden transition-all group hover:-translate-y-0.5 flex flex-col">
+      {image && (
+        <div
+          className="w-full overflow-hidden"
+          style={{ aspectRatio: "16/9", background: "var(--surface-container-highest)" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
+      )}
+      <div className="p-5 flex-1 flex flex-col">
       <div className="flex justify-between items-start mb-4 gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -87,9 +105,7 @@ export default function ProjectCard({
               style={{ color: "#ffb4ab" }}
               title={t("remove")}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-                delete
-              </span>
+              <Icon name="delete" size={14} />
             </button>
           )}
         </div>
@@ -138,17 +154,13 @@ export default function ProjectCard({
         <div className="flex gap-3 flex-wrap opacity-80">
           {typeof stars === "number" && (
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
-                star
-              </span>
+              <Icon name="star" size={12} />
               {stars}
             </span>
           )}
           {typeof forks === "number" && (
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
-                fork_right
-              </span>
+              <Icon name="fork_right" size={12} />
               {forks}
             </span>
           )}
@@ -169,9 +181,7 @@ export default function ProjectCard({
               style={{ color: "var(--primary)" }}
             >
               {t("liveDemo")}
-              <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
-                open_in_new
-              </span>
+              <Icon name="open_in_new" size={12} />
             </a>
           )}
           <a
@@ -182,11 +192,10 @@ export default function ProjectCard({
             style={{ color: "var(--primary)" }}
           >
             {t("sourceCode")}
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              arrow_outward
-            </span>
+            <Icon name="arrow_outward" size={14} />
           </a>
         </div>
+      </div>
       </div>
     </article>
   );

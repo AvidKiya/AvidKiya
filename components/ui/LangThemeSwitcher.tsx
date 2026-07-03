@@ -2,6 +2,7 @@
 
 import { useApp } from "@/contexts/AppContext";
 import { useEffect, useRef, useState } from "react";
+import Icon from "@/components/ui/Icon";
 
 /**
  * Combined language + theme switcher.
@@ -51,9 +52,7 @@ export default function LangThemeSwitcher() {
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-          language
-        </span>
+        <Icon name="language" size={16} />
         <span className="font-mono uppercase tracking-widest">
           {language === "fa" ? "فا" : "EN"}
         </span>
@@ -61,9 +60,7 @@ export default function LangThemeSwitcher() {
           className="inline-block w-px h-3"
           style={{ background: "var(--outline-variant)" }}
         />
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-          {theme === "dark" ? "dark_mode" : "light_mode"}
-        </span>
+        <Icon name={theme === "dark" ? "dark_mode" : "light_mode"} size={16} />
       </button>
 
       {open && (
@@ -142,9 +139,7 @@ function MenuChip({
       }}
     >
       {icon && (
-        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-          {icon}
-        </span>
+        <Icon name={icon} size={14} />
       )}
       {label}
     </button>

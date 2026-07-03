@@ -10,6 +10,7 @@ import { ListItem, AddButton } from "@/components/cms/EditableList";
 import type { ActivityLog, MiniProject, QuickLink, SystemMetric } from "@/lib/cms/schema";
 import { fetchUser } from "@/lib/github";
 import ContactForm from "./ContactForm";
+import Icon from "@/components/ui/Icon";
 
 /**
  * Command-Center page — recreated 1:1 from the reference mockup:
@@ -465,7 +466,7 @@ export default function CommandCenter() {
               className="mt-auto w-full py-3 rounded font-bold text-xs flex items-center justify-center gap-2 hover:brightness-110 transition-all"
               style={{ background: "var(--primary)", color: "var(--on-primary)" }}
             >
-              <span className="material-symbols-outlined text-sm">rocket_launch</span>
+              <Icon name="rocket_launch" className="text-sm" />
               <Editable path="about.ctaStartProject" editable={a.ctaStartProject} as="span" />
             </a>
           </section>
@@ -563,9 +564,7 @@ function QuickLinkRow({ link }: { link: QuickLink }) {
       }}
     >
       <span className="text-xs">{resolve(link.label)}</span>
-      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-        {link.icon}
-      </span>
+      <Icon name={link.icon} size={14} />
     </a>
   );
 }

@@ -15,6 +15,7 @@ import type { CustomRepoProject } from "@/lib/cms/schema";
 import ProjectCard from "./ProjectCard";
 import CustomProjectModal from "./CustomProjectModal";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
+import Icon from "@/components/ui/Icon";
 
 type Filter = "all" | "active" | "archived" | "custom";
 type Sort = "updated" | "stars" | "name";
@@ -141,9 +142,7 @@ export default function IdeShell() {
               color: "var(--on-surface-variant)",
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              search
-            </span>
+            <Icon name="search" size={14} />
             <span className="opacity-70">
               {language === "fa" ? "جستجو در پرتفولیو اوید کیا" : "Search AVID KIYA Portfolio"}
             </span>
@@ -157,9 +156,7 @@ export default function IdeShell() {
             className="text-xs opacity-70 hover:opacity-100 transition-opacity px-2"
             style={{ color: "var(--on-surface-variant)" }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-              home
-            </span>
+            <Icon name="home" size={18} />
           </Link>
         </div>
       </header>
@@ -206,12 +203,7 @@ export default function IdeShell() {
             >
               {t("ideExplorer")}
             </span>
-            <span
-              className="material-symbols-outlined text-sm cursor-pointer opacity-60"
-              style={{ color: "var(--on-surface-variant)" }}
-            >
-              more_horiz
-            </span>
+            <Icon name="more_horiz" color={"var(--on-surface-variant)"} className="text-sm cursor-pointer opacity-60" />
           </div>
 
           <div className="flex-1 overflow-y-auto text-xs" style={{ color: "var(--on-surface-variant)" }}>
@@ -307,6 +299,13 @@ export default function IdeShell() {
 
           {/* Editor content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: "var(--bg)" }}>
+            {activeTab === "skills" && (
+              <SkillsPanel />
+            )}
+            {activeTab === "contact" && (
+              <ContactPanel />
+            )}
+            {activeTab === "about" && (
             <div className="max-w-6xl mx-auto space-y-6">
               {/* Hero panel */}
               <HeroPanel user={user} />
@@ -317,9 +316,7 @@ export default function IdeShell() {
                   className="text-2xl font-bold flex items-center gap-3"
                   style={{ color: "var(--on-surface)" }}
                 >
-                  <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
-                    extension
-                  </span>
+                  <Icon name="extension" color={"var(--primary)"} />
                   {t("activeModules")}
                   <span
                     className="text-xs opacity-60 font-mono"
@@ -337,9 +334,7 @@ export default function IdeShell() {
                       borderColor: "var(--outline-variant)",
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-                      search
-                    </span>
+                    <Icon name="search" size={14} />
                     <input
                       value={q}
                       onChange={(e) => setQ(e.target.value)}
@@ -374,9 +369,7 @@ export default function IdeShell() {
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-bold"
                       style={{ background: "var(--primary)", color: "var(--on-primary)" }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                        add
-                      </span>
+                      <Icon name="add" size={16} />
                       {t("addCustomProject")}
                     </button>
                   ) : (
@@ -393,9 +386,7 @@ export default function IdeShell() {
                         color: "var(--on-surface-variant)",
                       }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                        lock
-                      </span>
+                      <Icon name="lock" size={16} />
                       {language === "fa" ? "ورود مدیر" : "Admin"}
                     </Link>
                   )}
@@ -438,6 +429,7 @@ export default function IdeShell() {
                       topics={c.topics ?? []}
                       status={c.status ?? "STABLE"}
                       isCustom
+                      image={c.image}
                       onRemove={isAdmin ? () => handleRemoveCustom(c.id) : undefined}
                     />
                   ))}
@@ -458,6 +450,7 @@ export default function IdeShell() {
                       forks={r.forks_count}
                       size={formatRepoSize(r.size)}
                       updatedAt={r.pushed_at}
+                      image={`https://opengraph.githubassets.com/1/${r.full_name}`}
                     />
                   ))}
 
@@ -468,6 +461,7 @@ export default function IdeShell() {
                 )}
               </div>
             </div>
+            )}
           </div>
 
           {/* Terminal */}
@@ -482,9 +476,7 @@ export default function IdeShell() {
       >
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1 px-2 h-full" style={{ background: "rgba(0,0,0,0.1)" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              account_tree
-            </span>
+            <Icon name="account_tree" size={14} />
             <span>main*</span>
           </div>
           <div className="flex items-center gap-1">
@@ -495,9 +487,7 @@ export default function IdeShell() {
             <span>{user ? t("githubStatus") : "Reconnecting..."}</span>
           </div>
           <div className="hidden md:flex items-center gap-1">
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              sync
-            </span>
+            <Icon name="sync" size={14} />
             <span>
               {repos.length} repos ↓ · {custom.length} custom ↑
             </span>
@@ -528,7 +518,7 @@ function ActivityIcon({ icon, active }: { icon: string; active?: boolean }) {
         opacity: active ? 1 : undefined,
       }}
     >
-      <span className="material-symbols-outlined">{icon}</span>
+      <Icon name={icon} />
     </div>
   );
 }
@@ -546,9 +536,7 @@ function ExplorerSection({
         className="flex items-center gap-1 px-2 py-1 cursor-pointer"
         style={{ background: "var(--surface-container-high)" }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-          expand_more
-        </span>
+        <Icon name="expand_more" size={16} />
         <span className="font-bold text-[11px] uppercase">{title}</span>
       </div>
       <div className="pl-4 py-1">{children}</div>
@@ -584,9 +572,7 @@ function ExplorerFile({
         if (!active) e.currentTarget.style.background = "transparent";
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: 16, color: iconColor }}>
-        {icon}
-      </span>
+      <Icon name={icon} size={16} />
       <span className="truncate">{label}</span>
     </div>
   );
@@ -618,16 +604,9 @@ function EditorTab({
         borderBottom: active ? `2px solid var(--primary)` : "2px solid transparent",
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: 14, color: iconColor }}>
-        {icon}
-      </span>
+      <Icon name={icon} size={14} />
       <span>{label}</span>
-      <span
-        className="material-symbols-outlined opacity-40 hover:opacity-100"
-        style={{ fontSize: 12, marginInlineStart: 8 }}
-      >
-        close
-      </span>
+      <Icon name="close" size={12} className="opacity-40 hover:opacity-100" />
     </div>
   );
 }
@@ -839,6 +818,187 @@ function TerminalPanel({
       </div>
     </div>
   );
+}
+
+/* ─────────────── Skills panel (Skills.json tab) ─────────────── */
+function SkillsPanel() {
+  const { language } = useApp();
+  const { state } = useCms();
+  const s = state.resume.skills;
+  const jsonPreview = JSON.stringify(
+    { skills: s.map((k) => ({ name: k.name, level: k.level })) },
+    null,
+    2
+  );
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="glass-panel rounded-xl p-6 md:p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Icon name="code" color="#efc051" size={22} />
+          <h2 className="text-2xl font-bold" style={{ color: "var(--on-surface)" }}>
+            Skills.json
+          </h2>
+          <span className="text-xs opacity-60 font-mono" style={{ color: "var(--on-surface-variant)" }}>
+            {language === "fa" ? "پشته فناوری" : "Tech stack"}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          {s.map((k) => (
+            <div key={k.id}>
+              <div className="flex justify-between mb-1.5 text-sm">
+                <span className="font-bold" style={{ color: "var(--on-surface)" }}>
+                  {k.name}
+                </span>
+                <span className="font-mono opacity-70" style={{ color: "var(--on-surface-variant)" }}>
+                  {k.level}%
+                </span>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--surface-container-highest)" }}>
+                <div
+                  className="h-full transition-all duration-700"
+                  style={{
+                    width: `${k.level}%`,
+                    background: `linear-gradient(90deg, var(--primary-dim, #00e29c), var(--primary))`,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="glass-panel rounded-xl p-4 md:p-6" style={{ background: "rgba(0,0,0,0.35)" }}>
+        <div className="text-[10px] uppercase opacity-60 mb-2 font-mono" style={{ color: "var(--on-surface-variant)" }}>
+          Skills.json — raw
+        </div>
+        <pre
+          className="font-mono text-xs overflow-x-auto"
+          style={{ color: "var(--primary)", margin: 0, whiteSpace: "pre-wrap" }}
+        >
+{jsonPreview}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── Contact panel (Contact.sh tab) ─────────────── */
+function ContactPanel() {
+  const { language } = useApp();
+  const { state, resolve } = useCms();
+  const socials = state.socials.filter((x) => x.enabled);
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="glass-panel rounded-xl p-6 md:p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <Icon name="terminal" color="#98d3b9" size={22} />
+          <h2 className="text-2xl font-bold" style={{ color: "var(--on-surface)" }}>
+            Contact.sh
+          </h2>
+        </div>
+
+        <div className="font-mono text-sm space-y-2 mb-8" style={{ color: "var(--on-surface-variant)" }}>
+          <div style={{ color: "var(--primary)" }}>
+            # ./contact.sh --help
+          </div>
+          <div>&gt; {language === "fa" ? "روش‌های ارتباطی زیر پشتیبانی می‌شوند:" : "Supported channels:"}</div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <ContactRow
+            icon="mail"
+            label={language === "fa" ? "ایمیل" : "Email"}
+            value={state.identity.email}
+            href={`mailto:${state.identity.email}`}
+          />
+          <ContactRow
+            icon="alternate_email"
+            label={language === "fa" ? "موقعیت" : "Location"}
+            value={resolve(state.identity.location)}
+          />
+          {socials.map((s) => (
+            <ContactRow
+              key={s.id}
+              icon={s.icon}
+              label={s.platform}
+              value={s.handle}
+              href={s.href}
+            />
+          ))}
+        </div>
+
+        <div className="mt-8 pt-6 border-t" style={{ borderColor: "var(--outline-variant)" }}>
+          <div className="font-mono text-sm mb-3" style={{ color: "var(--primary)" }}>
+            # ./contact.sh --send-message
+          </div>
+          <p className="text-sm opacity-80 mb-4" style={{ color: "var(--on-surface-variant)" }}>
+            {language === "fa"
+              ? "برای ارسال پیام مستقیم، به صفحه About بروید (فرم تماس در ترمینال)."
+              : "To send a direct message, visit the About page (contact form in the terminal)."}
+          </p>
+          <Link
+            href="/about"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded font-bold text-sm"
+            style={{ background: "var(--primary)", color: "var(--on-primary)" }}
+          >
+            <Icon name="mail" size={16} />
+            {language === "fa" ? "باز کردن فرم تماس" : "Open contact form"}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactRow({
+  icon,
+  label,
+  value,
+  href,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  href?: string;
+}) {
+  const inner = (
+    <div
+      className="flex items-center gap-3 p-3 rounded border transition-colors group"
+      style={{
+        background: "rgba(0,0,0,0.2)",
+        borderColor: "var(--outline-variant)",
+        color: "var(--on-surface)",
+      }}
+    >
+      <div
+        className="w-8 h-8 rounded grid place-items-center shrink-0"
+        style={{ background: "rgba(33,241,168,0.1)", color: "var(--primary)" }}
+      >
+        <Icon name={icon} size={16} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div
+          className="text-[10px] uppercase tracking-widest opacity-70"
+          style={{ color: "var(--on-surface-variant)" }}
+        >
+          {label}
+        </div>
+        <div className="text-sm font-mono truncate" dir="ltr">
+          {value}
+        </div>
+      </div>
+      {href && <Icon name="open_in_new" size={14} color="var(--on-surface-variant)" />}
+    </div>
+  );
+  if (href) {
+    return (
+      <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+        {inner}
+      </a>
+    );
+  }
+  return inner;
 }
 
 function TerminalLine({

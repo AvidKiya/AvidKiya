@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import type { CustomRepoProject } from "@/lib/cms/schema";
+import Icon from "@/components/ui/Icon";
 
 interface Props {
   onClose: () => void;
@@ -61,7 +62,7 @@ export default function CustomProjectModal({ onClose, onSave }: Props) {
             className="opacity-60 hover:opacity-100"
             style={{ color: "var(--on-surface)" }}
           >
-            <span className="material-symbols-outlined">close</span>
+            <Icon name="close" />
           </button>
         </div>
 

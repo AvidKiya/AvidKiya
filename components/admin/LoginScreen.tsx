@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCms } from "@/contexts/CmsContext";
 import { pingApi, verifyToken } from "@/lib/cms/api";
+import Icon from "@/components/ui/Icon";
 
 export default function LoginScreen() {
   const { login } = useCms();
@@ -145,12 +146,7 @@ export default function LoginScreen() {
           className="mt-4 w-full py-3 rounded-md font-bold text-sm disabled:opacity-60"
           style={{ background: "var(--primary)", color: "var(--on-primary)" }}
         >
-          <span
-            className="material-symbols-outlined align-middle me-2"
-            style={{ fontSize: 16 }}
-          >
-            {busy ? "sync" : "lock_open"}
-          </span>
+          <Icon name={busy ? "sync" : "lock_open"} size={16} className="align-middle me-2" />
           {busy ? "Verifying..." : "Enter"}
         </button>
 
@@ -223,15 +219,7 @@ export default function LoginScreen() {
 function DiagRow({ ok, label }: { ok: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span
-        className="material-symbols-outlined"
-        style={{
-          fontSize: 14,
-          color: ok ? "var(--primary)" : "#efc051",
-        }}
-      >
-        {ok ? "check_circle" : "warning"}
-      </span>
+      <Icon name={ok ? "check_circle" : "warning"} size={14} />
       <span style={{ color: "var(--on-surface-variant)" }}>{label}</span>
     </div>
   );

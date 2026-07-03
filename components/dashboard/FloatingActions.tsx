@@ -1,27 +1,29 @@
 "use client";
 
+import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
+import Icon from "@/components/ui/Icon";
 
 export default function FloatingActions() {
   const { t, dir } = useApp();
 
-  // Anchor to end-side (bottom-right in LTR, bottom-left in RTL)
   const sideClass = dir === "rtl" ? "left-6 md:left-8" : "right-6 md:right-8";
   const tipSideClass = dir === "rtl" ? "left-full ml-4" : "right-full mr-4";
 
   return (
     <div className={`fixed bottom-6 md:bottom-8 ${sideClass} flex flex-col gap-4 z-40`}>
-      <button
+      {/* Open the dedicated resume page (which itself has a "Print CV" button) */}
+      <Link
+        href="/resume"
         className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform group relative"
         style={{
           background: "var(--primary)",
           color: "var(--on-primary)",
           boxShadow: "0 10px 30px -10px rgba(33,241,168,0.5)",
         }}
-        onClick={() => window.print()}
         aria-label={t("printCV")}
       >
-        <span className="material-symbols-outlined">print</span>
+        <Icon name="print" size={22} />
         <span
           className={`absolute ${tipSideClass} px-3 py-1 text-[10px] rounded border whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity`}
           style={{
@@ -32,16 +34,14 @@ export default function FloatingActions() {
         >
           {t("printCV")}
         </span>
-      </button>
+      </Link>
 
-      <a
-        href="#contact"
+      <Link
+        href="/about"
         className="w-12 h-12 rounded-full glass-panel flex items-center justify-center hover:scale-110 transition-transform group relative"
         aria-label={t("connect")}
       >
-        <span className="material-symbols-outlined" style={{ color: "var(--on-surface)" }}>
-          forum
-        </span>
+        <Icon name="forum" size={20} color="var(--on-surface)" />
         <span
           className={`absolute ${tipSideClass} px-3 py-1 text-[10px] rounded border whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity`}
           style={{
@@ -52,7 +52,7 @@ export default function FloatingActions() {
         >
           {t("connect")}
         </span>
-      </a>
+      </Link>
     </div>
   );
 }

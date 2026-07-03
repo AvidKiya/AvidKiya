@@ -3,6 +3,7 @@
 import React from "react";
 import { useCms } from "@/contexts/CmsContext";
 import { I18nText } from "@/lib/cms/schema";
+import Icon from "@/components/ui/Icon";
 
 export function Section({
   title,
@@ -211,9 +212,7 @@ export function ListShell<T>({
           background: "rgba(33,241,168,0.05)",
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-          add
-        </span>
+        <Icon name="add" size={16} />
         {addLabel}
       </button>
     </>
@@ -231,9 +230,7 @@ function MiniBtn({ icon, onClick, danger }: { icon: string; onClick: () => void;
         border: "1px solid var(--outline-variant)",
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
-        {icon}
-      </span>
+      <Icon name={icon} size={12} />
     </button>
   );
 }

@@ -101,10 +101,44 @@ export interface CustomRepoProject {
   language?: string;
   topics?: string[];
   status: "STABLE" | "BETA" | "ALPHA" | "ARCHIVED";
+  /** Cover image — data URL (base64) or external https URL. */
+  image?: string;
+  /** Optional gallery — additional screenshots. */
+  gallery?: string[];
   createdAt: string;
 }
 
 /** ─── Top-level state shape ────────────────────────────────── */
+export interface ResumeExperience {
+  id: string;
+  period: I18nText;
+  role: I18nText;
+  org: I18nText;
+  bullets: I18nText[];
+}
+export interface ResumeSkill {
+  id: string;
+  name: string;
+  level: number;      // 0..100
+  category?: I18nText;
+}
+export interface ResumeEducation {
+  id: string;
+  period: I18nText;
+  degree: I18nText;
+  school: I18nText;
+}
+
+export interface ResumeSection {
+  summary: I18nText;
+  phone?: string;
+  website?: string;
+  experience: ResumeExperience[];
+  skills: ResumeSkill[];
+  education: ResumeEducation[];
+  languages: { id: string; name: I18nText; level: I18nText }[];
+}
+
 export interface CmsState {
   version: number;
 
@@ -117,6 +151,8 @@ export interface CmsState {
     yearsExperience: number;
     bio: I18nText;
   };
+
+  resume: ResumeSection;
 
   brand: {
     logoLetter: string;      // "A"
@@ -218,6 +254,69 @@ export const defaultCmsState: CmsState = {
     brandName: t("اوید کیا", "AVID KIYA"),
     primaryColor: "#21f1a8",
     accentColor: "#48ffb6",
+  },
+
+  resume: {
+    summary: t(
+      "معمار سیستم و توسعه‌دهنده ارشد بک‌اند با ۸+ سال تجربه در طراحی و پیاده‌سازی زیرساخت‌های توزیع‌شده مقیاس‌پذیر. متخصص در Rust، Go، Kubernetes و معماری میکروسرویس.",
+      "Systems Architect & Senior Backend Engineer with 8+ years of experience designing and building scalable distributed infrastructures. Expert in Rust, Go, Kubernetes and microservice architectures."
+    ),
+    phone: "",
+    website: "https://avidkiya.pages.dev",
+    experience: [
+      {
+        id: "exp-1",
+        period: t("۱۴۰۲ - اکنون", "2023 - Present"),
+        role: t("معمار ارشد سیستم", "Senior Systems Architect"),
+        org: t("دورکار / مستقل", "Freelance / Remote"),
+        bullets: [
+          t("طراحی زیرساخت‌های ابری مقیاس‌پذیر با تمرکز بر resilience", "Design of scalable cloud infrastructures focused on resilience"),
+          t("پیاده‌سازی پلتفرم‌های میکروسرویس با Rust و gRPC", "Implementation of microservice platforms using Rust and gRPC"),
+        ],
+      },
+      {
+        id: "exp-2",
+        period: t("۱۳۹۹ - ۱۴۰۲", "2020 - 2023"),
+        role: t("سرپرست تیم بک‌اند", "Backend Lead"),
+        org: t("اکوسیستم استارتاپی", "Startup Ecosystem"),
+        bullets: [
+          t("رهبری تیم ۶ نفره در تحویل یک پلتفرم ابری", "Led a 6-person team delivering a cloud platform"),
+          t("بهینه‌سازی دیتابیس‌های توزیع‌شده", "Optimization of distributed databases"),
+        ],
+      },
+      {
+        id: "exp-3",
+        period: t("۱۳۹۶ - ۱۳۹۹", "2017 - 2020"),
+        role: t("توسعه‌دهنده Full-Stack", "Full-Stack Engineer"),
+        org: t("محصولات مختلف", "Various Products"),
+        bullets: [
+          t("پیاده‌سازی رابط‌های کاربری با React و TypeScript", "Built UIs with React and TypeScript"),
+          t("طراحی و توسعه REST APIs", "Designed and built REST APIs"),
+        ],
+      },
+    ],
+    skills: [
+      { id: "sk-1", name: "Rust",        level: 92 },
+      { id: "sk-2", name: "Go",          level: 88 },
+      { id: "sk-3", name: "TypeScript",  level: 95 },
+      { id: "sk-4", name: "Python",      level: 82 },
+      { id: "sk-5", name: "Kubernetes",  level: 87 },
+      { id: "sk-6", name: "PostgreSQL",  level: 85 },
+      { id: "sk-7", name: "Redis",       level: 78 },
+      { id: "sk-8", name: "gRPC",        level: 80 },
+    ],
+    education: [
+      {
+        id: "edu-1",
+        period: t("۱۳۹۲ - ۱۳۹۶", "2013 - 2017"),
+        degree: t("کارشناسی مهندسی کامپیوتر", "B.Sc. Computer Engineering"),
+        school: t("دانشگاه", "University"),
+      },
+    ],
+    languages: [
+      { id: "l1", name: t("فارسی", "Persian"), level: t("زبان مادری", "Native") },
+      { id: "l2", name: t("انگلیسی", "English"), level: t("حرفه‌ای", "Professional") },
+    ],
   },
 
   settings: {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useCms } from "@/contexts/CmsContext";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
+import Icon from "@/components/ui/Icon";
 
 export default function TopNav() {
   const { t, dir, language } = useApp();
@@ -89,7 +90,7 @@ export default function TopNav() {
               className="hover:opacity-100 transition-opacity"
               style={{ color: "var(--on-surface)" }}
             >
-              <span className="material-symbols-outlined text-xl">hub</span>
+              <Icon name="hub" className="text-xl" />
             </a>
           )}
           <a
@@ -98,7 +99,7 @@ export default function TopNav() {
             style={{ color: "var(--on-surface)" }}
             aria-label="Email"
           >
-            <span className="material-symbols-outlined text-xl">alternate_email</span>
+            <Icon name="alternate_email" className="text-xl" />
           </a>
           {telegram && (
             <a
@@ -109,7 +110,7 @@ export default function TopNav() {
               className="hover:opacity-100 transition-opacity"
               style={{ color: "var(--on-surface)" }}
             >
-              <span className="material-symbols-outlined text-xl">send</span>
+              <Icon name="send" className="text-xl" />
             </a>
           )}
         </div>

@@ -2,6 +2,7 @@
 
 import { useCms } from "@/contexts/CmsContext";
 import { Card, Input, Label, Section } from "../common";
+import Icon from "@/components/ui/Icon";
 
 export default function SettingsEditor() {
   const { state, update } = useCms();
@@ -73,9 +74,7 @@ export default function SettingsEditor() {
                     borderColor: s.defaultTheme === th ? "var(--primary)" : "var(--outline-variant)",
                   }}
                 >
-                  <span className="material-symbols-outlined align-middle me-1" style={{ fontSize: 14 }}>
-                    {th === "dark" ? "dark_mode" : "light_mode"}
-                  </span>
+                  <Icon name={th === "dark" ? "dark_mode" : "light_mode"} size={14} className="align-middle me-1" />
                   {th === "dark" ? "Dark" : "Light"}
                 </button>
               ))}

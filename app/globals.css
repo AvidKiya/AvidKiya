@@ -40,33 +40,36 @@
   --watermark-opacity: 0.05;
 }
 
-/* LIGHT THEME */
+/* ─── LIGHT THEME ─────────────────────────────────────────────
+   Redesigned for high contrast. Uses a deep-emerald primary for text
+   (WCAG-AA on white) instead of the neon accent, which is now reserved
+   for hover/highlight backgrounds. */
 .light {
-  --bg: #f2f5f2;
-  --bg-radial-a: #e8f0ea;
-  --bg-radial-b: #f6faf7;
+  --bg: #f4f7f5;
+  --bg-radial-a: #ecf3ee;
+  --bg-radial-b: #ffffff;
   --surface: #ffffff;
-  --surface-container: rgba(255, 255, 255, 0.7);
-  --surface-container-solid: #f7faf8;
-  --surface-container-low: #eef3f0;
+  --surface-container: rgba(255, 255, 255, 0.85);
+  --surface-container-solid: #ffffff;
+  --surface-container-low: #f0f4f2;
   --surface-container-high: #e5ece7;
-  --surface-container-highest: #d9e2dc;
+  --surface-container-highest: #d0dbd4;
   --surface-bright: #ffffff;
-  --on-surface: #0e1a13;
-  --on-surface-variant: #3b4a41;
-  --outline: #5c6b62;
-  --outline-variant: rgba(60, 74, 65, 0.2);
-  --primary: #006c49;
-  --primary-fixed: #21f1a8;
-  --primary-dim: #00925f;
+  --on-surface: #0f1a14;         /* near-black main text */
+  --on-surface-variant: #4a5a52; /* mid-grey secondary text */
+  --outline: #6b7a72;
+  --outline-variant: rgba(60, 74, 65, 0.28);
+  --primary: #005236;            /* deep emerald — AA on white */
+  --primary-fixed: #00b380;      /* mid-tone for chips/accents */
+  --primary-dim: #003824;
   --on-primary: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(0, 108, 73, 0.15);
-  --glass-border-hover: rgba(0, 108, 73, 0.4);
-  --glass-shadow: 0 8px 32px 0 rgba(60, 90, 70, 0.15);
-  --glass-shadow-hover: 0 0 20px rgba(0, 108, 73, 0.15);
-  --nav-bg: rgba(255, 255, 255, 0.75);
-  --watermark-opacity: 0.03;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 82, 54, 0.18);
+  --glass-border-hover: rgba(0, 82, 54, 0.42);
+  --glass-shadow: 0 6px 24px 0 rgba(30, 45, 35, 0.10);
+  --glass-shadow-hover: 0 8px 30px rgba(0, 82, 54, 0.18);
+  --nav-bg: rgba(255, 255, 255, 0.88);
+  --watermark-opacity: 0.04;
 }
 
 * {

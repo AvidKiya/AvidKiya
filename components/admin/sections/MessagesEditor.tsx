@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useCms } from "@/contexts/CmsContext";
 import { Card, Section } from "../common";
 import { deleteRemoteMessage, fetchRemoteMessages } from "@/lib/cms/api";
+import Icon from "@/components/ui/Icon";
 
 /**
  * Messages panel — reads from the Cloudflare Worker (KV) when available,
@@ -77,9 +78,7 @@ export default function MessagesEditor() {
             className="text-center py-10 opacity-60"
             style={{ color: "var(--on-surface-variant)" }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 48 }}>
-              inbox
-            </span>
+            <Icon name="inbox" size={48} />
             <p className="mt-3 text-sm">No messages yet.</p>
           </div>
         </Card>

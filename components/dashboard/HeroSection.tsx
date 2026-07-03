@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
 import { useCms } from "@/contexts/CmsContext";
 import Editable from "@/components/cms/Editable";
+import Icon from "@/components/ui/Icon";
 
 export default function HeroSection() {
   const { dir } = useApp();
@@ -52,9 +53,7 @@ export default function HeroSection() {
             style={{ background: "var(--primary)", color: "var(--on-primary)" }}
           >
             <Editable path="dashboard.ctaPrimary" editable={d.ctaPrimary} as="span" />
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-              {dir === "rtl" ? "arrow_back" : "arrow_forward"}
-            </span>
+            <Icon name={dir === "rtl" ? "arrow_back" : "arrow_forward"} size={18} />
           </Link>
           <Link
             href="/about"
@@ -65,9 +64,7 @@ export default function HeroSection() {
             }}
           >
             <Editable path="dashboard.ctaSecondary" editable={d.ctaSecondary} as="span" />
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-              alternate_email
-            </span>
+            <Icon name="alternate_email" size={18} />
           </Link>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useCms } from "@/contexts/CmsContext";
 import Editable from "@/components/cms/Editable";
 import { AddButton, ListItem } from "@/components/cms/EditableList";
 import type { DashboardProject } from "@/lib/cms/schema";
+import Icon from "@/components/ui/Icon";
 
 export default function ProjectGrid() {
   const { dir } = useApp();
@@ -25,7 +26,7 @@ export default function ProjectGrid() {
                   className="p-3 rounded-lg"
                   style={{ background: "rgba(33,241,168,0.1)", color: "var(--primary)" }}
                 >
-                  <span className="material-symbols-outlined">{p.icon}</span>
+                  <Icon name={p.icon} />
                 </div>
                 <Editable
                   path={`dashboard.projects.${i}.category`}
@@ -73,9 +74,7 @@ export default function ProjectGrid() {
                   style={{ color: "var(--primary)" }}
                 >
                   View
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                    {dir === "rtl" ? "arrow_back" : "arrow_outward"}
-                  </span>
+                  <Icon name={dir === "rtl" ? "arrow_back" : "arrow_outward"} size={16} />
                 </a>
               </div>
             </article>
