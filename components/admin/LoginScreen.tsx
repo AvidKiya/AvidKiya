@@ -1,34 +1,69 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCms } from "@/contexts/CmsContext";
+import { pingApi, verifyToken } from "@/lib/cms/api";
 
 export default function LoginScreen() {
   const { login } = useCms();
   const [pw, setPw] = useState("");
-  const [err, setErr] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<{
+    apiReachable: boolean;
+    kvBound?: boolean;
+    tokenConfigured?: boolean;
+  } | null>(null);
+
+  // Diagnose the environment on mount so we can show a helpful message
+  useEffect(() => {
+    pingApi().then(setStatus);
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!pw) return;
     setBusy(true);
+    setError(null);
+
+    // Explicit verification so we can display precise errors
+    if (status?.apiReachable) {
+      const v = await verifyToken(pw);
+      if (v.ok) {
+        await login(pw);
+        // login() already updated context — page will re-render
+        return;
+      }
+      setBusy(false);
+      if (!v.tokenConfigured) {
+        setError(
+          "The ADMIN_TOKEN environment variable is NOT set in Cloudflare Pages → Settings → Environment variables. Add it, redeploy, then try again."
+        );
+      } else if (!v.kvBound) {
+        setError(
+          "Token accepted, but the KV namespace AVIDKIYA_KV is not bound. Bind it in Pages → Settings → Functions and redeploy."
+        );
+      } else {
+        setError("Wrong token. Check the value in your Cloudflare Pages env.");
+      }
+      return;
+    }
+
+    // Local / offline
     const ok = await login(pw);
     setBusy(false);
     if (!ok) {
-      setErr(true);
-      setTimeout(() => setErr(false), 1500);
+      setError(
+        "API unreachable and local dev password rejected. Use the offline password shown below."
+      );
     }
   }
 
   return (
     <div
       className="min-h-screen flex items-center justify-center p-6"
-      style={{
-        background:
-          "radial-gradient(circle at 50% 30%, #152018 0%, #08100b 100%)",
-      }}
+      style={{ background: "radial-gradient(circle at 50% 30%, #152018 0%, #08100b 100%)" }}
     >
       <form
         onSubmit={submit}
@@ -45,13 +80,29 @@ export default function LoginScreen() {
           <h1 className="text-xl font-bold" style={{ color: "var(--on-surface)" }}>
             Admin Panel
           </h1>
-          <p
-            className="text-xs opacity-70 mt-1"
-            style={{ color: "var(--on-surface-variant)" }}
-          >
+          <p className="text-xs opacity-70 mt-1" style={{ color: "var(--on-surface-variant)" }}>
             Enter your admin token to manage the portfolio
           </p>
         </div>
+
+        {/* Environment diagnosis */}
+        {status && (
+          <div
+            className="rounded-md p-3 mb-4 text-[11px] space-y-1"
+            style={{
+              background: "rgba(0,0,0,0.3)",
+              border: `1px solid var(--outline-variant)`,
+            }}
+          >
+            <DiagRow ok={status.apiReachable} label="API reachable" />
+            {status.apiReachable && (
+              <>
+                <DiagRow ok={!!status.tokenConfigured} label="ADMIN_TOKEN configured" />
+                <DiagRow ok={!!status.kvBound} label="KV namespace AVIDKIYA_KV bound" />
+              </>
+            )}
+          </div>
+        )}
 
         <label className="block">
           <span
@@ -64,23 +115,29 @@ export default function LoginScreen() {
             type="password"
             autoFocus
             value={pw}
-            onChange={(e) => setPw(e.target.value)}
+            onChange={(e) => {
+              setPw(e.target.value);
+              setError(null);
+            }}
             className="w-full rounded-md px-4 py-3 outline-none transition-all"
             style={{
               background: "rgba(0,0,0,0.4)",
-              border: `1px solid ${err ? "#ffb4ab" : "var(--outline-variant)"}`,
+              border: `1px solid ${error ? "#ffb4ab" : "var(--outline-variant)"}`,
               color: "var(--on-surface)",
-              boxShadow: err ? "0 0 0 3px rgba(255,180,171,0.2)" : undefined,
               fontFamily: "monospace",
             }}
-            placeholder="paste your ADMIN_TOKEN"
+            placeholder="paste ADMIN_TOKEN"
           />
-          {err && (
-            <div className="text-xs mt-2" style={{ color: "#ffb4ab" }}>
-              Wrong token — check the value in Cloudflare Pages settings.
-            </div>
-          )}
         </label>
+
+        {error && (
+          <div
+            className="text-xs mt-3 p-3 rounded"
+            style={{ background: "rgba(255,180,171,0.1)", color: "#ffb4ab" }}
+          >
+            {error}
+          </div>
+        )}
 
         <button
           type="submit"
@@ -101,39 +158,54 @@ export default function LoginScreen() {
           className="mt-6 pt-4 border-t"
           style={{ borderColor: "var(--outline-variant)" }}
         >
-          <div
-            className="text-[10px] uppercase tracking-widest opacity-50 mb-2"
-            style={{ color: "var(--on-surface-variant)" }}
-          >
-            Where does this token come from?
-          </div>
-          <p
-            className="text-xs leading-relaxed opacity-80"
-            style={{ color: "var(--on-surface-variant)" }}
-          >
-            In Cloudflare Pages → your project → <b>Settings → Environment
-            variables → Production</b>, add a secret named{" "}
-            <code
-              className="px-1.5 py-0.5 rounded"
-              style={{ background: "rgba(0,0,0,0.3)", color: "var(--primary)" }}
-            >
-              ADMIN_TOKEN
-            </code>
-            . Use its value here to unlock live editing on the deployed site.
-          </p>
-          <p
-            className="text-[11px] opacity-60 mt-3"
-            style={{ color: "var(--on-surface-variant)" }}
-          >
-            Local dev / no KV configured? The temporary password{" "}
-            <code
-              className="px-1.5 py-0.5 rounded"
-              style={{ background: "rgba(0,0,0,0.3)", color: "var(--primary)" }}
-            >
-              avidkiya-2026
-            </code>{" "}
-            unlocks offline (local-only) editing.
-          </p>
+          {status?.apiReachable === false ? (
+            <>
+              <div
+                className="text-[10px] uppercase tracking-widest opacity-50 mb-2"
+                style={{ color: "var(--on-surface-variant)" }}
+              >
+                Local / offline mode
+              </div>
+              <p
+                className="text-xs opacity-80"
+                style={{ color: "var(--on-surface-variant)" }}
+              >
+                The Cloudflare API is not reachable (you're probably running{" "}
+                <code>npm run dev</code>). Use{" "}
+                <code
+                  className="px-1.5 py-0.5 rounded"
+                  style={{ background: "rgba(0,0,0,0.3)", color: "var(--primary)" }}
+                >
+                  avidkiya-2026
+                </code>{" "}
+                to unlock local editing.
+              </p>
+            </>
+          ) : (
+            <>
+              <div
+                className="text-[10px] uppercase tracking-widest opacity-50 mb-2"
+                style={{ color: "var(--on-surface-variant)" }}
+              >
+                How to configure
+              </div>
+              <p
+                className="text-xs leading-relaxed opacity-80"
+                style={{ color: "var(--on-surface-variant)" }}
+              >
+                In Cloudflare Pages → your project →{" "}
+                <b>Settings → Environment variables → Production</b>, add a
+                Secret named{" "}
+                <code
+                  className="px-1.5 py-0.5 rounded"
+                  style={{ background: "rgba(0,0,0,0.3)", color: "var(--primary)" }}
+                >
+                  ADMIN_TOKEN
+                </code>
+                . Then <b>redeploy</b> so it takes effect. Use its value here.
+              </p>
+            </>
+          )}
         </div>
 
         <Link
@@ -144,6 +216,23 @@ export default function LoginScreen() {
           ← Back to site
         </Link>
       </form>
+    </div>
+  );
+}
+
+function DiagRow({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className="material-symbols-outlined"
+        style={{
+          fontSize: 14,
+          color: ok ? "var(--primary)" : "#efc051",
+        }}
+      >
+        {ok ? "check_circle" : "warning"}
+      </span>
+      <span style={{ color: "var(--on-surface-variant)" }}>{label}</span>
     </div>
   );
 }

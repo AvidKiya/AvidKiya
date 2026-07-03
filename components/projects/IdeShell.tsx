@@ -3,18 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
-import { siteConfig } from "@/lib/config";
+import { useCms } from "@/contexts/CmsContext";
 import {
-  CustomProject,
   fetchUser,
   fetchUserRepos,
   formatRepoSize,
   GithubRepo,
   GithubUser,
-  languageColor,
-  loadCustomProjects,
-  saveCustomProjects,
 } from "@/lib/github";
+import type { CustomRepoProject } from "@/lib/cms/schema";
 import ProjectCard from "./ProjectCard";
 import CustomProjectModal from "./CustomProjectModal";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
@@ -24,12 +21,15 @@ type Sort = "updated" | "stars" | "name";
 
 export default function IdeShell() {
   const { t, dir, language } = useApp();
+  const { state, isAdmin, addToList, removeFromList } = useCms();
+
+  const githubUsername = state.settings.githubUsername || "avidkiya";
+  const custom = state.projects.customProjects;
 
   const [repos, setRepos] = useState<GithubRepo[]>([]);
   const [user, setUser] = useState<GithubUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [custom, setCustom] = useState<CustomProject[]>([]);
   const [showModal, setShowModal] = useState(false);
 
   const [q, setQ] = useState("");
@@ -38,14 +38,13 @@ export default function IdeShell() {
   const [activeTab, setActiveTab] = useState<"about" | "skills" | "contact">("about");
 
   useEffect(() => {
-    setCustom(loadCustomProjects());
     (async () => {
       try {
         setLoading(true);
         setError(null);
         const [r, u] = await Promise.all([
-          fetchUserRepos(siteConfig.githubUsername),
-          fetchUser(siteConfig.githubUsername),
+          fetchUserRepos(githubUsername),
+          fetchUser(githubUsername),
         ]);
         setRepos(r.filter((x) => !x.fork));
         setUser(u);
@@ -55,7 +54,7 @@ export default function IdeShell() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [githubUsername]);
 
   const filteredRepos = useMemo(() => {
     let list = repos.slice();
@@ -87,19 +86,14 @@ export default function IdeShell() {
 
   const displayCustom = filter === "custom" || filter === "all";
 
-  function handleAddCustom(p: CustomProject) {
-    const next = [p, ...custom];
-    setCustom(next);
-    saveCustomProjects(next);
+  function handleAddCustom(p: CustomRepoProject) {
+    addToList<CustomRepoProject>("projects.customProjects", p);
     setShowModal(false);
   }
   function handleRemoveCustom(id: string) {
-    const next = custom.filter((c) => c.id !== id);
-    setCustom(next);
-    saveCustomProjects(next);
+    const idx = custom.findIndex((c) => c.id === id);
+    if (idx >= 0) removeFromList("projects.customProjects", idx);
   }
-
-  const explorerSide = dir === "rtl" ? "right" : "left";
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
@@ -331,7 +325,7 @@ export default function IdeShell() {
                     className="text-xs opacity-60 font-mono"
                     style={{ color: "var(--on-surface-variant)" }}
                   >
-                    {t("modulesListing")} @{siteConfig.githubUsername}
+                    {t("modulesListing")} @{githubUsername}
                   </span>
                 </h2>
 
@@ -374,16 +368,37 @@ export default function IdeShell() {
                     <option value="name">{t("sortName")}</option>
                   </select>
 
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-bold"
-                    style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                      add
-                    </span>
-                    {t("addCustomProject")}
-                  </button>
+                  {isAdmin ? (
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-bold"
+                      style={{ background: "var(--primary)", color: "var(--on-primary)" }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                        add
+                      </span>
+                      {t("addCustomProject")}
+                    </button>
+                  ) : (
+                    <Link
+                      href="/admin"
+                      title={
+                        language === "fa"
+                          ? "برای افزودن پروژه ابتدا وارد پنل مدیریت شوید"
+                          : "Log in to admin to add projects"
+                      }
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border opacity-60 hover:opacity-100"
+                      style={{
+                        borderColor: "var(--outline-variant)",
+                        color: "var(--on-surface-variant)",
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                        lock
+                      </span>
+                      {language === "fa" ? "ورود مدیر" : "Admin"}
+                    </Link>
+                  )}
                 </div>
               </div>
 
@@ -423,7 +438,7 @@ export default function IdeShell() {
                       topics={c.topics ?? []}
                       status={c.status ?? "STABLE"}
                       isCustom
-                      onRemove={() => handleRemoveCustom(c.id)}
+                      onRemove={isAdmin ? () => handleRemoveCustom(c.id) : undefined}
                     />
                   ))}
 
@@ -656,11 +671,11 @@ function SkeletonCard() {
 }
 
 function HeroPanel({ user }: { user: GithubUser | null }) {
-  const { t, language } = useApp();
-  const displayName =
-    language === "fa" ? siteConfig.identity.fullNameFa : user?.name ?? siteConfig.identity.fullNameEn;
-  const title = language === "fa" ? siteConfig.identity.titleFa : siteConfig.identity.titleEn;
-  const location = language === "fa" ? siteConfig.identity.locationFa : siteConfig.identity.locationEn;
+  const { t } = useApp();
+  const { state, resolve } = useCms();
+  const displayName = resolve(state.identity.fullName);
+  const title = resolve(state.identity.title);
+  const location = resolve(state.identity.location);
 
   return (
     <div className="glass-panel p-6 md:p-8 rounded-xl relative overflow-hidden group">

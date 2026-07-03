@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
-import type { CustomProject } from "@/lib/github";
+import type { CustomRepoProject } from "@/lib/cms/schema";
 
 interface Props {
   onClose: () => void;
-  onSave: (p: CustomProject) => void;
+  onSave: (p: CustomRepoProject) => void;
 }
 
 export default function CustomProjectModal({ onClose, onSave }: Props) {
@@ -17,7 +17,7 @@ export default function CustomProjectModal({ onClose, onSave }: Props) {
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
   const [topics, setTopics] = useState("");
-  const [status, setStatus] = useState<CustomProject["status"]>("STABLE");
+  const [status, setStatus] = useState<CustomRepoProject["status"]>("STABLE");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -117,7 +117,7 @@ export default function CustomProjectModal({ onClose, onSave }: Props) {
           <Field label="Status">
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as CustomProject["status"])}
+              onChange={(e) => setStatus(e.target.value as CustomRepoProject["status"])}
               className="input"
             >
               <option value="STABLE">STABLE</option>

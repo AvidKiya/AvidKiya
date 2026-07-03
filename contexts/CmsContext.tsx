@@ -17,7 +17,7 @@ import {
   StyleOverride,
 } from "@/lib/cms/schema";
 import { useApp } from "./AppContext";
-import { fetchRemoteState, pushRemoteState } from "@/lib/cms/api";
+import { fetchRemoteState, pingApi, pushRemoteState, verifyToken } from "@/lib/cms/api";
 
 const LS_STATE = "avidkiya:cms";
 const LS_EDIT_MODE = "avidkiya:editMode";
@@ -172,18 +172,27 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (t: string) => {
-    // Verify token by attempting a lightweight write (push current state)
-    const res = await pushRemoteState(state, t);
-    if (res.ok) {
-      setToken(t);
-      localStorage.setItem(LS_TOKEN, t);
-      setSyncStatus("synced");
-      setLastSyncAt(new Date().toISOString());
-      return true;
+    // 1) See if the API is reachable at all (i.e. we're on Cloudflare Pages
+    //    with Functions deployed).
+    const ping = await pingApi();
+
+    if (ping.apiReachable) {
+      // 2) Verify against the server. Only ADMIN_TOKEN from Cloudflare env
+      //    is accepted — no offline password bypass in production, otherwise
+      //    the local fallback would defeat the whole auth scheme.
+      const v = await verifyToken(t);
+      if (v.ok) {
+        setToken(t);
+        localStorage.setItem(LS_TOKEN, t);
+        setSyncStatus(v.kvBound ? "synced" : "offline");
+        setLastSyncAt(new Date().toISOString());
+        return true;
+      }
+      return false;
     }
-    // Fallback: local-only admin mode (offline / no KV configured)
-    // We accept a special local password so the panel still works during
-    // development or before the Worker is wired.
+
+    // 3) API unreachable → we're on localhost / static preview.
+    //    Accept the dev password so the panel remains usable offline.
     if (t === "avidkiya-2026") {
       setToken(t);
       localStorage.setItem(LS_TOKEN, t);
@@ -191,7 +200,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return true;
     }
     return false;
-  }, [state]);
+  }, []);
 
   const logout = useCallback(() => {
     setToken(null);

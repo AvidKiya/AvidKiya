@@ -99,3 +99,52 @@ export function isApiAvailable(): Promise<boolean> {
     .then(() => true)
     .catch(() => false);
 }
+
+export interface VerifyResult {
+  ok: boolean;
+  reason?: string;
+  kvBound?: boolean;
+  tokenConfigured?: boolean;
+  /** true if the /api/verify endpoint itself is reachable */
+  apiReachable: boolean;
+}
+
+/** Ping /api/verify with a candidate token. */
+export async function verifyToken(token: string): Promise<VerifyResult> {
+  try {
+    const res = await fetch(`${API_BASE}/verify`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    return {
+      ok: !!data.ok,
+      reason: data.reason,
+      kvBound: data.kvBound,
+      tokenConfigured: data.tokenConfigured,
+      apiReachable: true,
+    };
+  } catch {
+    return { ok: false, apiReachable: false, reason: "API unreachable" };
+  }
+}
+
+/** Ping the API without any auth — used to detect if we're deployed. */
+export async function pingApi(): Promise<{
+  apiReachable: boolean;
+  kvBound?: boolean;
+  tokenConfigured?: boolean;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/verify`);
+    if (!res.ok) return { apiReachable: false };
+    const data = await res.json();
+    return {
+      apiReachable: true,
+      kvBound: !!data.kvBound,
+      tokenConfigured: !!data.tokenConfigured,
+    };
+  } catch {
+    return { apiReachable: false };
+  }
+}

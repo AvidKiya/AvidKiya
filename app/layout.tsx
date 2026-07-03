@@ -22,6 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // Default to Persian + Dark. AppProvider will sync from localStorage on mount.
     <html lang="fa" dir="rtl" className="dark" suppressHydrationWarning>
       <head>
+        {/* Self-hosted fonts (Material Symbols + Vazirmatn + Hanken Grotesk +
+            Fira Sans). Bundled in /public/fonts — no dependency on Google
+            Fonts CDN so the site works in regions where fonts.googleapis.com
+            is blocked. */}
+        <link rel="preload" href="/fonts/material-symbols.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/vazirmatn-400.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="/fonts/fonts.css" />
         {/* Prevent theme flash: apply saved theme before hydration */}
         <script
           dangerouslySetInnerHTML={{

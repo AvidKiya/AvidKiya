@@ -121,32 +121,6 @@ export function languageColor(lang: string | null): string {
   return languageColors[lang] ?? "#21f1a8";
 }
 
-/** Custom project stored locally (later moved to KV via admin). */
-export interface CustomProject {
-  id: string;
-  name: string;
-  description: string;
-  descriptionFa?: string;
-  url: string;
-  language?: string;
-  topics?: string[];
-  status?: "STABLE" | "BETA" | "ALPHA" | "ARCHIVED";
-  createdAt: string;
-}
-
-const LS_CUSTOM = "avidkiya:custom-projects";
-
-export function loadCustomProjects(): CustomProject[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_CUSTOM);
-    return raw ? (JSON.parse(raw) as CustomProject[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveCustomProjects(items: CustomProject[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LS_CUSTOM, JSON.stringify(items));
-}
+// Custom projects are now stored in CmsContext (KV-backed) — see
+// `lib/cms/schema.ts` → `CustomRepoProject`. The local-storage helpers that
+// used to live here were removed to avoid two sources of truth.
