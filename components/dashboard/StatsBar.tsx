@@ -11,20 +11,16 @@ export default function StatsBar() {
 
   return (
     <section>
-      <div className="glass-panel rounded-xl overflow-hidden">
-        <div className={`grid grid-cols-2 md:grid-cols-${Math.min(stats.length, 4)}`}>
+      <div className="glass rounded-2xl overflow-hidden">
+        <div className={`grid grid-cols-2 md:grid-cols-${Math.min(stats.length, 4)} divider-x`}>
           {stats.map((s, i) => (
             <ListItem key={s.id} path="dashboard.stats" index={i}>
-              <div
-                className="p-6 md:p-8 text-center h-full"
-                style={{
-                  borderInlineStart:
-                    i === 0 ? "none" : "1px solid var(--outline-variant)",
-                }}
-              >
+              <div className="p-6 md:p-8 text-center h-full">
                 <div
-                  className="text-3xl md:text-4xl font-bold mb-1"
-                  style={{ color: s.highlight ? "var(--primary)" : "var(--on-surface)" }}
+                  className="text-3xl md:text-4xl font-extrabold mb-1"
+                  style={{
+                    color: s.highlight ? "var(--primary-bright)" : "var(--on-surface)",
+                  }}
                 >
                   {s.value}
                 </div>
@@ -32,8 +28,8 @@ export default function StatsBar() {
                   path={`dashboard.stats.${i}.label`}
                   raw={s.label}
                   as="div"
-                  className="text-[10px] uppercase tracking-widest opacity-60"
-                  style={{ color: "var(--on-surface-variant)" }}
+                  className="text-[11px] uppercase tracking-widest"
+                  style={{ color: "var(--outline)" }}
                 />
               </div>
             </ListItem>

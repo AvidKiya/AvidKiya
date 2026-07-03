@@ -6,6 +6,7 @@ import EditModeBar from "@/components/cms/EditModeBar";
 import BgMusic from "@/components/ui/BgMusic";
 import Analytics from "@/components/ui/Analytics";
 import ScrollExtras from "@/components/ui/ScrollExtras";
+import BackgroundLayers from "@/components/layout/BackgroundLayers";
 
 export const metadata: Metadata = {
   title: "AVID KIYA — Systems Architect Portfolio",
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen relative overflow-x-hidden">
         <AppProvider>
           <CmsProvider>
+            <BackgroundLayers />
             {children}
             <ScrollExtras />
             <EditModeBar />

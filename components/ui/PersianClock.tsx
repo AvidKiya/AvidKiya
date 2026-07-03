@@ -53,10 +53,7 @@ export default function PersianClock({
   }
 
   return (
-    <div
-      className="rounded-xl p-4 flex flex-col gap-2 glass-panel"
-      style={{ background: "var(--surface-container-solid)" }}
-    >
+    <div className="glass rounded-2xl p-5 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <div>
           <div
@@ -83,8 +80,7 @@ export default function PersianClock({
           </div>
         </div>
         <div
-          className="text-3xl md:text-4xl font-bold font-mono"
-          style={{ color: "var(--primary)" }}
+          className="text-3xl md:text-4xl font-bold font-mono grad-text"
         >
           {language === "fa" ? toFaDigits(time) : time}
         </div>

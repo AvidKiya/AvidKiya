@@ -1,89 +1,45 @@
 "use client";
 
+import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
 import { useCms } from "@/contexts/CmsContext";
 import Editable from "@/components/cms/Editable";
 import { AddButton, ListItem } from "@/components/cms/EditableList";
-import type { DashboardProject } from "@/lib/cms/schema";
 import Icon from "@/components/ui/Icon";
+import type { DashboardProject } from "@/lib/cms/schema";
 
 export default function ProjectGrid() {
-  const { dir } = useApp();
+  const { language } = useApp();
   const { state, addToList } = useCms();
   const projects = state.dashboard.projects;
 
   return (
     <section>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex items-end justify-between gap-4 mb-6">
+        <h2 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-3">
+          <Icon name="rocket_launch" size={28} color="var(--primary-bright)" />
+          <span>{language === "fa" ? "کار برجسته" : "Featured Work"}</span>
+        </h2>
+        <Link
+          href="/projects"
+          className="text-sm font-semibold hover:underline flex items-center gap-1"
+          style={{ color: "var(--primary-bright)" }}
+        >
+          <span>{language === "fa" ? "همه پروژه‌ها" : "All projects"}</span>
+          <Icon name="arrow_forward" size={16} />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {projects.map((p, i) => (
           <ListItem key={p.id} path="dashboard.projects" index={i}>
-            <article
-              className="glass-panel p-8 rounded-xl flex flex-col h-full"
-              style={{ background: "var(--glass-bg)" }}
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div
-                  className="p-3 rounded-lg"
-                  style={{ background: "rgba(33,241,168,0.1)", color: "var(--primary)" }}
-                >
-                  <Icon name={p.icon} />
-                </div>
-                <Editable
-                  path={`dashboard.projects.${i}.category`}
-                  raw={p.category}
-                  className="text-[10px] font-mono opacity-50 uppercase tracking-widest"
-                  style={{ color: "var(--on-surface-variant)" }}
-                />
-              </div>
-              <Editable
-                path={`dashboard.projects.${i}.title`}
-                raw={p.title}
-                as="h3"
-                className="text-2xl font-bold mb-2"
-                style={{ color: "var(--on-surface)" }}
-              />
-              <Editable
-                path={`dashboard.projects.${i}.description`}
-                raw={p.description}
-                multiline
-                as="p"
-                className="text-sm mb-8 leading-relaxed opacity-70"
-                style={{ color: "var(--on-surface-variant)" }}
-              />
-              <div
-                className="mt-auto pt-6 flex justify-between items-center border-t"
-                style={{ borderColor: "var(--outline-variant)" }}
-              >
-                <div className="flex gap-2">
-                  {p.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] px-2 py-0.5 rounded font-mono"
-                      style={{
-                        background: "var(--chip-bg)",
-                        color: "var(--on-surface-variant)",
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <a
-                  href="/projects"
-                  className="flex items-center gap-1 text-xs font-bold uppercase"
-                  style={{ color: "var(--primary)" }}
-                >
-                  View
-                  <Icon name={dir === "rtl" ? "arrow_back" : "arrow_outward"} size={16} />
-                </a>
-              </div>
-            </article>
+            <ProjectCard project={p} index={i} />
           </ListItem>
         ))}
       </div>
       <div className="mt-4">
         <AddButton
-          label="Add feature card"
+          label={language === "fa" ? "افزودن کارت" : "Add feature card"}
           onClick={() =>
             addToList<DashboardProject>("dashboard.projects", {
               id: `dp-${Date.now()}`,
@@ -97,5 +53,67 @@ export default function ProjectGrid() {
         />
       </div>
     </section>
+  );
+}
+
+function ProjectCard({ project: p, index }: { project: DashboardProject; index: number }) {
+  const { language } = useApp();
+  return (
+    <article
+      className="glass glass-hover rounded-2xl p-6 flex flex-col h-full"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div
+          className="w-10 h-10 rounded-lg grid place-items-center"
+          style={{
+            background: "var(--chip-bg)",
+            color: "var(--primary-bright)",
+          }}
+        >
+          <Icon name={p.icon} size={20} />
+        </div>
+        <Editable
+          path={`dashboard.projects.${index}.category`}
+          raw={p.category}
+          className="text-[10px] font-mono uppercase tracking-widest"
+          style={{ color: "var(--outline)" }}
+        />
+      </div>
+      <Editable
+        path={`dashboard.projects.${index}.title`}
+        raw={p.title}
+        as="h3"
+        className="text-xl font-extrabold mb-2"
+        style={{ color: "var(--on-surface)" }}
+      />
+      <Editable
+        path={`dashboard.projects.${index}.description`}
+        raw={p.description}
+        multiline
+        as="p"
+        className="text-sm mb-4 leading-relaxed line-clamp-3"
+        style={{ color: "var(--on-surface-variant)" }}
+      />
+      <div
+        className="mt-auto pt-4 flex justify-between items-center border-t"
+        style={{ borderColor: "var(--outline-variant)" }}
+      >
+        <div className="flex gap-1.5 flex-wrap">
+          {p.tags.map((tag) => (
+            <span key={tag} className="chip">
+              {tag}
+            </span>
+          ))}
+        </div>
+        <Link
+          href="/projects"
+          className="flex items-center gap-1 text-xs font-bold uppercase"
+          style={{ color: "var(--primary-bright)" }}
+        >
+          {language === "fa" ? "مشاهده" : "View"}
+          <Icon name="arrow_outward" size={14} />
+        </Link>
+      </div>
+    </article>
   );
 }
