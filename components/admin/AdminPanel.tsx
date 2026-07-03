@@ -14,6 +14,9 @@ import AboutEditor from "./sections/AboutEditor";
 import ProjectsEditor from "./sections/ProjectsEditor";
 import ResumeEditor from "./sections/ResumeEditor";
 import GiftsEditor from "./sections/GiftsEditor";
+import AnnouncementsEditor from "./sections/AnnouncementsEditor";
+import CommentsEditor from "./sections/CommentsEditor";
+import ShopEditor from "./sections/ShopEditor";
 import MessagesEditor from "./sections/MessagesEditor";
 import SettingsEditor from "./sections/SettingsEditor";
 import Icon from "@/components/ui/Icon";
@@ -27,29 +30,55 @@ type SectionId =
   | "projects"
   | "resume"
   | "gifts"
+  | "announcements"
+  | "comments"
+  | "shop"
   | "messages"
   | "settings";
 
-const SECTIONS: { id: SectionId; label: string; icon: string }[] = [
-  { id: "overview", label: "Overview", icon: "dashboard" },
-  { id: "identity", label: "Identity", icon: "account_circle" },
-  { id: "socials", label: "Socials", icon: "share" },
-  { id: "dashboard", label: "Landing Page", icon: "home" },
-  { id: "about", label: "About Page", icon: "person" },
-  { id: "projects", label: "Projects Page", icon: "folder" },
-  { id: "resume", label: "Resume", icon: "description" },
-  { id: "gifts", label: "Gifts", icon: "rocket_launch" },
-  { id: "messages", label: "Messages", icon: "inbox" },
-  { id: "settings", label: "Settings", icon: "settings" },
-];
-
 export default function AdminPanel() {
-  const { isAdmin, state, editMode, setEditMode, logout, exportJson, importJson, reset } = useCms();
-  const { dir } = useApp();
+  const {
+    isAdmin,
+    state,
+    editMode,
+    setEditMode,
+    logout,
+    exportJson,
+    importJson,
+    reset,
+  } = useCms();
+  const { t, language, dir } = useApp();
   const [section, setSection] = useState<SectionId>("overview");
   const [showImport, setShowImport] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
 
   if (!isAdmin) return <LoginScreen />;
+
+  const SECTIONS: { id: SectionId; label: string; icon: string; badge?: number }[] = [
+    { id: "overview", label: t("adminOverview"), icon: "dashboard" },
+    { id: "identity", label: t("adminIdentity"), icon: "account_circle" },
+    { id: "socials", label: t("adminSocials"), icon: "share" },
+    { id: "dashboard", label: t("adminDashboard"), icon: "home" },
+    { id: "about", label: t("adminAbout"), icon: "person" },
+    { id: "projects", label: t("adminProjects"), icon: "folder" },
+    { id: "resume", label: t("adminResume"), icon: "description" },
+    { id: "gifts", label: t("adminGifts"), icon: "rocket_launch" },
+    { id: "announcements", label: t("adminAnnouncements"), icon: "campaign" },
+    {
+      id: "comments",
+      label: t("adminComments"),
+      icon: "message",
+      badge: state.comments.filter((c) => !c.approved).length || undefined,
+    },
+    { id: "shop", label: t("adminShop"), icon: "shopping_cart" },
+    {
+      id: "messages",
+      label: t("adminMessages"),
+      icon: "inbox",
+      badge: state.messages.filter((m) => !m.read).length || undefined,
+    },
+    { id: "settings", label: t("adminSettings"), icon: "settings" },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
@@ -58,16 +87,30 @@ export default function AdminPanel() {
         className="h-14 border-b flex items-center justify-between px-4 md:px-6 sticky top-0 z-30 nav-blur"
         style={{ borderColor: "var(--outline-variant)" }}
       >
-        <div className="flex items-center gap-4">
+        <div className={`flex items-center gap-3 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
+          <button
+            onClick={() => setMobileNav(!mobileNav)}
+            className="lg:hidden w-10 h-10 rounded-lg grid place-items-center"
+            style={{
+              background: mobileNav ? "var(--primary)" : "transparent",
+              color: mobileNav ? "var(--on-primary)" : "var(--on-surface)",
+              border: "1px solid var(--outline-variant)",
+            }}
+          >
+            <Icon name={mobileNav ? "close" : "menu"} size={18} />
+          </button>
           <Link href="/" className="flex items-center gap-2">
             <Logo size={32} />
-            <span className="text-sm font-bold hidden sm:inline" style={{ color: "var(--on-surface)" }}>
-              ADMIN · {state.brand.brandName.en}
+            <span
+              className="text-sm font-bold hidden sm:inline"
+              style={{ color: "var(--on-surface)" }}
+            >
+              {language === "fa" ? "پنل مدیریت" : "ADMIN"} · {language === "fa" ? state.brand.brandName.fa : state.brand.brandName.en}
             </span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className={`flex items-center gap-2 md:gap-3 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
           <button
             onClick={() => setEditMode(!editMode)}
             className="text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1"
@@ -78,19 +121,18 @@ export default function AdminPanel() {
             }}
           >
             <Icon name={editMode ? "check_circle" : "edit"} size={14} />
-            <span className="hidden sm:inline">{editMode ? "Editing ON" : "Edit mode"}</span>
+            <span className="hidden sm:inline">
+              {editMode ? t("adminEditing") : t("adminEditMode")}
+            </span>
           </button>
           <LangThemeSwitcher />
           <button
             onClick={logout}
             className="text-xs px-3 py-1.5 rounded-full border"
-            style={{
-              borderColor: "var(--outline-variant)",
-              color: "var(--on-surface)",
-            }}
+            style={{ borderColor: "var(--outline-variant)", color: "var(--on-surface)" }}
           >
-            <Icon name="logout" size={14} className="align-middle me-1" />
-            <span className="hidden sm:inline">Logout</span>
+            <Icon name="logout" size={14} className="me-1" />
+            <span className="hidden sm:inline">{t("adminLogout")}</span>
           </button>
         </div>
       </header>
@@ -98,7 +140,11 @@ export default function AdminPanel() {
       <div className={`flex-1 flex ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
         {/* Sidebar */}
         <aside
-          className="w-56 lg:w-64 shrink-0 border-inline-end sticky top-14"
+          className={`shrink-0 border-inline-end lg:sticky lg:top-14 ${
+            mobileNav
+              ? "fixed inset-y-0 z-40 top-14 w-64"
+              : "hidden lg:block w-56 lg:w-64"
+          }`}
           style={{
             borderInlineEndWidth: 1,
             borderInlineEndStyle: "solid",
@@ -112,28 +158,36 @@ export default function AdminPanel() {
             {SECTIONS.map((s) => (
               <button
                 key={s.id}
-                onClick={() => setSection(s.id)}
-                className="flex items-center gap-3 px-3 py-2 rounded text-sm transition-all text-start"
+                onClick={() => {
+                  setSection(s.id);
+                  setMobileNav(false);
+                }}
+                className={`flex items-center gap-3 px-3 py-2 rounded text-sm transition-all text-start ${
+                  dir === "rtl" ? "flex-row-reverse text-right" : "text-left"
+                }`}
                 style={{
                   background: section === s.id ? "rgba(33,241,168,0.12)" : "transparent",
                   color: section === s.id ? "var(--primary)" : "var(--on-surface)",
                 }}
               >
                 <Icon name={s.icon} size={18} />
-                <span>{s.label}</span>
-                {s.id === "messages" && state.messages.filter((m) => !m.read).length > 0 && (
+                <span className="flex-1">{s.label}</span>
+                {s.badge != null && (
                   <span
-                    className="ms-auto text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                    className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                     style={{ background: "var(--primary)", color: "var(--on-primary)" }}
                   >
-                    {state.messages.filter((m) => !m.read).length}
+                    {s.badge}
                   </span>
                 )}
               </button>
             ))}
           </nav>
 
-          <div className="p-3 mt-auto space-y-2 border-t" style={{ borderColor: "var(--outline-variant)" }}>
+          <div
+            className="p-3 border-t space-y-2"
+            style={{ borderColor: "var(--outline-variant)" }}
+          >
             <button
               onClick={() => {
                 const blob = new Blob([exportJson()], { type: "application/json" });
@@ -148,7 +202,7 @@ export default function AdminPanel() {
               style={{ borderColor: "var(--outline-variant)", color: "var(--on-surface)" }}
             >
               <Icon name="download" size={14} />
-              Export JSON
+              {t("adminExport")}
             </button>
             <button
               onClick={() => setShowImport(true)}
@@ -156,17 +210,24 @@ export default function AdminPanel() {
               style={{ borderColor: "var(--outline-variant)", color: "var(--on-surface)" }}
             >
               <Icon name="upload" size={14} />
-              Import JSON
+              {t("adminImport")}
             </button>
             <button
               onClick={() => {
-                if (confirm("Reset everything to defaults? This can't be undone.")) reset();
+                if (
+                  confirm(
+                    language === "fa"
+                      ? "بازنشانی همه چیز به مقادیر پیش‌فرض؟"
+                      : "Reset everything to defaults?"
+                  )
+                )
+                  reset();
               }}
               className="w-full text-xs px-3 py-2 rounded border flex items-center gap-2 justify-center"
               style={{ borderColor: "rgba(255,180,171,0.5)", color: "#ffb4ab" }}
             >
               <Icon name="restart_alt" size={14} />
-              Reset
+              {t("adminReset")}
             </button>
           </div>
         </aside>
@@ -181,38 +242,57 @@ export default function AdminPanel() {
           {section === "projects" && <ProjectsEditor />}
           {section === "resume" && <ResumeEditor />}
           {section === "gifts" && <GiftsEditor />}
+          {section === "announcements" && <AnnouncementsEditor />}
+          {section === "comments" && <CommentsEditor />}
+          {section === "shop" && <ShopEditor />}
           {section === "messages" && <MessagesEditor />}
           {section === "settings" && <SettingsEditor />}
         </main>
       </div>
 
-      {showImport && <ImportModal onClose={() => setShowImport(false)} onImport={importJson} />}
+      {showImport && (
+        <ImportModal onClose={() => setShowImport(false)} onImport={importJson} />
+      )}
     </div>
   );
 }
 
 function Overview({ onGo }: { onGo: (s: SectionId) => void }) {
   const { state } = useCms();
+  const { t, language } = useApp();
   const unread = state.messages.filter((m) => !m.read).length;
+  const pending = state.comments.filter((c) => !c.approved).length;
 
-  const cards: { id: SectionId; label: string; sub: string; icon: string; hot?: boolean }[] = [
-    { id: "identity", label: "Identity", sub: `${state.identity.fullName.en}`, icon: "account_circle" },
-    { id: "socials", label: "Social accounts", sub: `${state.socials.length} networks`, icon: "share" },
-    { id: "dashboard", label: "Landing page", sub: `${state.dashboard.projects.length} projects · ${state.dashboard.stats.length} stats`, icon: "home" },
-    { id: "about", label: "About page", sub: `${state.about.metrics.length} metrics · ${state.about.miniProjects.length} projects`, icon: "person" },
-    { id: "projects", label: "Custom repos", sub: `${state.projects.customProjects.length} custom projects`, icon: "folder" },
-    { id: "messages", label: "Inbox", sub: `${state.messages.length} total · ${unread} unread`, icon: "inbox", hot: unread > 0 },
-    { id: "settings", label: "Site settings", sub: `GitHub: @${state.settings.githubUsername}`, icon: "settings" },
+  const cards: {
+    id: SectionId;
+    label: string;
+    sub: string;
+    icon: string;
+    hot?: boolean;
+  }[] = [
+    { id: "identity", label: t("adminIdentity"), sub: state.identity.fullName.en, icon: "account_circle" },
+    { id: "socials", label: t("adminSocials"), sub: `${state.socials.length} networks`, icon: "share" },
+    { id: "dashboard", label: t("adminDashboard"), sub: `${state.dashboard.projects.length} · ${state.dashboard.stats.length}`, icon: "home" },
+    { id: "about", label: t("adminAbout"), sub: `${state.about.metrics.length} metrics`, icon: "person" },
+    { id: "projects", label: t("adminProjects"), sub: `${state.projects.customProjects.length} custom`, icon: "folder" },
+    { id: "resume", label: t("adminResume"), sub: `${state.resume.experience.length} roles`, icon: "description" },
+    { id: "gifts", label: t("adminGifts"), sub: `${state.gifts.downloads.length} downloads`, icon: "rocket_launch" },
+    { id: "announcements", label: t("adminAnnouncements"), sub: `${state.announcements.length} items`, icon: "campaign" },
+    { id: "comments", label: t("adminComments"), sub: `${state.comments.length} · ${pending} pending`, icon: "message", hot: pending > 0 },
+    { id: "shop", label: t("adminShop"), sub: `${state.shop.products.length} products`, icon: "shopping_cart" },
+    { id: "messages", label: t("adminMessages"), sub: `${state.messages.length} · ${unread} unread`, icon: "inbox", hot: unread > 0 },
+    { id: "settings", label: t("adminSettings"), sub: `@${state.settings.githubUsername}`, icon: "settings" },
   ];
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: "var(--on-surface)" }}>
-        Welcome back, {state.identity.fullName.en}
+        {t("adminWelcome")}, {language === "fa" ? state.identity.fullName.fa : state.identity.fullName.en}
       </h1>
       <p className="opacity-70 mb-8" style={{ color: "var(--on-surface-variant)" }}>
-        Everything on the site is editable from here.  You can also toggle{" "}
-        <b style={{ color: "var(--primary)" }}>Edit mode</b> and click ✎ pencils directly on the live pages.
+        {language === "fa"
+          ? "همه چیز از اینجا قابل ویرایش است. حالت ویرایش را روشن کن تا آیکون ✎ کنار هر متن روی صفحه ظاهر شود."
+          : "Everything is editable from here. Toggle Edit mode to see ✎ pencils on the live pages."}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -231,9 +311,9 @@ function Overview({ onGo }: { onGo: (s: SectionId) => void }) {
                   color: c.hot ? "var(--on-primary)" : "var(--primary)",
                 }}
               >
-                <Icon name={c.icon} />
+                <Icon name={c.icon} size={20} />
               </div>
-              <Icon name="arrow_outward" color={"var(--on-surface)"} className="opacity-40" />
+              <Icon name="arrow_outward" size={16} color="var(--on-surface-variant)" />
             </div>
             <h3 className="font-bold text-lg mb-1" style={{ color: "var(--on-surface)" }}>
               {c.label}
@@ -243,21 +323,6 @@ function Overview({ onGo }: { onGo: (s: SectionId) => void }) {
             </p>
           </button>
         ))}
-      </div>
-
-      <div
-        className="mt-8 glass-panel rounded-lg p-5"
-        style={{ background: "var(--surface-container-solid)" }}
-      >
-        <h3 className="font-bold mb-2" style={{ color: "var(--primary)" }}>
-          Live-edit workflow
-        </h3>
-        <ol className="text-sm space-y-1 list-decimal ps-6" style={{ color: "var(--on-surface-variant)" }}>
-          <li>Toggle <b style={{ color: "var(--primary)" }}>Edit mode</b> from the top bar (or from any page footer).</li>
-          <li>Every page then shows a small ✎ next to each editable text/element.</li>
-          <li>Lists (metrics, quick links, projects, activity...) gain <b>move / edit / delete</b> handles and an <b>+ Add</b> button.</li>
-          <li>All changes save automatically to <code>localStorage</code>. Use <b>Export JSON</b> to back up, and push to Cloudflare KV later.</li>
-        </ol>
       </div>
     </div>
   );
@@ -281,26 +346,19 @@ function ImportModal({
       <div
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-2xl rounded-xl overflow-hidden"
-        style={{
-          background: "var(--surface-container-solid)",
-          border: "1px solid var(--outline-variant)",
-        }}
+        style={{ background: "var(--surface-container-solid)", border: "1px solid var(--outline-variant)" }}
       >
         <div className="p-4 border-b flex justify-between items-center" style={{ borderColor: "var(--outline-variant)" }}>
           <h3 className="font-bold" style={{ color: "var(--primary)" }}>Import CMS JSON</h3>
-          <button onClick={onClose}>
-            <Icon name="close" />
-          </button>
+          <button onClick={onClose}><Icon name="close" size={20} /></button>
         </div>
         <div className="p-4 space-y-3">
-          <p className="text-xs opacity-70" style={{ color: "var(--on-surface-variant)" }}>
-            Paste a previously-exported JSON blob:
-          </p>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={12}
-            className="cms-input font-mono text-xs"
+            className="w-full rounded-md px-3 py-2 text-xs font-mono outline-none"
+            style={{ background: "rgba(0,0,0,0.3)", border: "1px solid var(--outline-variant)", color: "var(--on-surface)" }}
             placeholder='{"version":1,...}'
           />
           {err && <div className="text-xs" style={{ color: "#ffb4ab" }}>{err}</div>}

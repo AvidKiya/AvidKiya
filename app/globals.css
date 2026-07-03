@@ -41,35 +41,39 @@
 }
 
 /* ─── LIGHT THEME ─────────────────────────────────────────────
-   Redesigned for high contrast. Uses a deep-emerald primary for text
-   (WCAG-AA on white) instead of the neon accent, which is now reserved
-   for hover/highlight backgrounds. */
+   Warm beige/cream palette matching the reference mockup.
+   Body: soft off-white, accents in dark charcoal. */
 .light {
-  --bg: #f4f7f5;
-  --bg-radial-a: #ecf3ee;
-  --bg-radial-b: #ffffff;
+  --bg: #f2ede4;
+  --bg-radial-a: #ede6d8;
+  --bg-radial-b: #f7f2e8;
   --surface: #ffffff;
-  --surface-container: rgba(255, 255, 255, 0.85);
-  --surface-container-solid: #ffffff;
-  --surface-container-low: #f0f4f2;
-  --surface-container-high: #e5ece7;
-  --surface-container-highest: #d0dbd4;
+  --surface-container: rgba(255, 253, 247, 0.92);
+  --surface-container-solid: #fbf7ee;
+  --surface-container-low: #f2ede4;
+  --surface-container-high: #e8e0cf;
+  --surface-container-highest: #ddd3bf;
   --surface-bright: #ffffff;
-  --on-surface: #0f1a14;         /* near-black main text */
-  --on-surface-variant: #4a5a52; /* mid-grey secondary text */
-  --outline: #6b7a72;
-  --outline-variant: rgba(60, 74, 65, 0.28);
-  --primary: #005236;            /* deep emerald — AA on white */
-  --primary-fixed: #00b380;      /* mid-tone for chips/accents */
-  --primary-dim: #003824;
-  --on-primary: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(0, 82, 54, 0.18);
-  --glass-border-hover: rgba(0, 82, 54, 0.42);
-  --glass-shadow: 0 6px 24px 0 rgba(30, 45, 35, 0.10);
-  --glass-shadow-hover: 0 8px 30px rgba(0, 82, 54, 0.18);
-  --nav-bg: rgba(255, 255, 255, 0.88);
-  --watermark-opacity: 0.04;
+  --on-surface: #1a1814;
+  --on-surface-variant: #4a4638;
+  --outline: #6b6656;
+  --outline-variant: rgba(74, 70, 56, 0.28);
+  --primary: #1a1814;
+  --primary-fixed: #ede6d8;
+  --primary-dim: #3a3628;
+  --on-primary: #f5efe3;
+  --glass-bg: rgba(255, 253, 247, 0.85);
+  --glass-border: rgba(74, 70, 56, 0.18);
+  --glass-border-hover: rgba(26, 24, 20, 0.4);
+  --glass-shadow: 0 6px 24px 0 rgba(74, 60, 30, 0.12);
+  --glass-shadow-hover: 0 8px 30px rgba(74, 60, 30, 0.20);
+  --nav-bg: rgba(242, 237, 228, 0.9);
+  --watermark-opacity: 0.05;
+}
+
+.light .glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
 }
 
 * {

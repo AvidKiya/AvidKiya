@@ -71,7 +71,7 @@ export const translations = {
   },
 
   // ─── Projects / IDE page ───────────────────────────
-  ideTitle: { fa: "AVIDKIYA_IDE_V1.0", en: "AVIDKIYA_IDE_V1.0" },
+  ideTitle: { fa: "پروژه‌ها", en: "PROJECTS" },
   ideExplorer: { fa: "کاوشگر", en: "EXPLORER" },
   ideSectionSrc: { fa: "سورس", en: "SRC" },
   ideSectionProjects: { fa: "پروژه‌ها", en: "PROJECTS" },
@@ -116,7 +116,7 @@ export const translations = {
 
   // ─── About / Command Center ─────────────────────────
   commandCenter: { fa: "مرکز فرماندهی", en: "Command Center" },
-  commandCenterVersion: { fa: "COMMAND_CENTER.v3", en: "COMMAND_CENTER.v3" },
+  commandCenterVersion: { fa: "مرکز فرماندهی", en: "COMMAND CENTER" },
   currentLocation: { fa: "موقعیت فعلی", en: "Current Location" },
   tehranNode: { fa: "ایران / تهران", en: "IRAN / TEHRAN_NODE" },
   systemStatus: { fa: "وضعیت سیستم", en: "System Status" },
@@ -170,6 +170,35 @@ export const translations = {
   liveNow: { fa: "الان آنلاین", en: "Live now" },
   viewProfile: { fa: "مشاهده پروفایل", en: "View Profile" },
   channel: { fa: "کانال", en: "Channel" },
+
+  // New sections
+  navResume: { fa: "رزومه", en: "Resume" },
+  navGifts: { fa: "هدیه‌ها", en: "Gifts" },
+  navAnnouncements: { fa: "اعلان‌ها", en: "Updates" },
+  navComments: { fa: "نظرات", en: "Reviews" },
+  navShop: { fa: "فروشگاه", en: "Shop" },
+
+  // Admin panel labels
+  adminOverview: { fa: "نمای کلی", en: "Overview" },
+  adminIdentity: { fa: "هویت", en: "Identity" },
+  adminSocials: { fa: "شبکه‌ها", en: "Socials" },
+  adminDashboard: { fa: "صفحه اصلی", en: "Landing" },
+  adminAbout: { fa: "درباره من", en: "About" },
+  adminProjects: { fa: "پروژه‌ها", en: "Projects" },
+  adminResume: { fa: "رزومه", en: "Resume" },
+  adminGifts: { fa: "هدیه‌ها", en: "Gifts" },
+  adminAnnouncements: { fa: "اعلان‌ها", en: "Announcements" },
+  adminComments: { fa: "نظرات", en: "Reviews" },
+  adminShop: { fa: "فروشگاه", en: "Shop" },
+  adminMessages: { fa: "پیام‌ها", en: "Messages" },
+  adminSettings: { fa: "تنظیمات", en: "Settings" },
+  adminEditing: { fa: "ویرایش فعال", en: "Editing ON" },
+  adminEditMode: { fa: "حالت ویرایش", en: "Edit mode" },
+  adminLogout: { fa: "خروج", en: "Logout" },
+  adminExport: { fa: "خروجی JSON", en: "Export JSON" },
+  adminImport: { fa: "ورودی JSON", en: "Import JSON" },
+  adminReset: { fa: "بازنشانی", en: "Reset" },
+  adminWelcome: { fa: "خوش برگشتی", en: "Welcome back" },
 
   // Language / Theme toggles
   toggleLang: { fa: "EN", en: "فا" },

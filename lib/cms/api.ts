@@ -111,6 +111,72 @@ export async function updateRemoteMessage(
   }
 }
 
+/* ─── Comments API ─── */
+
+export async function submitComment(payload: {
+  name: string;
+  message: string;
+  email?: string;
+  website?: string;
+  role?: string;
+  rating?: number;
+}): Promise<{ ok: boolean; id?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: data?.error };
+    return { ok: true, id: data.id };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
+export async function fetchComments(token?: string) {
+  try {
+    const res = await fetch(`${API_BASE}/comments`, {
+      headers: token ? tokenHeaders(token) : {},
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.comments as any[];
+  } catch {
+    return null;
+  }
+}
+
+export async function updateComment(
+  id: string,
+  patch: { approved?: boolean; pinned?: boolean; reply?: string },
+  token: string
+) {
+  try {
+    const res = await fetch(`${API_BASE}/comments?id=${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...tokenHeaders(token) },
+      body: JSON.stringify(patch),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteComment(id: string, token: string) {
+  try {
+    const res = await fetch(`${API_BASE}/comments?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: tokenHeaders(token),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export function isApiAvailable(): Promise<boolean> {
   return fetch(`${API_BASE}/cms`, { method: "OPTIONS" })
     .then(() => true)

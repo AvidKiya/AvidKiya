@@ -238,6 +238,21 @@ export interface CmsState {
     downloadSubtitle: I18nText;
     downloads: DownloadItem[];
   };
+
+  // Announcements / news / polls / maps
+  announcements: Announcement[];
+
+  // Visitor testimonials (need admin approval before appearing)
+  comments: Comment[];
+
+  // Shop
+  shop: {
+    title: I18nText;
+    subtitle: I18nText;
+    enabled: boolean;
+    products: Product[];
+    categories: I18nText[];
+  };
 }
 
 export interface DonationLink {
@@ -257,6 +272,79 @@ export interface DownloadItem {
   size?: string;                // "12KB"
   category?: I18nText;          // "V2Ray", "Proxy", ...
   free?: boolean;               // default true
+}
+
+/* ─── Announcements ────────────────────────────── */
+export type AnnouncementKind = "news" | "text" | "image" | "poll" | "map" | "custom";
+
+export interface PollOption {
+  id: string;
+  label: I18nText;
+  votes: number;
+}
+
+export interface Announcement {
+  id: string;
+  kind: AnnouncementKind;
+  title: I18nText;
+  body?: I18nText;
+  image?: string;
+  pinned?: boolean;
+  createdAt: string;
+  expiresAt?: string;
+  archived?: boolean;
+  hidden?: boolean;
+  poll?: {
+    question: I18nText;
+    options: PollOption[];
+    allowMultiple?: boolean;
+  };
+  map?: {
+    lat: number;
+    lng: number;
+    zoom?: number;
+    label?: I18nText;
+  };
+  href?: string;
+  hrefLabel?: I18nText;
+}
+
+/* ─── Comments / Testimonials ──────────────────── */
+export interface Comment {
+  id: string;
+  name: string;
+  email?: string;
+  website?: string;
+  role?: string;
+  avatar?: string;
+  rating?: number;
+  message: string;
+  at: string;
+  approved: boolean;
+  pinned?: boolean;
+  reply?: string;
+  replyAt?: string;
+}
+
+/* ─── Shop products ─────────────────────────────── */
+export type ProductCurrency = "USD" | "EUR" | "IRR" | "TMN" | "USDT";
+
+export interface Product {
+  id: string;
+  title: I18nText;
+  description: I18nText;
+  image?: string;
+  gallery?: string[];
+  price: number;
+  currency: ProductCurrency;
+  discount?: number;
+  category?: I18nText;
+  tags?: string[];
+  inStock?: boolean;
+  soldCount?: number;
+  href?: string;
+  featured?: boolean;
+  createdAt: string;
 }
 
 /* ─── Default seed content ─────────────────────────────────── */
@@ -450,7 +538,7 @@ export const defaultCmsState: CmsState = {
   },
 
   about: {
-    version: et("COMMAND_CENTER.v3", "COMMAND_CENTER.v3"),
+    version: et("مرکز فرماندهی", "COMMAND CENTER"),
     locationLabel: et("موقعیت فعلی", "Current Location"),
     locationValue: et("ایران / تهران", "IRAN / TEHRAN_NODE"),
     statusTitle: et("وضعیت سیستم", "System Status"),
@@ -526,7 +614,7 @@ export const defaultCmsState: CmsState = {
   },
 
   projects: {
-    ideTitle: et("AVIDKIYA_IDE_V1.0", "AVIDKIYA_IDE_V1.0"),
+    ideTitle: et("پروژه‌ها", "PROJECTS"),
     customProjects: [],
   },
 
@@ -610,6 +698,115 @@ export const defaultCmsState: CmsState = {
         size: "2.1MB",
         category: t("آموزش", "Learning"),
         free: true,
+      },
+    ],
+  },
+
+  announcements: [
+    {
+      id: "ann-1",
+      kind: "news",
+      title: t("نسخه ۲.۰ پرتفولیو منتشر شد", "Portfolio v2.0 released"),
+      body: t(
+        "نسخه جدید سایت با پنل مدیریت، فروشگاه، اعلانات و بسیار امکانات دیگر منتشر شد. حتما تست کنید!",
+        "New site version with admin panel, shop, announcements and many more features. Check it out!"
+      ),
+      pinned: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "ann-2",
+      kind: "poll",
+      title: t("نظرسنجی: زبان مورد علاقه شما", "Poll: your favorite language"),
+      body: t(
+        "کدام زبان برنامه‌نویسی را ترجیح می‌دهید؟",
+        "Which programming language do you prefer?"
+      ),
+      createdAt: new Date().toISOString(),
+      poll: {
+        question: t("زبان مورد علاقه؟", "Favorite language?"),
+        options: [
+          { id: "o1", label: t("Rust", "Rust"), votes: 12 },
+          { id: "o2", label: t("Go", "Go"), votes: 8 },
+          { id: "o3", label: t("TypeScript", "TypeScript"), votes: 18 },
+          { id: "o4", label: t("Python", "Python"), votes: 10 },
+        ],
+      },
+    },
+  ],
+
+  comments: [
+    {
+      id: "cmt-1",
+      name: "Ali Rezaei",
+      role: "Frontend Developer",
+      rating: 5,
+      message:
+        "Great work on distributed systems. Really enjoyed collaborating on the Nexus Engine project.",
+      at: new Date(Date.now() - 3 * 86400e3).toISOString(),
+      approved: true,
+      pinned: true,
+    },
+  ],
+
+  shop: {
+    title: t("فروشگاه", "Shop"),
+    subtitle: t(
+      "محصولات دیجیتال، کانفیگ‌های پرمیوم، مشاوره و بیشتر.",
+      "Digital products, premium configs, consultations and more."
+    ),
+    enabled: true,
+    categories: [
+      t("مشاوره", "Consulting"),
+      t("کانفیگ", "Configs"),
+      t("قالب", "Templates"),
+      t("آموزش", "Courses"),
+    ],
+    products: [
+      {
+        id: "p-1",
+        title: t("کانفیگ V2Ray پرمیوم (۱ ماه)", "Premium V2Ray Config (1 month)"),
+        description: t(
+          "کانفیگ اختصاصی با سرعت بالا و پشتیبانی ۲۴ ساعته.",
+          "Dedicated high-speed config with 24/7 support."
+        ),
+        price: 5,
+        currency: "USDT",
+        category: t("کانفیگ", "Configs"),
+        tags: ["v2ray", "vpn", "premium"],
+        inStock: true,
+        featured: true,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "p-2",
+        title: t("جلسه مشاوره ۱ ساعته", "1-Hour Consultation Session"),
+        description: t(
+          "بررسی معماری سیستم و راهنمایی برای پروژه شما.",
+          "System architecture review and guidance for your project."
+        ),
+        price: 50,
+        currency: "USD",
+        category: t("مشاوره", "Consulting"),
+        tags: ["consulting", "architecture"],
+        inStock: true,
+        featured: true,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "p-3",
+        title: t("قالب Next.js حرفه‌ای", "Professional Next.js Template"),
+        description: t(
+          "قالب کامل با احراز هویت، دیتابیس و پنل ادمین.",
+          "Complete template with auth, database, and admin panel."
+        ),
+        price: 29,
+        currency: "USD",
+        discount: 0.3,
+        category: t("قالب", "Templates"),
+        tags: ["nextjs", "template"],
+        inStock: true,
+        createdAt: new Date().toISOString(),
       },
     ],
   },
