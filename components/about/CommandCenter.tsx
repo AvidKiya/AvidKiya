@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { useCms } from "@/contexts/CmsContext";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
+import Logo from "@/components/ui/Logo";
 import Editable from "@/components/cms/Editable";
 import { ListItem, AddButton } from "@/components/cms/EditableList";
 import type { ActivityLog, MiniProject, QuickLink, SystemMetric } from "@/lib/cms/schema";
@@ -110,12 +111,7 @@ export default function CommandCenter() {
         </div>
 
         <div className="flex-1 flex justify-center">
-          <div
-            className="w-9 h-9 rounded-lg grid place-items-center font-bold text-lg"
-            style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-          >
-            {state.brand.logoLetter}
-          </div>
+          <Logo size={40} />
         </div>
 
         <div className="flex items-center gap-6">

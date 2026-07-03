@@ -2,6 +2,7 @@
 
 import { useCms } from "@/contexts/CmsContext";
 import { Card, I18nRow, Input, Label, Section } from "../common";
+import ImageUpload from "@/components/ui/ImageUpload";
 
 export default function IdentityEditor() {
   const { state, update } = useCms();
@@ -38,9 +39,18 @@ export default function IdentityEditor() {
       </Card>
 
       <Card title="Brand">
+        <div className="mb-4">
+          <ImageUpload
+            label="Logo image (leave empty to use letter fallback)"
+            value={state.brand.logoImage}
+            onChange={(v) => update("brand.logoImage", v)}
+            aspectRatio="1/1"
+            maxSizeKB={200}
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label>Logo letter</Label>
+            <Label>Logo letter (fallback)</Label>
             <Input
               value={state.brand.logoLetter}
               onChange={(e) => update("brand.logoLetter", e.target.value.slice(0, 2))}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCms } from "@/contexts/CmsContext";
 import { pingApi, verifyToken } from "@/lib/cms/api";
+import Logo from "@/components/ui/Logo";
 import Icon from "@/components/ui/Icon";
 
 export default function LoginScreen() {
@@ -72,11 +73,8 @@ export default function LoginScreen() {
         style={{ background: "rgba(13,21,16,0.85)" }}
       >
         <div className="text-center mb-6">
-          <div
-            className="w-14 h-14 rounded-xl grid place-items-center font-bold text-2xl mx-auto mb-4"
-            style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-          >
-            A
+          <div className="mx-auto mb-4 inline-block">
+            <Logo size={56} radius={16} />
           </div>
           <h1 className="text-xl font-bold" style={{ color: "var(--on-surface)" }}>
             Admin Panel

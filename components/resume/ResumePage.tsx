@@ -5,6 +5,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useCms } from "@/contexts/CmsContext";
 import Icon from "@/components/ui/Icon";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
+import Logo from "@/components/ui/Logo";
 import Editable from "@/components/cms/Editable";
 
 /**
@@ -34,12 +35,7 @@ export default function ResumePage() {
         }}
       >
         <Link href="/" className="flex items-center gap-3">
-          <span
-            className="w-8 h-8 rounded-lg grid place-items-center font-bold"
-            style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-          >
-            {state.brand.logoLetter}
-          </span>
+          <Logo size={32} />
           <span className="font-bold text-sm" style={{ color: "var(--on-surface)" }}>
             {resolve(state.brand.brandName)}
           </span>

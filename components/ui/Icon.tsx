@@ -19,6 +19,7 @@ import {
   ArrowUp,
   ArrowUpRight,
   AtSign,
+  Bitcoin,
   Bug,
   Camera,
   Check,
@@ -29,6 +30,7 @@ import {
   CloudOff,
   CloudUpload,
   Code,
+  Coffee,
   Download,
   Edit3,
   ExternalLink,
@@ -37,6 +39,7 @@ import {
   Folder,
   GitBranch,
   GitFork,
+  Heart,
   Home,
   Inbox,
   Languages,
@@ -54,6 +57,7 @@ import {
   Printer,
   Puzzle,
   RefreshCw,
+  Reply,
   Rocket,
   RotateCcw,
   Search,
@@ -203,6 +207,12 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   // Themes
   dark_mode: Moon,
   light_mode: Sun,
+
+  // Gifts / donations
+  heart: Heart,
+  coffee: Coffee,
+  bitcoin: Bitcoin,
+  reply: Reply,
 
   // Social platforms
   github: GithubSvg,

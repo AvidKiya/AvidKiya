@@ -94,6 +94,23 @@ export async function deleteRemoteMessage(id: string, token: string) {
   }
 }
 
+export async function updateRemoteMessage(
+  id: string,
+  patch: { read?: boolean; reply?: string },
+  token: string
+) {
+  try {
+    const res = await fetch(`${API_BASE}/messages?id=${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...tokenHeaders(token) },
+      body: JSON.stringify(patch),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export function isApiAvailable(): Promise<boolean> {
   return fetch(`${API_BASE}/cms`, { method: "OPTIONS" })
     .then(() => true)

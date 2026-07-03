@@ -5,12 +5,15 @@ import { useState } from "react";
 import { useCms } from "@/contexts/CmsContext";
 import { useApp } from "@/contexts/AppContext";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
+import Logo from "@/components/ui/Logo";
 import LoginScreen from "./LoginScreen";
 import IdentityEditor from "./sections/IdentityEditor";
 import SocialsEditor from "./sections/SocialsEditor";
 import DashboardEditor from "./sections/DashboardEditor";
 import AboutEditor from "./sections/AboutEditor";
 import ProjectsEditor from "./sections/ProjectsEditor";
+import ResumeEditor from "./sections/ResumeEditor";
+import GiftsEditor from "./sections/GiftsEditor";
 import MessagesEditor from "./sections/MessagesEditor";
 import SettingsEditor from "./sections/SettingsEditor";
 import Icon from "@/components/ui/Icon";
@@ -22,6 +25,8 @@ type SectionId =
   | "dashboard"
   | "about"
   | "projects"
+  | "resume"
+  | "gifts"
   | "messages"
   | "settings";
 
@@ -32,6 +37,8 @@ const SECTIONS: { id: SectionId; label: string; icon: string }[] = [
   { id: "dashboard", label: "Landing Page", icon: "home" },
   { id: "about", label: "About Page", icon: "person" },
   { id: "projects", label: "Projects Page", icon: "folder" },
+  { id: "resume", label: "Resume", icon: "description" },
+  { id: "gifts", label: "Gifts", icon: "rocket_launch" },
   { id: "messages", label: "Messages", icon: "inbox" },
   { id: "settings", label: "Settings", icon: "settings" },
 ];
@@ -53,14 +60,9 @@ export default function AdminPanel() {
       >
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <span
-              className="w-8 h-8 rounded-lg grid place-items-center font-bold"
-              style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-            >
-              A
-            </span>
+            <Logo size={32} />
             <span className="text-sm font-bold hidden sm:inline" style={{ color: "var(--on-surface)" }}>
-              ADMIN · AVID KIYA
+              ADMIN · {state.brand.brandName.en}
             </span>
           </Link>
         </div>
@@ -177,6 +179,8 @@ export default function AdminPanel() {
           {section === "dashboard" && <DashboardEditor />}
           {section === "about" && <AboutEditor />}
           {section === "projects" && <ProjectsEditor />}
+          {section === "resume" && <ResumeEditor />}
+          {section === "gifts" && <GiftsEditor />}
           {section === "messages" && <MessagesEditor />}
           {section === "settings" && <SettingsEditor />}
         </main>

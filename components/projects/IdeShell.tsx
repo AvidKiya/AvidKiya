@@ -16,6 +16,7 @@ import ProjectCard from "./ProjectCard";
 import CustomProjectModal from "./CustomProjectModal";
 import LangThemeSwitcher from "@/components/ui/LangThemeSwitcher";
 import Icon from "@/components/ui/Icon";
+import Logo from "@/components/ui/Logo";
 
 type Filter = "all" | "active" | "archived" | "custom";
 type Sort = "updated" | "stars" | "name";
@@ -108,12 +109,7 @@ export default function IdeShell() {
       >
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <span
-              className="w-5 h-5 rounded flex items-center justify-center font-bold text-[11px]"
-              style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-            >
-              A
-            </span>
+            <Logo size={22} radius={5} />
             <span
               className="font-mono text-[11px] tracking-widest opacity-60"
               style={{ color: "var(--on-surface-variant)" }}
@@ -676,11 +672,8 @@ function HeroPanel({ user }: { user: GithubUser | null }) {
                 style={{ filter: "drop-shadow(0 0 15px rgba(33,241,168,0.3))" }}
               />
             ) : (
-              <div
-                className="aspect-square w-full rounded flex items-center justify-center text-4xl font-bold"
-                style={{ background: "var(--primary)", color: "var(--on-primary)" }}
-              >
-                A
+              <div className="aspect-square w-full rounded overflow-hidden">
+                <Logo size={140} radius={6} />
               </div>
             )}
           </div>

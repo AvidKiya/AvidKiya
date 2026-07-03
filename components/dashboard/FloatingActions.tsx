@@ -37,11 +37,16 @@ export default function FloatingActions() {
       </Link>
 
       <Link
-        href="/about"
-        className="w-12 h-12 rounded-full glass-panel flex items-center justify-center hover:scale-110 transition-transform group relative"
+        href="/about#contact"
+        className="w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 transition-transform group relative"
+        style={{
+          background: "var(--surface-container-solid)",
+          border: "1px solid var(--outline-variant)",
+          backdropFilter: "blur(20px)",
+        }}
         aria-label={t("connect")}
       >
-        <Icon name="forum" size={20} color="var(--on-surface)" />
+        <Icon name="mail" size={20} color="var(--primary)" />
         <span
           className={`absolute ${tipSideClass} px-3 py-1 text-[10px] rounded border whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity`}
           style={{

@@ -155,9 +155,10 @@ export interface CmsState {
   resume: ResumeSection;
 
   brand: {
-    logoLetter: string;      // "A"
+    logoLetter: string;      // Fallback if no logoImage
+    logoImage?: string;      // Data-URL or /brand/xxx.png
     brandName: I18nText;
-    primaryColor: string;    // hex
+    primaryColor: string;
     accentColor: string;
   };
 
@@ -222,7 +223,40 @@ export interface CmsState {
     message: string;
     at: string;
     read?: boolean;
+    reply?: string;
+    replyAt?: string;
   }[];
+
+  // Gifts (donation links + downloadable resources)
+  gifts: {
+    title: I18nText;
+    subtitle: I18nText;
+    donationTitle: I18nText;
+    donationSubtitle: I18nText;
+    donationLinks: DonationLink[];
+    downloadTitle: I18nText;
+    downloadSubtitle: I18nText;
+    downloads: DownloadItem[];
+  };
+}
+
+export interface DonationLink {
+  id: string;
+  label: I18nText;
+  href: string;
+  icon: string;                 // e.g. "coffee", "heart", "bitcoin"
+  color?: string;               // brand color
+}
+
+export interface DownloadItem {
+  id: string;
+  title: I18nText;
+  description: I18nText;
+  href: string;                 // direct link OR data-URL
+  fileType?: string;            // "config", "pdf", "zip", ...
+  size?: string;                // "12KB"
+  category?: I18nText;          // "V2Ray", "Proxy", ...
+  free?: boolean;               // default true
 }
 
 /* ─── Default seed content ─────────────────────────────────── */
@@ -251,6 +285,7 @@ export const defaultCmsState: CmsState = {
 
   brand: {
     logoLetter: "A",
+    logoImage: "/brand/logo.png",
     brandName: t("اوید کیا", "AVID KIYA"),
     primaryColor: "#21f1a8",
     accentColor: "#48ffb6",
@@ -496,4 +531,86 @@ export const defaultCmsState: CmsState = {
   },
 
   messages: [],
+
+  gifts: {
+    title: t("هدایا", "Gifts"),
+    subtitle: t(
+      "بخشی برای تبادل هدیه — من چیزهای رایگان به‌درد‌بخور آماده کرده‌ام، و اگر دوست داشتی می‌توانی هدیه‌ای برای من بفرستی.",
+      "A little corner for exchanging gifts — I've prepared useful free resources, and if you'd like you can send me a token of support."
+    ),
+    donationTitle: t("هدیه شما به من", "Your gift to me"),
+    donationSubtitle: t(
+      "اگر محتوا برایت مفید بود، از طریق لینک‌های زیر می‌توانی حمایت کنی.",
+      "If the content has been useful, you can support me through the links below."
+    ),
+    donationLinks: [
+      {
+        id: "d1",
+        label: t("زرین‌پال", "ZarinPal"),
+        href: "https://zarinp.al/avidkiya",
+        icon: "heart",
+        color: "#ffb400",
+      },
+      {
+        id: "d2",
+        label: t("Buy Me a Coffee", "Buy Me a Coffee"),
+        href: "https://buymeacoffee.com/avidkiya",
+        icon: "coffee",
+        color: "#ffdd00",
+      },
+      {
+        id: "d3",
+        label: t("رمزارز (USDT / BTC)", "Crypto (USDT / BTC)"),
+        href: "#",
+        icon: "bitcoin",
+        color: "#f7931a",
+      },
+    ],
+    downloadTitle: t("هدیه من به شما", "My gift to you"),
+    downloadSubtitle: t(
+      "کانفیگ‌های رایگان V2Ray، پروکسی و منابع مفید.",
+      "Free V2Ray configs, proxies, and useful resources."
+    ),
+    downloads: [
+      {
+        id: "g1",
+        title: t("کانفیگ V2Ray رایگان", "Free V2Ray Config"),
+        description: t(
+          "پک کانفیگ‌های به‌روز شده برای دور زدن فیلترینگ.",
+          "Fresh V2Ray config pack, updated regularly."
+        ),
+        href: "https://raw.githubusercontent.com/avidkiya/configs/main/v2ray.txt",
+        fileType: "config",
+        size: "12KB",
+        category: t("پروکسی", "Proxy"),
+        free: true,
+      },
+      {
+        id: "g2",
+        title: t("لیست پروکسی HTTP", "HTTP Proxy List"),
+        description: t(
+          "لیست پروکسی HTTP روزانه به‌روزرسانی می‌شود.",
+          "Daily-updated HTTP proxy list."
+        ),
+        href: "https://raw.githubusercontent.com/avidkiya/proxy-list/main/http.txt",
+        fileType: "list",
+        size: "4KB",
+        category: t("پروکسی", "Proxy"),
+        free: true,
+      },
+      {
+        id: "g3",
+        title: t("راهنمای شروع Docker", "Docker Starter Guide"),
+        description: t(
+          "PDF فارسی برای شروع کار با Docker.",
+          "Persian PDF quick-start guide for Docker."
+        ),
+        href: "#",
+        fileType: "pdf",
+        size: "2.1MB",
+        category: t("آموزش", "Learning"),
+        free: true,
+      },
+    ],
+  },
 };

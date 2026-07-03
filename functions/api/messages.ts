@@ -89,3 +89,31 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
   await env.AVIDKIYA_KV.put(KV_KEY, JSON.stringify(filtered));
   return json({ ok: true, removed: list.length - filtered.length }, 200);
 };
+
+/**
+ * PUT /api/messages?id=xxx  → update a single message (mark as read, add reply)
+ * Body: { read?: boolean, reply?: string }
+ */
+export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
+  if (!isAuthed(request, env)) return json({ error: "Unauthorized" }, 401);
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  if (!id) return json({ error: "Missing id" }, 400);
+  const patch = await request.json<any>().catch(() => ({}));
+  const list = await loadMessages(env);
+  let found = false;
+  const next = list.map((m) => {
+    if (m.id !== id) return m;
+    found = true;
+    return {
+      ...m,
+      ...(patch.read !== undefined ? { read: !!patch.read } : {}),
+      ...(patch.reply !== undefined
+        ? { reply: String(patch.reply), replyAt: new Date().toISOString() }
+        : {}),
+    };
+  });
+  if (!found) return json({ error: "Not found" }, 404);
+  await env.AVIDKIYA_KV.put(KV_KEY, JSON.stringify(next));
+  return json({ ok: true }, 200);
+};
