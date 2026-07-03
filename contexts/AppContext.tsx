@@ -17,7 +17,10 @@ export function AppProvider({ children, defaultLang='fa', defaultTheme='dark' }:
   }, [defaultLang, defaultTheme]);
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+    document.documentElement.dataset.lang = lang;
+    document.documentElement.dir = 'ltr';
+    const root = document.getElementById('app-root');
+    if (root) root.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
     document.body.classList.toggle('lang-fa', lang === 'fa');
     document.body.classList.toggle('lang-en', lang === 'en');
     try { localStorage.setItem('avidkiya_lang', lang); } catch {}
