@@ -13,10 +13,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  output: 'export',
-  distDir: '.vercel/output/static',
   trailingSlash: true,
-  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;
