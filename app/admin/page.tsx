@@ -134,7 +134,7 @@ export default function AdminPage(){
           </div>
         )}
       </section>
-    </0div>
+    </div>
   );
 }
 
