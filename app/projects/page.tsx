@@ -1,10 +1,2 @@
-import IdeShell from "@/components/projects/IdeShell";
-
-export const metadata = {
-  title: "Projects — AVID KIYA",
-  description: "Live GitHub repositories & custom projects, browsed like an IDE.",
-};
-
-export default function ProjectsPage() {
-  return <IdeShell />;
-}
+import { IdeShell } from '@/components/projects/IdeShell';
+export default function ProjectsPage(){return <main className="page-wrap"><IdeShell/></main>}

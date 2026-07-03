@@ -1,10 +1,2 @@
-import ShopPage from "@/components/shop/ShopPage";
-
-export const metadata = {
-  title: "Shop — AVID KIYA",
-  description: "Digital products & consultations.",
-};
-
-export default function Page() {
-  return <ShopPage />;
-}
+import { ShopPage } from '@/components/shop/ShopPage';
+export default function Shop(){return <main className="page-wrap"><ShopPage/></main>}

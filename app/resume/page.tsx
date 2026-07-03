@@ -1,10 +1,2 @@
-import ResumePage from "@/components/resume/ResumePage";
-
-export const metadata = {
-  title: "Resume — AVID KIYA",
-  description: "Professional resume of Avid Kiya.",
-};
-
-export default function Page() {
-  return <ResumePage />;
-}
+import { ResumePage } from '@/components/resume/ResumePage';
+export default function Resume(){return <main className="page-wrap"><ResumePage/></main>}

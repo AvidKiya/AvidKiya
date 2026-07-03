@@ -1,911 +1,138 @@
-/**
- * CMS Schema — single source of truth for editable content.
- *
- * Every visible text / list / style value on the site lives here.
- * The admin panel (and the inline pencil-edit overlay) mutate this object,
- * which is then persisted to localStorage and (later) to Cloudflare KV via
- * `functions/api/cms.ts`.
- *
- * The shape is intentionally serialisable JSON so a Cloudflare Worker can
- * `env.AVIDKIYA_KV.put("cms", JSON.stringify(state))` without transformation.
- */
-
-export interface I18nText {
-  fa: string;
-  en: string;
-}
-
-/** Per-element style overrides — used by the pencil editor. */
-export interface StyleOverride {
-  fontSize?: string;      // e.g. "18px" / "1.25rem"
-  color?: string;         // "var(--primary)" | "#fff"
-  textAlign?: "start" | "center" | "end";
-  fontWeight?: string;    // "400" | "700"
-  letterSpacing?: string;
-  marginTop?: string;
-  marginBottom?: string;
-  paddingBlock?: string;
-  paddingInline?: string;
-  hidden?: boolean;
-}
-
-export interface EditableText {
-  value: I18nText;
-  style?: StyleOverride;
-}
-
-export interface QuickLink {
-  id: string;
-  label: I18nText;
-  href: string;
-  icon: string;   // Material Symbols name
-}
-
-export interface SystemMetric {
-  id: string;
-  label: I18nText;
-  percent: number;      // 0–100
-  valueFa: string;      // e.g. "۴۲٪"
-  valueEn: string;      // e.g. "42%"
-}
-
-export interface MiniProject {
-  id: string;
-  name: I18nText;
-  desc: I18nText;
-  status: "ACTIVE" | "STABLE" | "BETA" | "ARCHIVED";
-  cta: I18nText;
-  href: string;
-}
-
-export interface ActivityLog {
-  id: string;
-  when: I18nText;
-  what: I18nText;
-  active?: boolean;
-}
-
-export interface SocialAccount {
-  id: string;
-  platform: string;       // "Telegram" | "Instagram" | ...
-  handle: string;         // "@avidkiya"
-  href: string;
-  gradient: string;       // CSS gradient
-  subtitle: I18nText;
-  icon: "telegram" | "instagram" | "x" | "github" | "linkedin" | "email";
-  enabled: boolean;
-}
-
-export interface DashboardStat {
-  id: string;
-  value: string;         // "10k+"
-  label: I18nText;
-  highlight?: boolean;
-}
-
-export interface DashboardProject {
-  id: string;
-  title: I18nText;
-  description: I18nText;
-  tags: string[];
-  icon: string;          // material symbol
-  category: I18nText;    // "Core Engine" / "Featured Work"
-}
-
-export interface CustomRepoProject {
-  id: string;
-  name: string;
-  description: string;
-  descriptionFa?: string;
-  url: string;
-  language?: string;
-  topics?: string[];
-  status: "STABLE" | "BETA" | "ALPHA" | "ARCHIVED";
-  /** Cover image — data URL (base64) or external https URL. */
-  image?: string;
-  /** Optional gallery — additional screenshots. */
-  gallery?: string[];
-  createdAt: string;
-}
-
-/** ─── Top-level state shape ────────────────────────────────── */
-export interface ResumeExperience {
-  id: string;
-  period: I18nText;
-  role: I18nText;
-  org: I18nText;
-  bullets: I18nText[];
-}
-export interface ResumeSkill {
-  id: string;
-  name: string;
-  level: number;      // 0..100
-  category?: I18nText;
-}
-export interface ResumeEducation {
-  id: string;
-  period: I18nText;
-  degree: I18nText;
-  school: I18nText;
-}
-
-export interface ResumeSection {
-  summary: I18nText;
-  phone?: string;
-  website?: string;
-  experience: ResumeExperience[];
-  skills: ResumeSkill[];
-  education: ResumeEducation[];
-  languages: { id: string; name: I18nText; level: I18nText }[];
-}
+export type Lang = 'fa' | 'en';
+export type Theme = 'dark' | 'light';
+export interface I18nText { fa: string; en: string }
+export interface SocialAccount { id: string; platform: string; label: string; url: string; icon: string }
+export interface Project { id: string; title: I18nText; description: I18nText; tags: string[]; url?: string; repo?: string; featured?: boolean }
+export interface Stat { id: string; label: I18nText; value: string; accent?: string }
+export interface Metric { id: string; label: I18nText; percent: number; color?: string }
+export interface LinkItem { id: string; label: I18nText; url: string; icon?: string }
+export interface Experience { id: string; role: I18nText; company: I18nText; period: I18nText; bullets: I18nText[] }
+export interface Skill { id: string; name: string; percent: number; category?: string }
+export interface Education { id: string; title: I18nText; place: I18nText; period: I18nText }
+export interface GiftDownload { id: string; title: I18nText; description: I18nText; url: string; type: string }
+export interface DonationLink { id: string; label: I18nText; url: string; kind: string }
+export type AnnouncementType = 'news'|'poll'|'map'|'image'|'text';
+export interface Announcement { id: string; type: AnnouncementType; title: I18nText; body: I18nText; image?: string; pinned?: boolean; archived?: boolean; hidden?: boolean; expiresAt?: string; poll?: { question: I18nText; options: { id:string; label:I18nText; votes:number }[] }; mapUrl?: string; createdAt: string }
+export interface Comment { id: string; name: string; email?: string; role?: string; rating: number; text: string; approved: boolean; pinned?: boolean; createdAt: string }
+export interface Product { id: string; title: I18nText; description: I18nText; price: string; category: string; tags: string[]; image?: string; featured?: boolean; soldOut?: boolean; discount?: number; buyUrl?: string }
+export interface Message { id: string; name: string; email: string; subject?: string; text: string; reply?: string; createdAt: string; read?: boolean }
 
 export interface CmsState {
   version: number;
-
-  identity: {
-    handle: string;
-    fullName: I18nText;
-    title: I18nText;
-    location: I18nText;
-    email: string;
-    yearsExperience: number;
-    bio: I18nText;
-  };
-
-  resume: ResumeSection;
-
-  brand: {
-    logoLetter: string;      // Fallback if no logoImage
-    logoImage?: string;      // Data-URL or /brand/xxx.png
-    brandName: I18nText;
-    primaryColor: string;
-    accentColor: string;
-  };
-
-  settings: {
-    defaultLanguage: "fa" | "en";
-    defaultTheme: "dark" | "light";
-    githubUsername: string;
-    /** Master switch for the pencil edit overlay. */
-    editMode: boolean;
-  };
-
+  identity: { fullName: I18nText; title: I18nText; location: I18nText; email: string; yearsExperience: string; bio: I18nText; handle: string; phone: string; website: string };
+  brand: { logoLetter: string; logoImage: string; brandName: I18nText; primaryColor: string; accentColor: string };
+  settings: { defaultLanguage: Lang; defaultTheme: Theme; githubUsername: string; editMode: boolean };
   socials: SocialAccount[];
-
-  // Landing page
-  dashboard: {
-    heroTag: EditableText;
-    heroTitleA: EditableText;
-    heroTitleB: EditableText;
-    heroDescription: EditableText;
-    ctaPrimary: EditableText;
-    ctaSecondary: EditableText;
-    projects: DashboardProject[];
-    stats: DashboardStat[];
-  };
-
-  // About / Command center page
-  about: {
-    version: EditableText;               // "COMMAND_CENTER.v3"
-    locationLabel: EditableText;
-    locationValue: EditableText;
-    statusTitle: EditableText;
-    metrics: SystemMetric[];
-    quickLinksTitle: EditableText;
-    quickLinks: QuickLink[];
-    quote: EditableText;
-    terminalHeader: EditableText;        // "ROOT@ARCHITECT_NODE:~"
-    uptimeLabel: EditableText;
-    initSession: EditableText;
-    initLines: EditableText[];
-    welcomeTitle: EditableText;
-    welcomeBody: EditableText;
-    miniProjects: MiniProject[];
-    promptText: EditableText;
-    ghActivityTitle: EditableText;
-    ghActivitySub: EditableText;
-    recentActivityTitle: EditableText;
-    recentActivity: ActivityLog[];
-    ctaStartProject: EditableText;
-  };
-
-  projects: {
-    ideTitle: EditableText;
-    customProjects: CustomRepoProject[];
-  };
-
-  // Messages submitted through the contact form
-  messages: {
-    id: string;
-    name: string;
-    email: string;
-    subject: string;
-    message: string;
-    at: string;
-    read?: boolean;
-    reply?: string;
-    replyAt?: string;
-  }[];
-
-  // Gifts (donation links + downloadable resources)
-  gifts: {
-    title: I18nText;
-    subtitle: I18nText;
-    donationTitle: I18nText;
-    donationSubtitle: I18nText;
-    donationLinks: DonationLink[];
-    downloadTitle: I18nText;
-    downloadSubtitle: I18nText;
-    downloads: DownloadItem[];
-  };
-
-  // Announcements / news / polls / maps
+  dashboard: { heroTag: I18nText; heroTitleA: I18nText; heroTitleB: I18nText; heroDescription: I18nText; ctaPrimary: I18nText; ctaSecondary: I18nText; projects: Project[]; stats: Stat[] };
+  about: { statusTitle: I18nText; metrics: Metric[]; quickLinks: LinkItem[]; quote: I18nText; welcomeTitle: I18nText; welcomeBody: I18nText; miniProjects: Project[]; recentActivity: { id:string; title:I18nText; time:I18nText }[] };
+  projects: { customProjects: Project[] };
+  resume: { summary: I18nText; phone: string; website: string; experience: Experience[]; skills: Skill[]; education: Education[]; languages: Skill[]; profiles: LinkItem[] };
+  gifts: { title: I18nText; subtitle: I18nText; donationLinks: DonationLink[]; downloadTitle: I18nText; downloads: GiftDownload[] };
   announcements: Announcement[];
-
-  // Visitor testimonials (need admin approval before appearing)
   comments: Comment[];
-
-  // Shop
-  shop: {
-    title: I18nText;
-    subtitle: I18nText;
-    enabled: boolean;
-    products: Product[];
-    categories: I18nText[];
-  };
-
-  // Background music (auto-plays on site entry)
-  music: {
-    enabled: boolean;
-    autoplay: boolean;
-    loop: boolean;
-    volume: number;
-    src: string;
-    title?: string;
-  };
-
-  seo: {
-    siteName: I18nText;
-    description: I18nText;
-    keywords: string;
-    ogImage: string;
-    twitterHandle: string;
-  };
-
-  analytics: {
-    enabled: boolean;
-    plausibleDomain: string;
-    googleId: string;
-  };
-
-  newsletter: {
-    enabled: boolean;
-    title: I18nText;
-    subtitle: I18nText;
-    subscribers: { id: string; email: string; at: string }[];
-  };
-
-  stats2: {
-    totalVisits: number;
-    lastVisitAt: string;
-  };
-
-  // Hero showcase — 3D model / image beside the hero text
-  heroObject: {
-    kind: "image" | "model3d" | "none";
-    src: string;                 // image URL/data or .glb model URL
-    posterSrc?: string;          // fallback image for model
-    autoRotate?: boolean;
-    alt?: I18nText;
-  };
+  shop: { title: I18nText; enabled: boolean; categories: string[]; products: Product[] };
+  messages: Message[];
+  music: { enabled: boolean; autoplay: boolean; loop: boolean; volume: number; src: string; title: string };
+  heroObject: { kind: 'none'|'image'|'model3d'; src: string; posterSrc: string; autoRotate: boolean; alt: I18nText };
+  seo: { siteName: string; description: string; keywords: string; ogImage: string; twitterHandle: string };
+  analytics: { enabled: boolean; plausibleDomain: string; googleId: string };
+  newsletter: { enabled: boolean; title: I18nText; subtitle: I18nText; subscribers: string[] };
 }
-
-export interface DonationLink {
-  id: string;
-  label: I18nText;
-  href: string;
-  icon: string;                 // e.g. "coffee", "heart", "bitcoin"
-  color?: string;               // brand color
-}
-
-export interface DownloadItem {
-  id: string;
-  title: I18nText;
-  description: I18nText;
-  href: string;                 // direct link OR data-URL
-  fileType?: string;            // "config", "pdf", "zip", ...
-  size?: string;                // "12KB"
-  category?: I18nText;          // "V2Ray", "Proxy", ...
-  free?: boolean;               // default true
-}
-
-/* ─── Announcements ────────────────────────────── */
-export type AnnouncementKind = "news" | "text" | "image" | "poll" | "map" | "custom";
-
-export interface PollOption {
-  id: string;
-  label: I18nText;
-  votes: number;
-}
-
-export interface Announcement {
-  id: string;
-  kind: AnnouncementKind;
-  title: I18nText;
-  body?: I18nText;
-  image?: string;
-  pinned?: boolean;
-  createdAt: string;
-  expiresAt?: string;
-  archived?: boolean;
-  hidden?: boolean;
-  poll?: {
-    question: I18nText;
-    options: PollOption[];
-    allowMultiple?: boolean;
-  };
-  map?: {
-    lat: number;
-    lng: number;
-    zoom?: number;
-    label?: I18nText;
-  };
-  href?: string;
-  hrefLabel?: I18nText;
-}
-
-/* ─── Comments / Testimonials ──────────────────── */
-export interface Comment {
-  id: string;
-  name: string;
-  email?: string;
-  website?: string;
-  role?: string;
-  avatar?: string;
-  rating?: number;
-  message: string;
-  at: string;
-  approved: boolean;
-  pinned?: boolean;
-  reply?: string;
-  replyAt?: string;
-}
-
-/* ─── Shop products ─────────────────────────────── */
-export type ProductCurrency = "USD" | "EUR" | "IRR" | "TMN" | "USDT";
-
-export interface Product {
-  id: string;
-  title: I18nText;
-  description: I18nText;
-  image?: string;
-  gallery?: string[];
-  price: number;
-  currency: ProductCurrency;
-  discount?: number;
-  category?: I18nText;
-  tags?: string[];
-  inStock?: boolean;
-  soldCount?: number;
-  href?: string;
-  featured?: boolean;
-  createdAt: string;
-}
-
-/* ─── Default seed content ─────────────────────────────────── */
 
 const t = (fa: string, en: string): I18nText => ({ fa, en });
-const et = (fa: string, en: string): EditableText => ({ value: { fa, en } });
 
 export const defaultCmsState: CmsState = {
   version: 1,
-
   identity: {
-    handle: "avidkiya",
-    fullName: t("اوید کیا", "Avid Kiya"),
-    title: t(
-      "معمار سیستم و توسعه‌دهنده ارشد بک‌اند",
-      "Systems Architect & Backend Lead"
-    ),
-    location: t("ایران / دورکار", "Iran / Remote"),
-    email: "avidkiya@gmail.com",
-    yearsExperience: 8,
-    bio: t(
-      "متخصص طراحی و پیاده‌سازی زیرساخت‌های مقیاس‌پذیر",
-      "Building scalable infrastructure and distributed systems."
-    ),
+    fullName: t('اوید کیا', 'Avid Kiya'),
+    title: t('معمار سیستم و مهندس بک‌اند', 'Systems Architect & Backend Engineer'),
+    location: t('پاریس، فرانسه', 'Paris, France'),
+    email: 'hello@avidkiya.dev',
+    yearsExperience: '+7',
+    phone: '+33 0 00 00 00 00',
+    website: 'avidkiya.dev',
+    handle: '@avidkiya',
+    bio: t('من سیستم‌های مقیاس‌پذیر، ابزارهای اتوماسیون و تجربه‌های وب سریع می‌سازم؛ جایی بین معماری بک‌اند، امنیت و محصول.', 'I build scalable systems, automation tools and fast web experiences at the intersection of backend architecture, security and product.'),
   },
-
-  brand: {
-    logoLetter: "A",
-    logoImage: "/brand/logo.png",
-    brandName: t("اوید کیا", "AVID KIYA"),
-    primaryColor: "#21f1a8",
-    accentColor: "#48ffb6",
-  },
-
-  resume: {
-    summary: t(
-      "معمار سیستم و توسعه‌دهنده ارشد بک‌اند با ۸+ سال تجربه در طراحی و پیاده‌سازی زیرساخت‌های توزیع‌شده مقیاس‌پذیر. متخصص در Rust، Go، Kubernetes و معماری میکروسرویس.",
-      "Systems Architect & Senior Backend Engineer with 8+ years of experience designing and building scalable distributed infrastructures. Expert in Rust, Go, Kubernetes and microservice architectures."
-    ),
-    phone: "",
-    website: "https://avidkiya.pages.dev",
-    experience: [
-      {
-        id: "exp-1",
-        period: t("۱۴۰۲ - اکنون", "2023 - Present"),
-        role: t("معمار ارشد سیستم", "Senior Systems Architect"),
-        org: t("دورکار / مستقل", "Freelance / Remote"),
-        bullets: [
-          t("طراحی زیرساخت‌های ابری مقیاس‌پذیر با تمرکز بر resilience", "Design of scalable cloud infrastructures focused on resilience"),
-          t("پیاده‌سازی پلتفرم‌های میکروسرویس با Rust و gRPC", "Implementation of microservice platforms using Rust and gRPC"),
-        ],
-      },
-      {
-        id: "exp-2",
-        period: t("۱۳۹۹ - ۱۴۰۲", "2020 - 2023"),
-        role: t("سرپرست تیم بک‌اند", "Backend Lead"),
-        org: t("اکوسیستم استارتاپی", "Startup Ecosystem"),
-        bullets: [
-          t("رهبری تیم ۶ نفره در تحویل یک پلتفرم ابری", "Led a 6-person team delivering a cloud platform"),
-          t("بهینه‌سازی دیتابیس‌های توزیع‌شده", "Optimization of distributed databases"),
-        ],
-      },
-      {
-        id: "exp-3",
-        period: t("۱۳۹۶ - ۱۳۹۹", "2017 - 2020"),
-        role: t("توسعه‌دهنده Full-Stack", "Full-Stack Engineer"),
-        org: t("محصولات مختلف", "Various Products"),
-        bullets: [
-          t("پیاده‌سازی رابط‌های کاربری با React و TypeScript", "Built UIs with React and TypeScript"),
-          t("طراحی و توسعه REST APIs", "Designed and built REST APIs"),
-        ],
-      },
-    ],
-    skills: [
-      { id: "sk-1", name: "Rust",        level: 92 },
-      { id: "sk-2", name: "Go",          level: 88 },
-      { id: "sk-3", name: "TypeScript",  level: 95 },
-      { id: "sk-4", name: "Python",      level: 82 },
-      { id: "sk-5", name: "Kubernetes",  level: 87 },
-      { id: "sk-6", name: "PostgreSQL",  level: 85 },
-      { id: "sk-7", name: "Redis",       level: 78 },
-      { id: "sk-8", name: "gRPC",        level: 80 },
-    ],
-    education: [
-      {
-        id: "edu-1",
-        period: t("۱۳۹۲ - ۱۳۹۶", "2013 - 2017"),
-        degree: t("کارشناسی مهندسی کامپیوتر", "B.Sc. Computer Engineering"),
-        school: t("دانشگاه", "University"),
-      },
-    ],
-    languages: [
-      { id: "l1", name: t("فارسی", "Persian"), level: t("زبان مادری", "Native") },
-      { id: "l2", name: t("انگلیسی", "English"), level: t("حرفه‌ای", "Professional") },
-    ],
-  },
-
-  settings: {
-    defaultLanguage: "fa",
-    defaultTheme: "dark",
-    githubUsername: "avidkiya",
-    editMode: false,
-  },
-
+  brand: { logoLetter: 'AK', logoImage: '', brandName: t('AvidKiya OS', 'AvidKiya OS'), primaryColor: '#5d7ae6', accentColor: '#34d399' },
+  settings: { defaultLanguage: 'fa', defaultTheme: 'dark', githubUsername: 'IR-NETLIFY', editMode: false },
   socials: [
-    {
-      id: "github",
-      platform: "GitHub",
-      handle: "@avidkiya",
-      href: "https://github.com/avidkiya",
-      gradient: "linear-gradient(135deg,#171515 0%,#2d2d2d 100%)",
-      subtitle: t("مخازن کد", "Code repositories"),
-      icon: "github",
-      enabled: true,
-    },
-    {
-      id: "telegram",
-      platform: "Telegram",
-      handle: "@avidkiya",
-      href: "https://t.me/avidkiya",
-      gradient: "linear-gradient(135deg,#0088cc 0%,#005c8f 100%)",
-      subtitle: t("کانال شخصی", "Personal channel"),
-      icon: "telegram",
-      enabled: true,
-    },
-    {
-      id: "instagram",
-      platform: "Instagram",
-      handle: "@avidkiya",
-      href: "https://instagram.com/avidkiya",
-      gradient:
-        "linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)",
-      subtitle: t("پیج شخصی", "Personal profile"),
-      icon: "instagram",
-      enabled: true,
-    },
-    {
-      id: "x",
-      platform: "X / Twitter",
-      handle: "@avidkiya",
-      href: "https://x.com/avidkiya",
-      gradient: "linear-gradient(135deg,#000 0%,#1a1a1a 100%)",
-      subtitle: t("افکار و اخبار", "Thoughts & news"),
-      icon: "x",
-      enabled: true,
-    },
+    { id:'github', platform:'GitHub', label:'GitHub', url:'https://github.com/IR-NETLIFY', icon:'github' },
+    { id:'telegram', platform:'Telegram', label:'Telegram', url:'https://t.me/avidkiya', icon:'telegram' },
+    { id:'linkedin', platform:'LinkedIn', label:'LinkedIn', url:'https://linkedin.com', icon:'linkedin' },
+    { id:'x', platform:'X', label:'X', url:'https://x.com', icon:'x' },
   ],
-
   dashboard: {
-    heroTag: et("معمار سیستم‌ها", "Systems Architect"),
-    heroTitleA: et("طراحی سیستم‌های", "Building resilient"),
-    heroTitleB: et("توزیع‌شدهٔ مقاوم.", "Distributed Systems."),
-    heroDescription: et(
-      "طراحی زیرساخت‌های در دسترس بالا با تمرکز بر ارکستراسیون کم‌تأخیر و معماری‌های ابری خودترمیم.",
-      "Engineering high-availability infrastructures with a focus on low-latency orchestration and self-healing cloud architectures."
-    ),
-    ctaPrimary: et("کاوش پروژه‌ها", "Explore Projects"),
-    ctaSecondary: et("تماس بگیرید", "Get in Touch"),
-
+    heroTag: t('سیستم آنلاین است', 'System online'),
+    heroTitleA: t('اوید کیا', 'Avid Kiya'),
+    heroTitleB: t('DevHub OS', 'DevHub OS'),
+    heroDescription: t('پرتفولیو هدلس، داشبورد شخصی و مرکز فرماندهی پروژه‌ها؛ طراحی‌شده برای نمایش مهارت، اعتماد و سرعت.', 'A headless portfolio, personal dashboard and project command center designed to communicate skill, trust and speed.'),
+    ctaPrimary: t('مشاهده پروژه‌ها', 'View Work'),
+    ctaSecondary: t('تماس', 'Contact'),
     projects: [
-      {
-        id: "p1",
-        title: t("موتور نکسوس", "Nexus Engine"),
-        description: t(
-          "یک لایهٔ ارکستراسیون با عملکرد بالا برای معماری‌های میکروسرویس مقاوم. با Rust و gRPC.",
-          "A high-performance orchestration layer designed for resilient microservices architectures. Built with Rust and gRPC."
-        ),
-        tags: ["RUST", "K8S"],
-        icon: "dataset",
-        category: t("موتور اصلی", "Core Engine"),
-      },
-      {
-        id: "p2",
-        title: t("معماری سیستم‌های توزیع شده", "Distributed Systems Architecture"),
-        description: t(
-          "طراحی و پیاده‌سازی زیرساخت‌های مقیاس‌پذیر با تمرکز بر پایداری بالا و پاسخ‌دهی در زمان واقعی برای پلتفرم‌های ابری.",
-          "Design and implementation of scalable infrastructures focused on high stability and real-time responsiveness for cloud platforms."
-        ),
-        tags: ["INFRA", "DESIGN"],
-        icon: "architecture",
-        category: t("کار برجسته", "Featured Work"),
-      },
+      { id:'p1', title:t('اتوماسیون استقرار Cloudflare', 'Cloudflare Deployment Automation'), description:t('Worker نصب‌کننده با KV، Pages و secrets.', 'Installer Worker with KV, Pages and secrets.'), tags:['Cloudflare','Workers','KV'], featured:true },
+      { id:'p2', title:t('API Gateway مقیاس‌پذیر', 'Scalable API Gateway'), description:t('احراز هویت، rate limit و observability برای سرویس‌ها.', 'Auth, rate limiting and observability for services.'), tags:['Node.js','Redis','Postgres'], featured:true },
+      { id:'p3', title:t('پایپ‌لاین داده و مانیتورینگ', 'Data & Monitoring Pipeline'), description:t('جمع‌آوری، پاک‌سازی و داشبورد زمان‌واقعی.', 'Realtime ingestion, cleanup and dashboards.'), tags:['Python','ETL','Grafana'] },
+      { id:'p4', title:t('CMS بدون سرور', 'Serverless CMS'), description:t('مدیریت محتوا روی KV با ویرایش inline.', 'KV-backed CMS with inline editing.'), tags:['Next.js','KV','TypeScript'] },
     ],
-
     stats: [
-      { id: "s1", value: "10k+", label: t("درخواست/ثانیه", "Requests / Sec"), highlight: true },
-      { id: "s2", value: "99.9%", label: t("پایداری", "Uptime Metric") },
-      { id: "s3", value: "08+", label: t("نودهای جهانی", "Global Nodes") },
-      { id: "s4", value: "05+", label: t("سال تجربه", "Years Experience") },
+      { id:'s1', label:t('سال تجربه', 'Years experience'), value:'+7', accent:'emerald' },
+      { id:'s2', label:t('پروژه تحویل‌شده', 'Delivered projects'), value:'42+', accent:'cyan' },
+      { id:'s3', label:t('آپتایم هدف', 'Target uptime'), value:'99.9%', accent:'amber' },
+      { id:'s4', label:t('استک اصلی', 'Core stack'), value:'Py/Node', accent:'violet' },
     ],
   },
-
   about: {
-    version: et("مرکز فرماندهی", "COMMAND CENTER"),
-    locationLabel: et("موقعیت فعلی", "Current Location"),
-    locationValue: et("ایران / تهران", "IRAN / TEHRAN_NODE"),
-    statusTitle: et("وضعیت سیستم", "System Status"),
-
-    metrics: [
-      { id: "cpu", label: t("پردازش مرکزی", "CPU Usage"), percent: 42, valueFa: "۴۲٪", valueEn: "42%" },
-      { id: "mem", label: t("حافظه سیستم", "Memory"), percent: 65, valueFa: "۱۲.۴ گیگ", valueEn: "12.4 GB" },
-      { id: "net", label: t("پهنای باند", "Bandwidth"), percent: 15, valueFa: "۸۹۰ مگ/ث", valueEn: "890 Mbps" },
-    ],
-
-    quickLinksTitle: et("لینک‌های دسترسی سریع", "Quick Links"),
-    quickLinks: [
-      { id: "gh", label: t("پروفایل گیت‌هاب", "GitHub Profile"), href: "https://github.com/avidkiya", icon: "link" },
-      { id: "cv", label: t("رزومه کامل (PDF)", "Full Resume (PDF)"), href: "#", icon: "file_download" },
-      { id: "mail", label: t("ارتباط مستقیم", "Direct Contact"), href: "mailto:avidkiya@gmail.com", icon: "alternate_email" },
-    ],
-
-    quote: et(
-      "«سیستم‌های توزیع شده نه تنها کد، بلکه هنر تعادل بین آشفتگی و نظم هستند.»",
-      "\"Distributed systems are the art of balancing chaos and order.\""
-    ),
-
-    terminalHeader: et("ROOT@ARCHITECT_NODE:~", "ROOT@ARCHITECT_NODE:~"),
-    uptimeLabel: et("Uptime", "Uptime"),
-
-    initSession: et("initialize_session.sh --verbose", "initialize_session.sh --verbose"),
-    initLines: [
-      et("بارگذاری هسته مرکزی... [تکمیل]", "loading kernel... [OK]"),
-      et("اتصال به شبکه عصبی... [تکمیل]", "connecting neural net... [OK]"),
-      et("تایید هویت کاربر: اوید کیا (معمار ارشد سیستم)", "user verified: Avid Kiya (Senior Systems Architect)"),
-    ],
-    welcomeTitle: et("به مرکز فرماندهی خوش آمدید", "Welcome to Command Center"),
-    welcomeBody: et(
-      "من متخصص طراحی و پیاده‌سازی زیرساخت‌های مقیاس‌پذیر و سیستم‌های توزیع شده با تمرکز بر کارایی بالا و دسترسی همیشگی هستم. در اینجا می‌توانید آخرین پروژه‌ها و وضعیت فعالیت‌های من را مشاهده کنید.",
-      "I specialize in designing and implementing scalable infrastructures and distributed systems with a focus on high performance and constant availability. Here you can explore my latest projects and activity."
-    ),
-    miniProjects: [
-      {
-        id: "m1",
-        name: t("پروژه: Nexus Engine", "Project: Nexus Engine"),
-        desc: t(
-          "بهینه‌سازی لایه ارکستراسیون میکروسرویس‌ها با نرخ پردازش ۱۰ هزار درخواست در ثانیه.",
-          "Optimized microservice orchestration layer with 10K req/sec throughput."
-        ),
-        status: "ACTIVE",
-        cta: t("[ اجرای اسکریپت دمو ]", "[ RUN DEMO ]"),
-        href: "#",
-      },
-      {
-        id: "m2",
-        name: t("پروژه: SecureGate v2", "Project: SecureGate v2"),
-        desc: t(
-          "دروازه امنیتی مبتنی بر هوش مصنوعی برای شناسایی تهدیدات در لحظه.",
-          "AI-driven security gateway for real-time threat detection."
-        ),
-        status: "STABLE",
-        cta: t("[ بررسی لاگ‌ها ]", "[ INSPECT LOGS ]"),
-        href: "#",
-      },
-    ],
-    promptText: et("آماده برای دریافت دستورات جدید...", "Ready for new commands..."),
-
-    ghActivityTitle: et("فعالیت گیت‌هاب", "GitHub Activity"),
-    ghActivitySub: et("(۳۰ روز اخیر)", "(last 30 days)"),
-
-    recentActivityTitle: et("سیاهه فعالیت‌های اخیر", "Recent Activity Log"),
-    recentActivity: [
-      { id: "a1", when: t("امروز - ۱۴:۲۰", "Today · 14:20"), what: t("استقرار نسخه ۱.۲.۰ موتور نکسوس", "Deployed Nexus Engine v1.2.0"), active: true },
-      { id: "a2", when: t("دیروز - ۰۹:۱۵", "Yesterday · 09:15"), what: t("بهینه‌سازی دیتابیس توزیع شده", "Optimized distributed database") },
-      { id: "a3", when: t("۳ روز قبل", "3 days ago"), what: t("بروزرسانی پروتکل‌های امنیتی SSL", "Updated SSL security protocols") },
-    ],
-    ctaStartProject: et("شروع پروژه جدید", "Start a New Project"),
+    statusTitle: t('وضعیت سیستم', 'System Status'),
+    metrics: [ {id:'cpu', label:t('پردازنده', 'CPU'), percent:42, color:'#6f93ec'}, {id:'mem', label:t('حافظه', 'Memory'), percent:68, color:'#34d399'}, {id:'bw', label:t('پهنای‌باند', 'Bandwidth'), percent:55, color:'#fbbf24'} ],
+    quickLinks: [ {id:'cv', label:t('رزومه چاپی', 'Printable CV'), url:'/resume', icon:'fileText'}, {id:'gh', label:t('گیت‌هاب', 'GitHub'), url:'https://github.com/IR-NETLIFY', icon:'github'} ],
+    quote: t('سیستم خوب، قبل از دیده‌شدن، قابل اعتماد است.', 'A good system is reliable before it is visible.'),
+    welcomeTitle: t('به مرکز فرماندهی خوش آمدید', 'Welcome to Command Center'),
+    welcomeBody: t('اینجا نمای عملیاتی مهارت‌ها، پروژه‌ها، ارتباطات و مسیر حرفه‌ای من است.', 'This is the operational view of my skills, projects, communication and professional path.'),
+    miniProjects: [],
+    recentActivity: [ {id:'a1', title:t('بهبود CMS و پنل ادمین', 'Improved CMS and admin panel'), time:t('امروز', 'Today')}, {id:'a2', title:t('افزودن API نظرات', 'Added comments API'), time:t('۲ روز پیش', '2 days ago')} ],
   },
-
-  projects: {
-    ideTitle: et("پروژه‌ها", "PROJECTS"),
-    customProjects: [],
+  projects: { customProjects: [] },
+  resume: {
+    summary: t('مهندس بک‌اند با تمرکز بر معماری سیستم، اتوماسیون ابری و ساخت محصولات قابل نگهداری.', 'Backend engineer focused on systems architecture, cloud automation and maintainable products.'),
+    phone: '+33 0 00 00 00 00', website: 'avidkiya.dev',
+    experience: [ { id:'e1', role:t('Systems Architect', 'Systems Architect'), company:t('Freelance / Remote', 'Freelance / Remote'), period:t('۲۰۲۱ — اکنون', '2021 — Present'), bullets:[t('طراحی سرویس‌های مقیاس‌پذیر و APIهای امن.', 'Designed scalable services and secure APIs.'), t('اتوماسیون CI/CD و استقرارهای serverless.', 'Automated CI/CD and serverless deployments.')] }, { id:'e2', role:t('Backend Engineer', 'Backend Engineer'), company:t('محصولات SaaS', 'SaaS Products'), period:t('۲۰۱۸ — ۲۰۲۱', '2018 — 2021'), bullets:[t('ساخت API، صف، کش و مانیتورینگ.', 'Built APIs, queues, caching and monitoring.'), t('بهینه‌سازی کارایی و کاهش هزینه زیرساخت.', 'Optimized performance and reduced infrastructure cost.')] } ],
+    skills: [ {id:'sk1', name:'Python', percent:92, category:'backend'}, {id:'sk2', name:'Node.js', percent:88, category:'backend'}, {id:'sk3', name:'TypeScript', percent:86, category:'frontend'}, {id:'sk4', name:'Cloudflare', percent:84, category:'cloud'}, {id:'sk5', name:'PostgreSQL', percent:80, category:'data'} ],
+    education: [ {id:'ed1', title:t('مهندسی نرم‌افزار', 'Software Engineering'), place:t('مطالعه تخصصی و پروژه‌محور', 'Project-based specialization'), period:t('پیوسته', 'Ongoing')} ],
+    languages: [ {id:'l1', name:'فارسی / Persian', percent:100}, {id:'l2', name:'English', percent:86}, {id:'l3', name:'Français', percent:55} ],
+    profiles: [ {id:'pr1', label:t('گیت‌هاب', 'GitHub'), url:'https://github.com/IR-NETLIFY', icon:'github'}, {id:'pr2', label:t('لینکدین', 'LinkedIn'), url:'https://linkedin.com', icon:'linkedin'} ],
   },
-
-  messages: [],
-
   gifts: {
-    title: t("هدایا", "Gifts"),
-    subtitle: t(
-      "بخشی برای تبادل هدیه — من چیزهای رایگان به‌درد‌بخور آماده کرده‌ام، و اگر دوست داشتی می‌توانی هدیه‌ای برای من بفرستی.",
-      "A little corner for exchanging gifts — I've prepared useful free resources, and if you'd like you can send me a token of support."
-    ),
-    donationTitle: t("هدیه شما به من", "Your gift to me"),
-    donationSubtitle: t(
-      "اگر محتوا برایت مفید بود، از طریق لینک‌های زیر می‌توانی حمایت کنی.",
-      "If the content has been useful, you can support me through the links below."
-    ),
-    donationLinks: [
-      {
-        id: "d1",
-        label: t("زرین‌پال", "ZarinPal"),
-        href: "https://zarinp.al/avidkiya",
-        icon: "heart",
-        color: "#ffb400",
-      },
-      {
-        id: "d2",
-        label: t("Buy Me a Coffee", "Buy Me a Coffee"),
-        href: "https://buymeacoffee.com/avidkiya",
-        icon: "coffee",
-        color: "#ffdd00",
-      },
-      {
-        id: "d3",
-        label: t("رمزارز (USDT / BTC)", "Crypto (USDT / BTC)"),
-        href: "#",
-        icon: "bitcoin",
-        color: "#f7931a",
-      },
-    ],
-    downloadTitle: t("هدیه من به شما", "My gift to you"),
-    downloadSubtitle: t(
-      "کانفیگ‌های رایگان V2Ray، پروکسی و منابع مفید.",
-      "Free V2Ray configs, proxies, and useful resources."
-    ),
-    downloads: [
-      {
-        id: "g1",
-        title: t("کانفیگ V2Ray رایگان", "Free V2Ray Config"),
-        description: t(
-          "پک کانفیگ‌های به‌روز شده برای دور زدن فیلترینگ.",
-          "Fresh V2Ray config pack, updated regularly."
-        ),
-        href: "https://raw.githubusercontent.com/avidkiya/configs/main/v2ray.txt",
-        fileType: "config",
-        size: "12KB",
-        category: t("پروکسی", "Proxy"),
-        free: true,
-      },
-      {
-        id: "g2",
-        title: t("لیست پروکسی HTTP", "HTTP Proxy List"),
-        description: t(
-          "لیست پروکسی HTTP روزانه به‌روزرسانی می‌شود.",
-          "Daily-updated HTTP proxy list."
-        ),
-        href: "https://raw.githubusercontent.com/avidkiya/proxy-list/main/http.txt",
-        fileType: "list",
-        size: "4KB",
-        category: t("پروکسی", "Proxy"),
-        free: true,
-      },
-      {
-        id: "g3",
-        title: t("راهنمای شروع Docker", "Docker Starter Guide"),
-        description: t(
-          "PDF فارسی برای شروع کار با Docker.",
-          "Persian PDF quick-start guide for Docker."
-        ),
-        href: "#",
-        fileType: "pdf",
-        size: "2.1MB",
-        category: t("آموزش", "Learning"),
-        free: true,
-      },
-    ],
+    title:t('هدیه‌ها و حمایت', 'Gifts & Support'), subtitle:t('چیزهایی که رایگان می‌دهم و راه‌هایی که می‌توانید حمایت کنید.', 'Free resources I share and ways you can support.'), downloadTitle:t('هدیه من به شما', 'My gift to you'),
+    downloads:[ {id:'d1', title:t('PDF راهنمای شروع بک‌اند', 'Backend starter PDF'), description:t('چک‌لیست ابزار و معماری.', 'Tools and architecture checklist.'), url:'#', type:'PDF'}, {id:'d2', title:t('کانفیگ نمونه V2Ray', 'Sample V2Ray config'), description:t('برای آموزش و آزمایش.', 'For learning and testing.'), url:'#', type:'CONFIG'} ],
+    donationLinks:[ {id:'zarin', label:t('زرین‌پال', 'ZarinPal'), url:'#', kind:'zarinpal'}, {id:'coffee', label:t('Buy Me a Coffee', 'Buy Me a Coffee'), url:'#', kind:'coffee'}, {id:'btc', label:t('Bitcoin', 'Bitcoin'), url:'#', kind:'bitcoin'} ],
   },
-
   announcements: [
-    {
-      id: "ann-1",
-      kind: "news",
-      title: t("نسخه ۲.۰ پرتفولیو منتشر شد", "Portfolio v2.0 released"),
-      body: t(
-        "نسخه جدید سایت با پنل مدیریت، فروشگاه، اعلانات و بسیار امکانات دیگر منتشر شد. حتما تست کنید!",
-        "New site version with admin panel, shop, announcements and many more features. Check it out!"
-      ),
-      pinned: true,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: "ann-2",
-      kind: "poll",
-      title: t("نظرسنجی: زبان مورد علاقه شما", "Poll: your favorite language"),
-      body: t(
-        "کدام زبان برنامه‌نویسی را ترجیح می‌دهید؟",
-        "Which programming language do you prefer?"
-      ),
-      createdAt: new Date().toISOString(),
-      poll: {
-        question: t("زبان مورد علاقه؟", "Favorite language?"),
-        options: [
-          { id: "o1", label: t("Rust", "Rust"), votes: 12 },
-          { id: "o2", label: t("Go", "Go"), votes: 8 },
-          { id: "o3", label: t("TypeScript", "TypeScript"), votes: 18 },
-          { id: "o4", label: t("Python", "Python"), votes: 10 },
-        ],
-      },
-    },
+    { id:'an1', type:'news', title:t('نسخه جدید AvidKiya OS', 'New AvidKiya OS release'), body:t('پنل ادمین، CMS و دیپلوی خودکار اضافه شد.', 'Admin panel, CMS and auto deployer were added.'), pinned:true, createdAt:new Date().toISOString() },
+    { id:'an2', type:'poll', title:t('نظرسنجی', 'Poll'), body:t('کدام محتوا برای شما جذاب‌تر است؟', 'Which content is more useful?'), createdAt:new Date().toISOString(), poll:{ question:t('موضوع بعدی؟', 'Next topic?'), options:[{id:'o1', label:t('Cloudflare', 'Cloudflare'), votes:12},{id:'o2', label:t('Backend', 'Backend'), votes:9},{id:'o3', label:t('Security', 'Security'), votes:5}] } },
+    { id:'an3', type:'map', title:t('موقعیت کاری', 'Work location'), body:t('فعال در پاریس و ریموت.', 'Based in Paris and remote.'), mapUrl:'https://www.openstreetmap.org/export/embed.html?bbox=2.224%2C48.815%2C2.469%2C48.902&layer=mapnik', createdAt:new Date().toISOString() }
   ],
-
-  comments: [
-    {
-      id: "cmt-1",
-      name: "Ali Rezaei",
-      role: "Frontend Developer",
-      rating: 5,
-      message:
-        "Great work on distributed systems. Really enjoyed collaborating on the Nexus Engine project.",
-      at: new Date(Date.now() - 3 * 86400e3).toISOString(),
-      approved: true,
-      pinned: true,
-    },
-  ],
-
-  shop: {
-    title: t("فروشگاه", "Shop"),
-    subtitle: t(
-      "محصولات دیجیتال، کانفیگ‌های پرمیوم، مشاوره و بیشتر.",
-      "Digital products, premium configs, consultations and more."
-    ),
-    enabled: true,
-    categories: [
-      t("مشاوره", "Consulting"),
-      t("کانفیگ", "Configs"),
-      t("قالب", "Templates"),
-      t("آموزش", "Courses"),
-    ],
-    products: [
-      {
-        id: "p-1",
-        title: t("کانفیگ V2Ray پرمیوم (۱ ماه)", "Premium V2Ray Config (1 month)"),
-        description: t(
-          "کانفیگ اختصاصی با سرعت بالا و پشتیبانی ۲۴ ساعته.",
-          "Dedicated high-speed config with 24/7 support."
-        ),
-        price: 5,
-        currency: "USDT",
-        category: t("کانفیگ", "Configs"),
-        tags: ["v2ray", "vpn", "premium"],
-        inStock: true,
-        featured: true,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "p-2",
-        title: t("جلسه مشاوره ۱ ساعته", "1-Hour Consultation Session"),
-        description: t(
-          "بررسی معماری سیستم و راهنمایی برای پروژه شما.",
-          "System architecture review and guidance for your project."
-        ),
-        price: 50,
-        currency: "USD",
-        category: t("مشاوره", "Consulting"),
-        tags: ["consulting", "architecture"],
-        inStock: true,
-        featured: true,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "p-3",
-        title: t("قالب Next.js حرفه‌ای", "Professional Next.js Template"),
-        description: t(
-          "قالب کامل با احراز هویت، دیتابیس و پنل ادمین.",
-          "Complete template with auth, database, and admin panel."
-        ),
-        price: 29,
-        currency: "USD",
-        discount: 0.3,
-        category: t("قالب", "Templates"),
-        tags: ["nextjs", "template"],
-        inStock: true,
-        createdAt: new Date().toISOString(),
-      },
-    ],
-  },
-
-  music: {
-    enabled: false,
-    autoplay: true,
-    loop: true,
-    volume: 0.4,
-    src: "",
-    title: "",
-  },
-
-  // SEO / meta
-  seo: {
-    siteName: t("اوید کیا | معمار سیستم", "AVID KIYA · Systems Architect"),
-    description: t(
-      "پرتفولیو اوید کیا، معمار سیستم‌های توزیع شده و توسعه‌دهنده ارشد بک‌اند.",
-      "Portfolio of Avid Kiya, distributed systems architect and senior backend engineer."
-    ),
-    keywords: "systems architect, backend, rust, go, kubernetes, cloudflare, portfolio",
-    ogImage: "",
-    twitterHandle: "@avidkiya",
-  },
-
-  // Analytics
-  analytics: {
-    enabled: false,
-    plausibleDomain: "",     // e.g. avidkiya.pages.dev
-    googleId: "",             // e.g. G-XXXXXXXX
-  },
-
-  // Newsletter signups (collected via KV)
-  newsletter: {
-    enabled: false,
-    title: t("عضویت در خبرنامه", "Subscribe to newsletter"),
-    subtitle: t(
-      "برای دریافت آخرین اخبار و مطالب.",
-      "Get the latest news and posts."
-    ),
-    subscribers: [] as { id: string; email: string; at: string }[],
-  },
-
-  // Visit counter (incremented server-side)
-  stats2: {
-    totalVisits: 0,
-    lastVisitAt: "",
-  },
-
-  heroObject: {
-    kind: "none",
-    src: "",
-    posterSrc: "",
-    autoRotate: true,
-    alt: { fa: "شیء نمایشی", en: "Hero showcase" },
-  },
+  comments: [ {id:'c1', name:'Nima', role:'Founder', rating:5, text:'بسیار دقیق، سریع و قابل اعتماد.', approved:true, pinned:true, createdAt:new Date().toISOString()}, {id:'c2', name:'Sarah', role:'PM', rating:5, text:'Great architecture and communication.', approved:true, createdAt:new Date().toISOString()} ],
+  shop: { title:t('فروشگاه محصولات دیجیتال', 'Digital Products Shop'), enabled:true, categories:['all','templates','ebooks','automation'], products:[ {id:'prod1', title:t('قالب API Gateway', 'API Gateway Template'), description:t('استارتر امن Node.js + TypeScript.', 'Secure Node.js + TypeScript starter.'), price:'49 USDT', category:'templates', tags:['Node','Auth'], featured:true, discount:20, buyUrl:'mailto:hello@avidkiya.dev?subject=Buy API Gateway'}, {id:'prod2', title:t('چک‌لیست معماری سیستم', 'System Architecture Checklist'), description:t('PDF فشرده برای طراحی سرویس.', 'Compact PDF for service design.'), price:'15 EUR', category:'ebooks', tags:['PDF','Architecture'], buyUrl:'mailto:hello@avidkiya.dev?subject=Buy Checklist'} ] },
+  messages: [],
+  music: { enabled:false, autoplay:false, loop:true, volume:.25, src:'', title:'' },
+  heroObject: { kind:'none', src:'', posterSrc:'', autoRotate:true, alt:t('شیء قهرمان', 'Hero object') },
+  seo: { siteName:'AvidKiya OS', description:'Avid Kiya — Systems Architect & Backend Engineer', keywords:'Avid Kiya, backend, systems architect, Cloudflare, portfolio', ogImage:'', twitterHandle:'@avidkiya' },
+  analytics: { enabled:false, plausibleDomain:'', googleId:'' },
+  newsletter: { enabled:true, title:t('عضویت در خبرنامه DevHub', 'Join the DevHub newsletter'), subtitle:t('یادداشت‌های کوتاه درباره بک‌اند، امنیت و کلاد.', 'Short notes about backend, security and cloud.'), subscribers:[] },
 };
+
+export function migrateCms(input: unknown): CmsState {
+  const merge = (base: any, value: any): any => {
+    if (Array.isArray(base)) return Array.isArray(value) ? value : base;
+    if (base && typeof base === 'object') {
+      const out: any = { ...base };
+      if (value && typeof value === 'object') for (const k of Object.keys(value)) out[k] = merge(base[k], value[k]);
+      return out;
+    }
+    return value ?? base;
+  };
+  const migrated = merge(defaultCmsState, input || {});
+  migrated.version = defaultCmsState.version;
+  return migrated;
+}

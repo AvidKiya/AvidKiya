@@ -1,10 +1,2 @@
-import GiftsPage from "@/components/gifts/GiftsPage";
-
-export const metadata = {
-  title: "Gifts — AVID KIYA",
-  description: "Free resources and donation links.",
-};
-
-export default function Page() {
-  return <GiftsPage />;
-}
+import { GiftsPage } from '@/components/gifts/GiftsPage';
+export default function Gifts(){return <main className="page-wrap"><GiftsPage/></main>}

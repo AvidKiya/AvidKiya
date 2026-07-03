@@ -1,22 +1,8 @@
 name = "avidkiya-portfolio"
 compatibility_date = "2024-09-01"
+pages_build_output_dir = "out"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".vercel/output/static"
 
-# ─── Bindings ─────────────────────────────────────────────────
-# These are DEFAULTS for local `wrangler pages dev` only.
-# In production, configure them in the Cloudflare dashboard:
-#   Pages project → Settings → Functions
-#     → KV namespace bindings: AVIDKIYA_KV
-#     → Environment variables (Secrets): ADMIN_TOKEN
-#
-# Create the KV namespace first (once):
-#   npx wrangler kv:namespace create AVIDKIYA_KV
-# then copy the returned id below.
-
-# [[kv_namespaces]]
-# binding = "AVIDKIYA_KV"
-# id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
-
-# [vars]
-# ADMIN_TOKEN = "change-me-locally-only"
+# For GitHub-connected Cloudflare Pages, set these in Dashboard once:
+# 1) Settings → Environment variables → ADMIN_TOKEN = a strong password/token
+# 2) Settings → Functions → KV namespace bindings → AVIDKIYA_KV = your KV namespace

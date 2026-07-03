@@ -1,0 +1,3 @@
+'use client';
+import { useEffect, useState } from 'react';import { Icon } from './Icon';
+export function BackToTop(){const[v,setV]=useState(false);useEffect(()=>{const f=()=>setV(scrollY>500);addEventListener('scroll',f,{passive:true});return()=>removeEventListener('scroll',f)},[]);return <button aria-label="Back to top" onClick={()=>scrollTo({top:0,behavior:'smooth'})} className={`no-print fixed bottom-5 end-5 z-50 grid h-11 w-11 place-items-center rounded-full border border-border bg-surface shadow-glow transition ${v?'opacity-100':'pointer-events-none opacity-0'}`}><Icon name="arrowUp"/></button>}

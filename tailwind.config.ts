@@ -1,78 +1,41 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: "class",
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./contexts/**/*.{ts,tsx}",
-  ],
+  darkMode: ['class', '.dark'],
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './contexts/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        // Dark theme (default from mockups)
-        primary: {
-          DEFAULT: "#21f1a8",
-          fixed: "#48ffb6",
-          dim: "#00e29c",
-          container: "#21f1a8",
-        },
-        surface: {
-          DEFAULT: "#0d1510",
-          dim: "#0d1510",
-          bright: "#323b35",
-          container: "rgba(25, 34, 28, 0.6)",
-          "container-low": "#151d18",
-          "container-lowest": "#08100b",
-          "container-high": "#232c27",
-          "container-highest": "#2e3731",
-          variant: "#2e3731",
-        },
-        "on-surface": {
-          DEFAULT: "#dbe5dd",
-          variant: "#bacbbf",
-        },
-        background: "#08100b",
-        outline: {
-          DEFAULT: "#84958a",
-          variant: "rgba(132, 149, 138, 0.2)",
-        },
-        // Light theme (activated via `.light` root class)
-        // Handled via CSS variables in globals.css
-      },
-      borderRadius: {
-        DEFAULT: "1rem",
-        lg: "1.5rem",
-        xl: "2rem",
-        full: "9999px",
+        bg: 'var(--bg)',
+        bg2: 'var(--bg2)',
+        surface: 'var(--surface-solid)',
+        panel: 'var(--surface)',
+        border: 'var(--border)',
+        text: 'var(--text)',
+        muted: 'var(--text-dim)',
+        primary: 'var(--primary)',
+        primaryBright: 'var(--primary-bright)',
+        cyan: 'var(--cyan)',
+        emerald: 'var(--emerald)',
+        amber: 'var(--amber)',
+        rose: 'var(--rose)',
+        violet: 'var(--violet)',
       },
       fontFamily: {
-        body: ["var(--font-body)", "Hanken Grotesk", "sans-serif"],
-        mono: ["var(--font-mono)", "Fira Sans", "monospace"],
-        display: ["var(--font-body)", "Hanken Grotesk", "sans-serif"],
+        fa: ['Vazirmatn', 'system-ui', 'sans-serif'],
+        en: ['Hanken Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
-      animation: {
-        "pulse-soft": "pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "scan": "scan 4s linear infinite",
-        "blink": "blink 1s step-end infinite",
-      },
+      boxShadow: { glow: 'var(--shadow)' },
+      borderRadius: { os: '1.25rem' },
       keyframes: {
-        "pulse-soft": {
-          "0%, 100%": { opacity: "0.8" },
-          "50%": { opacity: "1" },
-        },
-        scan: {
-          "0%": { top: "-2px" },
-          "100%": { top: "100%" },
-        },
-        blink: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0" },
-        },
+        scan: { '0%': { transform: 'translateY(-120%)' }, '100%': { transform: 'translateY(520%)' } },
+        pulseSoft: { '0%,100%': { opacity: '.72' }, '50%': { opacity: '1' } },
+        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
       },
+      animation: { scan: 'scan 4.5s linear infinite', pulseSoft: 'pulseSoft 1.8s ease-in-out infinite', float: 'float 8s ease-in-out infinite' },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/forms')],
 };
-
 export default config;

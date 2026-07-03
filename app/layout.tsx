@@ -1,68 +1,22 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
-import { AppProvider } from "@/contexts/AppContext";
-import { CmsProvider } from "@/contexts/CmsContext";
-import EditModeBar from "@/components/cms/EditModeBar";
-import BgMusic from "@/components/ui/BgMusic";
-import Analytics from "@/components/ui/Analytics";
-import ScrollExtras from "@/components/ui/ScrollExtras";
-import BackgroundLayers from "@/components/layout/BackgroundLayers";
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+import { AppProvider } from '@/contexts/AppContext';
+import { CmsProvider } from '@/contexts/CmsContext';
+import { TopNav } from '@/components/layout/TopNav';
+import { Footer } from '@/components/layout/Footer';
+import { BackgroundLayers } from '@/components/layout/BackgroundLayers';
+import { ScrollProgress } from '@/components/ui/ScrollProgress';
+import { BackToTop } from '@/components/ui/BackToTop';
+import { BgMusic } from '@/components/ui/BgMusic';
 
 export const metadata: Metadata = {
-  title: "AVID KIYA — Systems Architect Portfolio",
-  description:
-    "Portfolio of Avid Kiya — Systems Architect building resilient distributed systems.",
-  icons: { icon: "/favicon.svg" },
+  title: 'AvidKiya OS — Avid Kiya Portfolio',
+  description: 'Avid Kiya — Systems Architect & Backend Engineer',
+  keywords: ['Avid Kiya','backend','systems architect','Cloudflare','portfolio'],
+  icons: { icon: '/favicon.svg' },
 };
-
-export const viewport: Viewport = {
-  themeColor: "#0d1510",
-  width: "device-width",
-  initialScale: 1,
-};
-
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#171717' };
+const antiFlash = `(function(){try{var t=localStorage.getItem('avidkiya_theme')||'dark';var l=localStorage.getItem('avidkiya_lang')||'fa';document.documentElement.classList.toggle('light',t==='light');document.documentElement.classList.toggle('dark',t!=='light');document.documentElement.dataset.theme=t;document.documentElement.lang=l;document.documentElement.dir=l==='en'?'ltr':'rtl';}catch(e){document.documentElement.classList.add('dark');document.documentElement.dir='rtl';}})();`;
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    // Default to Persian + Dark. AppProvider will sync from localStorage on mount.
-    <html lang="fa" dir="rtl" className="dark" suppressHydrationWarning>
-      <head>
-        {/* Self-hosted fonts (Material Symbols + Vazirmatn + Hanken Grotesk +
-            Fira Sans). Bundled in /public/fonts — no dependency on Google
-            Fonts CDN so the site works in regions where fonts.googleapis.com
-            is blocked. */}
-        <link rel="preload" href="/fonts/vazirmatn-400.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="/fonts/fonts.css" />
-        {/* Prevent theme flash: apply saved theme before hydration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(){
-                try {
-                  var lang = localStorage.getItem('avidkiya:lang') || 'fa';
-                  var theme = localStorage.getItem('avidkiya:theme') || 'dark';
-                  var html = document.documentElement;
-                  html.setAttribute('lang', lang);
-                  html.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
-                  html.classList.remove('dark','light');
-                  html.classList.add(theme);
-                } catch(e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body className="min-h-screen relative overflow-x-hidden">
-        <AppProvider>
-          <CmsProvider>
-            <BackgroundLayers />
-            {children}
-            <ScrollExtras />
-            <EditModeBar />
-            <BgMusic />
-            <Analytics />
-          </CmsProvider>
-        </AppProvider>
-      </body>
-    </html>
-  );
+  return <html lang="fa" dir="rtl" className="dark" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: antiFlash }} /></head><body><AppProvider><CmsProvider><BackgroundLayers/><ScrollProgress/><TopNav/>{children}<Footer/><BackToTop/><BgMusic/></CmsProvider></AppProvider></body></html>;
 }

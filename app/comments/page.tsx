@@ -1,10 +1,2 @@
-import CommentsPage from "@/components/comments/CommentsPage";
-
-export const metadata = {
-  title: "Comments — AVID KIYA",
-  description: "Reviews & testimonials.",
-};
-
-export default function Page() {
-  return <CommentsPage />;
-}
+import { CommentsPage } from '@/components/comments/CommentsPage';
+export default function Comments(){return <main className="page-wrap"><CommentsPage/></main>}
