@@ -1,24 +1,99 @@
-import type { I18nText, Lang } from './cms/schema';
-export function isI18nText(v: unknown): v is I18nText { return !!v && typeof v === 'object' && 'fa' in v && 'en' in v; }
-export function resolveText(value: I18nText | string | undefined | null, lang: Lang): string {
-  if (!value) return '';
-  if (typeof value === 'string') return value;
-  return value[lang] || value.fa || value.en || '';
+import { I18nText, Lang } from './cms/schema';
+
+export function t(text: I18nText | string | undefined, lang: Lang): string {
+  if (!text) return '';
+  if (typeof text === 'string') return text;
+  return text[lang] ?? text.fa ?? text.en ?? '';
 }
-export const navItems = [
-  { href:'/', label:{fa:'خانه', en:'Home'}, icon:'home' },
-  { href:'/projects', label:{fa:'پروژه‌ها', en:'Projects'}, icon:'folder' },
-  { href:'/about', label:{fa:'درباره', en:'About'}, icon:'terminal' },
-  { href:'/resume', label:{fa:'رزومه', en:'Resume'}, icon:'fileText' },
-  { href:'/gifts', label:{fa:'هدیه‌ها', en:'Gifts'}, icon:'gift' },
-  { href:'/announcements', label:{fa:'اعلانات', en:'Announcements'}, icon:'megaphone' },
-  { href:'/comments', label:{fa:'نظرات', en:'Comments'}, icon:'messageCircle' },
-  { href:'/shop', label:{fa:'فروشگاه', en:'Shop'}, icon:'shoppingBag' },
-  { href:'/admin', label:{fa:'ادمین', en:'Admin'}, icon:'lock' },
-];
-export const labels = {
-  print: { fa:'چاپ رزومه', en:'Print CV' },
-  contact: { fa:'تماس', en:'Contact' },
-  language: { fa:'زبان', en:'Language' },
-  theme: { fa:'تم', en:'Theme' },
+
+export const uiStrings: Record<Lang, Record<string,string>> = {
+  fa: {
+    home: "خانه",
+    projects: "پروژه‌ها",
+    about: "درباره",
+    resume: "رزومه",
+    gifts: "هدیه‌ها",
+    announcements: "اعلانات",
+    comments: "نظرات",
+    shop: "فروشگاه",
+    admin: "مدیریت",
+    viewWork: "مشاهده کارها",
+    contact: "تماس",
+    printCV: "چاپ رزومه",
+    featuredWork: "کارهای برجسته",
+    language: "زبان",
+    theme: "تم",
+    dark: "شب",
+    light: "روز",
+    editMode: "حالت ویرایش",
+    save: "ذخیره",
+    cancel: "لغو",
+    delete: "حذف",
+    edit: "ویرایش",
+    add: "افزودن",
+    search: "جستجو",
+    filter: "فیلتر",
+    all: "همه",
+    active: "فعال",
+    archive: "آرشیو",
+    send: "ارسال",
+    name: "نام",
+    email: "ایمیل",
+    message: "پیام",
+    submit: "ثبت",
+    buy: "خرید",
+    download: "دانلود",
+    donate: "حمایت",
+    close: "بستن",
+    open: "باز کردن",
+    loading: "در حال بارگذاری...",
+  },
+  en: {
+    home: "Home",
+    projects: "Projects",
+    about: "About",
+    resume: "Resume",
+    gifts: "Gifts",
+    announcements: "Announcements",
+    comments: "Comments",
+    shop: "Shop",
+    admin: "Admin",
+    viewWork: "View Work",
+    contact: "Contact",
+    printCV: "Print CV",
+    featuredWork: "Featured Work",
+    language: "Language",
+    theme: "Theme",
+    dark: "Dark",
+    light: "Light",
+    editMode: "Edit mode",
+    save: "Save",
+    cancel: "Cancel",
+    delete: "Delete",
+    edit: "Edit",
+    add: "Add",
+    search: "Search",
+    filter: "Filter",
+    all: "All",
+    active: "Active",
+    archive: "Archive",
+    send: "Send",
+    name: "Name",
+    email: "Email",
+    message: "Message",
+    submit: "Submit",
+    buy: "Buy",
+    download: "Download",
+    donate: "Donate",
+    close: "Close",
+    open: "Open",
+    loading: "Loading...",
+  }
 };
+
+export function ui(lang: Lang, key: string) {
+  return uiStrings[lang][key] ?? key;
+}
+
+export const faDigits = (s: string | number) => String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+export const enDigits = (s: string) => s.replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));

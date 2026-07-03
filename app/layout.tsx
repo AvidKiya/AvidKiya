@@ -1,22 +1,42 @@
-import type { Metadata, Viewport } from 'next';
-import './globals.css';
-import { AppProvider } from '@/contexts/AppContext';
-import { CmsProvider } from '@/contexts/CmsContext';
-import { TopNav } from '@/components/layout/TopNav';
-import { Footer } from '@/components/layout/Footer';
-import { BackgroundLayers } from '@/components/layout/BackgroundLayers';
-import { ScrollProgress } from '@/components/ui/ScrollProgress';
-import { BackToTop } from '@/components/ui/BackToTop';
-import { BgMusic } from '@/components/ui/BgMusic';
+import "./globals.css";
+import type { Metadata } from "next";
+import { AppProvider } from "@/contexts/AppContext";
+import { defaultCms } from "@/lib/cms/schema";
+import { ClientShell } from "@/components/layout/ClientShell";
 
 export const metadata: Metadata = {
-  title: 'AvidKiya OS — Avid Kiya Portfolio',
-  description: 'Avid Kiya — Systems Architect & Backend Engineer',
-  keywords: ['Avid Kiya','backend','systems architect','Cloudflare','portfolio'],
-  icons: { icon: '/favicon.svg' },
+  title: "Avid Kiya — System Architect",
+  description: "Official portfolio of Avid Kiya, System Architect & Backend Engineer.",
 };
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#171717' };
-const antiFlash = `(function(){try{var t=localStorage.getItem('avidkiya_theme')||'dark';var l=localStorage.getItem('avidkiya_lang')||'fa';document.documentElement.classList.toggle('light',t==='light');document.documentElement.classList.toggle('dark',t!=='light');document.documentElement.dataset.theme=t;document.documentElement.dataset.lang=l;document.documentElement.lang=l;document.documentElement.dir='ltr';document.documentElement.style.overflowX='hidden';}catch(e){document.documentElement.classList.add('dark');document.documentElement.dir='ltr';document.documentElement.style.overflowX='hidden';}})();`;
+
+function AntiFlash(){
+  const code = `
+  (function(){
+    try{
+      var l = localStorage.getItem('ak_lang') || '${defaultCms.settings.defaultLanguage}';
+      var t = localStorage.getItem('ak_theme') || '${defaultCms.settings.defaultTheme}';
+      document.documentElement.setAttribute('lang', l);
+      document.documentElement.setAttribute('dir', l==='fa' ? 'rtl' : 'ltr');
+      if(t==='light') document.documentElement.classList.add('light');
+    }catch(e){}
+  })();
+  `;
+  return <script dangerouslySetInnerHTML={{ __html: code }} />;
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="fa" dir="ltr" className="dark" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: antiFlash }} /></head><body><div id="app-root" dir="rtl"><AppProvider><CmsProvider><BackgroundLayers/><ScrollProgress/><TopNav/>{children}<Footer/><BackToTop/><BgMusic/></CmsProvider></AppProvider></div></body></html>;
+  return (
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
+      <head>
+        <AntiFlash />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.svg" />
+      </head>
+      <body>
+        <AppProvider defaultLang={defaultCms.settings.defaultLanguage} defaultTheme={defaultCms.settings.defaultTheme}>
+          <ClientShell>{children}</ClientShell>
+        </AppProvider>
+      </body>
+    </html>
+  );
 }

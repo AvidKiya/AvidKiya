@@ -1,28 +1,163 @@
-@font-face{font-family:Vazirmatn;src:url('/fonts/Vazirmatn.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;}
-:root{
-  --bg:#171717;--bg2:#1f1f22;--surface:rgba(37,37,42,.62);--surface-solid:#1f1f22;--surface-2:#26262b;--surface-3:#303039;
-  --border:rgba(93,122,230,.22);--border-strong:rgba(93,122,230,.48);--text:#f1f5f9;--text-dim:#a7adba;--text-mute:#6f7685;
-  --primary:#2141a8;--primary-bright:#5d7ae6;--on-primary:#fff;--cyan:#6f93ec;--emerald:#34d399;--amber:#fbbf24;--rose:#fb7185;--violet:#c084fc;
-  --grid:rgba(93,122,230,.075);--shadow:0 24px 70px -32px rgba(0,0,0,.95);color-scheme:dark;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Vazirmatn self-hosted */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
 }
-html.light{--bg:#ffffff;--bg2:#ffffff;--surface:rgba(255,255,255,.74);--surface-solid:#ffffff;--surface-2:#ffffff;--surface-3:#ffffff;--border:rgba(0,71,65,.18);--border-strong:rgba(0,71,65,.42);--text:#0b1a17;--text-dim:#27443e;--text-mute:#5f736d;--primary:#004741;--primary-bright:#006a61;--on-primary:#fff;--cyan:#0e7490;--emerald:#047857;--amber:#b45309;--rose:#be123c;--violet:#6d28d9;--grid:rgba(0,71,65,.06);--shadow:0 24px 60px -34px rgba(0,50,45,.28);color-scheme:light;}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);min-height:100vh;font-family:Vazirmatn,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}body.lang-en{font-family:Hanken Grotesk,Inter,system-ui,sans-serif} body.lang-fa{font-family:Vazirmatn,system-ui,sans-serif}.mono{font-family:JetBrains Mono,Fira Code,ui-monospace,SFMono-Regular,monospace}a{color:inherit;text-decoration:none}::selection{background:var(--primary-bright);color:#fff}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}.glass{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}.glass-strong{background:var(--surface-solid);border:1px solid var(--border);box-shadow:var(--shadow)}.pill{border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.045)}html.light .pill{background:rgba(0,71,65,.035)}.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border-radius:.85rem;padding:.72rem 1rem;font-weight:800;font-size:.9rem;transition:.2s ease;border:1px solid transparent}.btn:hover{transform:translateY(-1px)}.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-bright));color:var(--on-primary)}.btn-outline{border-color:var(--border-strong);color:var(--text);background:rgba(255,255,255,.03)}.btn-outline:hover{border-color:var(--primary-bright);color:var(--primary-bright)}.tag{display:inline-flex;align-items:center;gap:.25rem;padding:.28rem .62rem;border:1px solid var(--border);border-radius:.55rem;background:rgba(255,255,255,.04);font-size:.72rem;color:var(--text-dim)}.input{width:100%;border-radius:.85rem;border:1px solid var(--border);background:rgba(0,0,0,.16);padding:.72rem .9rem;color:var(--text);outline:none}.input:focus{border-color:var(--primary-bright);box-shadow:0 0 0 3px rgba(93,122,230,.16)}.page-wrap{width:min(1180px,calc(100vw - 32px));margin:0 auto;padding:104px 0 64px}.section-title{font-size:clamp(1.4rem,3vw,2.4rem);font-weight:950;letter-spacing:-.04em}.gradient-text{background:linear-gradient(135deg,var(--primary-bright),var(--cyan),var(--emerald));-webkit-background-clip:text;background-clip:text;color:transparent}.bg-layer{position:fixed;inset:0;z-index:-1;pointer-events:none}.bg-grid{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:38px 38px;mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,#000 30%,transparent 82%)}.bg-glow{background:radial-gradient(55% 42% at 18% 0%,rgba(93,122,230,.22),transparent 60%),radial-gradient(42% 36% at 96% 12%,rgba(111,147,236,.14),transparent 65%),radial-gradient(60% 55% at 50% 112%,rgba(192,132,252,.12),transparent 60%)}html.light .bg-glow{background:radial-gradient(50% 36% at 15% 0%,rgba(0,71,65,.12),transparent 64%),radial-gradient(42% 34% at 100% 10%,rgba(14,116,144,.08),transparent 65%)}.scan-line{position:absolute;inset-inline:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--primary-bright),transparent);animation:scan 4s linear infinite}.mac-dot{width:12px;height:12px;border-radius:99px;display:inline-block}.editable{position:relative}.edit-pencil{opacity:0;position:absolute;inset-inline-start:-1.45rem;top:0;color:var(--amber);font-size:.85rem}.edit-mode .editable:hover .edit-pencil{opacity:1}.print-only{display:none}@media print{body{background:#fff;color:#111}.no-print{display:none!important}.print-only{display:block}.page-wrap{width:auto;padding:0}.resume-sheet{box-shadow:none!important;border:0!important;margin:0!important;width:100%!important}@page{size:A4;margin:14mm}}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
 
-/* RTL overflow hardening: prevents Cloudflare/Chrome opening the page at the far-right horizontal scroll edge */
-html,body{width:100%;max-width:100%;overflow-x:hidden;}
-body{position:relative;}
-main,section,article,aside,header,footer,div,pre{min-width:0;}
-.page-wrap{width:calc(100% - 32px);max-width:1180px;margin-inline:auto;}
-.ascii-safe{direction:ltr!important;unicode-bidi:isolate;text-align:left;max-width:100%;overflow:hidden;white-space:pre;}
-@media (max-width:640px){.page-wrap{width:calc(100% - 20px);padding-top:92px}.ascii-safe{font-size:7px!important}}
+:root {
+  /* Dark (default - DevHub OS) */
+  --bg: #171717;
+  --bg-elev: #1f1f22;
+  --bg-soft: #26262b;
+  --primary: #5d7ae6;
+  --primary-solid: #2141a8;
+  --accent: #6f93ec;
+  --accent-2: #34d399;
+  --accent-3: #fbbf24;
+  --accent-4: #fb7185;
+  --accent-5: #c084fc;
+  --text: #e8eaf6;
+  --text-muted: #a7aec3;
+  --text-faint: #6b7288;
+  --border: #2b2f3a;
+  --glass: rgba(31,31,34,0.72);
+  --grid: rgba(93,122,230,0.07);
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+}
 
+.light {
+  --bg: #ffffff;
+  --bg-elev: #ffffff;
+  --bg-soft: #f7f8f8;
+  --primary: #004741;
+  --primary-solid: #004741;
+  --accent: #00695f;
+  --accent-2: #059669;
+  --accent-3: #d97706;
+  --accent-4: #e11d48;
+  --accent-5: #7c3aed;
+  --text: #0b1a17;
+  --text-muted: #35524c;
+  --text-faint: #6a8a82;
+  --border: #d6e2df;
+  --glass: rgba(255,255,255,0.82);
+  --grid: rgba(0,71,65,0.05);
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #e11d48;
+}
 
-/* Emergency production fix v2: keep the document LTR to remove Chrome RTL horizontal-scroll anchoring.
-   Direction is applied only to #app-root, so Persian UI is still RTL but viewport cannot open at the far-right edge. */
-html{direction:ltr!important;overflow-x:hidden!important;scrollbar-gutter:stable;}
-body{direction:ltr!important;overflow-x:hidden!important;}
-#app-root{direction:rtl;min-height:100vh;overflow-x:clip;max-width:100vw;}
-#app-root[dir='ltr']{direction:ltr;}
-#app-root[dir='rtl'] .page-wrap,#app-root[dir='rtl'] footer,#app-root[dir='rtl'] header{text-align:initial;}
-#app-root *{max-width:100%;}
-#app-root svg{max-width:none;}
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, -apple-system, "Hanken Grotesk", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+html[dir="rtl"] body { font-family: 'Vazirmatn', Tahoma, sans-serif; }
+html[dir="ltr"] body { font-family: ui-sans-serif, system-ui, -apple-system, "Hanken Grotesk", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.glow-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: .25;
+  pointer-events: none;
+}
+
+/* glass */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--border);
+}
+
+/* scan */
+.scan-line {
+  position: absolute;
+  inset-inline: 0;
+  height: 90px;
+  background: linear-gradient(180deg, transparent, rgba(93,122,230,.18), transparent);
+  animation: scan 3s linear infinite;
+  pointer-events: none;
+}
+
+/* utils */
+.text-gradient {
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* print */
+@media print {
+  body { background: white !important; color: black !important; }
+  .no-print { display: none !important; }
+  .print-break { page-break-after: always; }
+  @page { size: A4; margin: 14mm; }
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-elev); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* RTL logical helpers */
+.rtl-flip { transform: scaleX(-1); }
+html[dir="rtl"] .rtl-flip { transform: scaleX(1); }
+
+/* edit mode */
+.edit-outline { outline: 1px dashed rgba(93,122,230,.55); outline-offset: 2px; border-radius: 4px; position: relative; }
+.edit-pencil {
+  position: absolute; top: -10px; inset-inline-end: -8px;
+  background: var(--primary); color: white; font-size: 10px; padding: 2px 5px; border-radius: 6px; z-index: 40; cursor: pointer;
+}
+
+/* tab pill animation */
+.tab-pill-active {
+  transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* persian digits */
+.fa-num { font-feature-settings: "ss01"; }

@@ -1,3 +1,13 @@
-'use client';
-import { useEffect, useState } from 'react';import { Icon } from './Icon';
-export function BackToTop(){const[v,setV]=useState(false);useEffect(()=>{const f=()=>setV(scrollY>500);addEventListener('scroll',f,{passive:true});return()=>removeEventListener('scroll',f)},[]);return <button aria-label="Back to top" onClick={()=>scrollTo({top:0,behavior:'smooth'})} className={`no-print fixed bottom-5 end-5 z-50 grid h-11 w-11 place-items-center rounded-full border border-border bg-surface shadow-glow transition ${v?'opacity-100':'pointer-events-none opacity-0'}`}><Icon name="arrowUp"/></button>}
+"use client";
+import { useEffect, useState } from "react";
+import { Icon } from "./Icon";
+export function BackToTop(){
+  const [show, setShow] = useState(false);
+  useEffect(()=>{
+    const fn = ()=> setShow(window.scrollY > 500);
+    window.addEventListener("scroll", fn);
+    return ()=> window.removeEventListener("scroll", fn);
+  },[]);
+  if(!show) return null;
+  return <button onClick={()=>window.scrollTo({top:0, behavior:"smooth"})} className="fixed bottom-6 end-6 z-40 p-3 rounded-2xl glass shadow-glow hover:scale-105 transition no-print"><Icon name="arrow_up" /></button>;
+}

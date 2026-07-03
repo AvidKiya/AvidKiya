@@ -1,5 +1,49 @@
-import { getCms, isAuthed, json, putCms, readJson } from './_auth';
-export const onRequestPost = async ({ request, env }: any) => { const b=await readJson(request); const cms=(await getCms(env))||{}; cms.comments=[...(cms.comments||[]),{id:crypto.randomUUID(),name:b.name||'',email:b.email||'',role:b.role||'',rating:Number(b.rating||5),text:b.text||'',approved:false,pinned:false,createdAt:new Date().toISOString()}]; await putCms(env,cms); return json({ok:true}); };
-export const onRequestGet = async ({ request, env }: any) => { const admin=await isAuthed(request,env); const all=((await getCms(env))||{}).comments||[]; return json({ok:true,comments:admin?all:all.filter((c:any)=>c.approved)}); };
-export const onRequestPut = async ({ request, env }: any) => { if(!(await isAuthed(request,env))) return json({ok:false,error:'Unauthorized'},401); const b=await readJson(request); const cms=(await getCms(env))||{}; cms.comments=(cms.comments||[]).map((c:any)=>c.id===b.id?{...c,...b}:c); await putCms(env,cms); return json({ok:true}); };
-export const onRequestDelete = async ({ request, env }: any) => { if(!(await isAuthed(request,env))) return json({ok:false,error:'Unauthorized'},401); const {id}=await readJson(request); const cms=(await getCms(env))||{}; cms.comments=(cms.comments||[]).filter((c:any)=>c.id!==id); await putCms(env,cms); return json({ok:true}); };
+import { isAuthorized } from "./_auth";
+const CMS_KEY = "cms:state:v1";
+async function readCms(env:any){ return (await env.AVIDKIYA_KV.get(CMS_KEY, "json")) || { comments: [] }; }
+async function writeCms(env:any, cms:any){ await env.AVIDKIYA_KV.put(CMS_KEY, JSON.stringify(cms)); }
+
+export const onRequestPost: PagesFunction<any> = async ({ request, env }) => {
+  const body:any = await request.json();
+  const cms:any = await readCms(env);
+  cms.comments = cms.comments || [];
+  cms.comments.unshift({
+    id: crypto.randomUUID(),
+    name: body.name,
+    email: body.email,
+    role: body.role || "",
+    rating: Number(body.rating) || 5,
+    text: body.text,
+    approved: false,
+    pinned: false,
+    createdAt: new Date().toISOString()
+  });
+  await writeCms(env, cms);
+  return Response.json({ ok:true });
+};
+
+export const onRequestGet: PagesFunction<any> = async ({ request, env }) => {
+  const url = new URL(request.url);
+  const admin = await isAuthorized(request, env);
+  const cms:any = await readCms(env);
+  const list = admin || url.searchParams.get("admin")==="1" ? (cms.comments||[]) : (cms.comments||[]).filter((c:any)=>c.approved);
+  return Response.json({ ok:true, comments: list });
+};
+
+export const onRequestPut: PagesFunction<any> = async ({ request, env }) => {
+  if (!await isAuthorized(request, env)) return Response.json({ ok:false }, { status:401 });
+  const body:any = await request.json();
+  const cms:any = await readCms(env);
+  cms.comments = (cms.comments||[]).map((c:any)=> c.id===body.id ? {...c, ...body.patch} : c);
+  await writeCms(env, cms);
+  return Response.json({ ok:true });
+};
+
+export const onRequestDelete: PagesFunction<any> = async ({ request, env }) => {
+  if (!await isAuthorized(request, env)) return Response.json({ ok:false }, { status:401 });
+  const id = new URL(request.url).searchParams.get("id");
+  const cms:any = await readCms(env);
+  cms.comments = (cms.comments||[]).filter((c:any)=> c.id !== id);
+  await writeCms(env, cms);
+  return Response.json({ ok:true });
+};

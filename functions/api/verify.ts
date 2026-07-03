@@ -1,3 +1,10 @@
-import { effectiveToken, json } from './_auth';
-export const onRequestPost = async ({ request, env }: any) => { const token = await effectiveToken(env); const h=(request.headers.get('authorization')||'').replace('Bearer ',''); return json({ ok: !!token && h === token, diagnostics:{ apiReachable:true, tokenSet:!!token, kvBound:!!env.AVIDKIYA_KV } }, (!!token && h===token)?200:401); };
-export const onRequestGet = async ({ env }: any) => json({ ok:true, diagnostics:{ apiReachable:true, tokenSet:!!(await effectiveToken(env)), kvBound:!!env.AVIDKIYA_KV } });
+import { isAuthorized, effectiveToken } from "./_auth";
+
+export const onRequestGet: PagesFunction<{ADMIN_TOKEN:string, AVIDKIYA_KV:KVNamespace}> = async ({ request, env }) => {
+  const ok = await isAuthorized(request, env);
+  let kv = false;
+  try { await env.AVIDKIYA_KV.get("ping"); kv = true; } catch {}
+  return Response.json({ ok, kv, api: true });
+};
+
+export const onRequestPost = onRequestGet;

@@ -1,9 +1,88 @@
-'use client';
-import Link from 'next/link';import { useCms } from '@/contexts/CmsContext';import { useApp } from '@/contexts/AppContext';import { Editable } from '@/components/cms/Editable';import { Icon } from '@/components/ui/Icon';
-const ascii = String.raw`   ___ __   ________  ____     ____  _______    ____  __  ______ 
-  /   |\ \ / /  _/ / / / /    / __ \/ ____/ |  / / / / / / / __ )
- / /| | \ V // // / / / /    / / / / __/  | | / / / / / / / __  |
-/ ___ |  | |/ // /_/ / /___ / /_/ / /___  | |/ / /_/ / /_/ / /_/ /
-/_/  |_|  |_/___/\____/_____(_)____/_____/  |___/\____/_____/_____/`;
-export function Hero(){const{cms,resolve}=useCms();const{lang}=useApp();return <section className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]"><div className="glass relative min-w-0 overflow-hidden rounded-[2rem] p-6 md:p-8"><div className="scan-line"/><pre dir="ltr" className="ascii-safe mono mb-6 text-[8px] leading-tight text-primaryBright sm:text-xs" aria-hidden>{ascii}</pre><div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald/30 bg-emerald/10 px-3 py-1.5 text-sm font-bold text-emerald"><span className="h-2 w-2 animate-pulseSoft rounded-full bg-emerald"/><Editable path="dashboard.heroTag"/></div><h1 className="text-balance text-4xl font-black leading-tight tracking-[-.05em] md:text-6xl"><Editable path="dashboard.heroTitleA"/> <span className="gradient-text"><Editable path="dashboard.heroTitleB"/></span></h1><p className="mt-5 max-w-2xl text-lg leading-8 text-muted"><Editable path="dashboard.heroDescription"/></p><div className="mt-7 flex flex-wrap gap-3"><Link className="btn btn-primary" href="/projects"><Icon name="folder"/> {resolve(cms.dashboard.ctaPrimary)}</Link><Link className="btn btn-outline" href="/about#contact"><Icon name="send"/> {resolve(cms.dashboard.ctaSecondary)}</Link><button className="btn btn-outline" onClick={()=>print()}><Icon name="printer"/> {lang==='fa'?'چاپ CV':'Print CV'}</button></div><div className="mt-6 flex flex-wrap gap-2">{['Python','Node.js','TypeScript','Cloudflare','PostgreSQL','Redis','Docker'].map(x=><span className="tag mono" key={x}>#{x}</span>)}</div></div><aside className="glass relative min-w-0 overflow-hidden rounded-[2rem] p-6"><div className="absolute -end-20 -top-20 h-56 w-56 rounded-full bg-primaryBright/20 blur-3xl"/><div className="relative"><div className="mb-5 grid h-24 w-24 place-items-center rounded-3xl border border-border bg-bg2 text-3xl font-black text-primaryBright shadow-glow">AK</div><div className="space-y-4 text-sm"><Profile k={lang==='fa'?'موقعیت':'Location'} v={resolve(cms.identity.location)} icon="mapPin"/><Profile k="Email" v={cms.identity.email} icon="mail"/><Profile k={lang==='fa'?'تجربه':'Experience'} v={cms.identity.yearsExperience} icon="activity"/><Profile k={lang==='fa'?'وضعیت':'Status'} v={lang==='fa'?'آماده همکاری':'Available'} icon="zap"/></div></div></aside></section>}
-function Profile({k,v,icon}:{k:string;v:string;icon:string}){return <div className="flex items-center gap-3 rounded-2xl border border-border bg-panel p-3"><Icon name={icon} className="text-primaryBright"/><div><div className="text-xs text-muted">{k}</div><div className="font-black">{v}</div></div></div>}
+"use client";
+import { useCms } from "@/contexts/CmsContext";
+import { useApp } from "@/contexts/AppContext";
+import { Editable } from "@/components/cms/Editable";
+import { Icon } from "@/components/ui/Icon";
+
+const ascii = `
+ █████╗ ██╗   ██╗██╗██████╗ 
+██╔══██╗██║   ██║██║██╔══██╗
+███████║██║   ██║██║██║  ██║
+██╔══██║╚██╗ ██╔╝██║██║  ██║
+██║  ██║ ╚████╔╝ ██║██████╔╝
+╚═╝  ╚═╝  ╚═══╝  ╚═╝╚═════╝ 
+   DEVHUB OS
+`;
+
+export function Hero(){
+  const { cms, resolve } = useCms();
+  const { lang } = useApp();
+
+  const printCV = ()=> { window.open('/resume', '_blank'); };
+
+  return (
+    <div className="glass rounded-[28px] relative overflow-hidden p-6 md:p-10 shadow-glow">
+      <div className="scan-line" />
+      <div className="grid lg:grid-cols-[1.4fr_.9fr] gap-8 items-center">
+        <div>
+          <pre className="text-[9px] md:text-[11px] leading-tight text-primary/80 font-mono mb-4 whitespace-pre overflow-x-auto">{ascii}</pre>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+            <span className="text-[11px] text-success font-mono"><Editable path="dashboard.heroTag">{resolve(cms.dashboard.heroTag)}</Editable></span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-black leading-tight">
+            <Editable path="dashboard.heroTitleA">{resolve(cms.dashboard.heroTitleA)}</Editable><br/>
+            <span className="text-gradient"><Editable path="dashboard.heroTitleB">{resolve(cms.dashboard.heroTitleB)}</Editable></span>
+          </h1>
+          <p className="text-text-muted mt-4 max-w-xl leading-relaxed">
+            <Editable path="dashboard.heroDescription" multiline>{resolve(cms.dashboard.heroDescription)}</Editable>
+          </p>
+          <div className="flex flex-wrap gap-3 mt-6">
+            <a href="/projects" className="px-5 py-3 rounded-2xl font-bold text-white" style={{ background: "linear-gradient(120deg, var(--primary-solid), var(--primary))" }}>
+              <Editable path="dashboard.ctaPrimary">{resolve(cms.dashboard.ctaPrimary)}</Editable>
+            </a>
+            <a href="/about#contact" className="px-5 py-3 rounded-2xl font-bold border border-border hover:bg-bg-soft">
+              <Editable path="dashboard.ctaSecondary">{resolve(cms.dashboard.ctaSecondary)}</Editable>
+            </a>
+            <button onClick={printCV} className="px-5 py-3 rounded-2xl font-bold border border-border hover:bg-bg-soft text-sm">
+              {lang==="fa" ? "چاپ رزومه" : "Print CV"}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-6 text-[11px]">
+            {["Go","TypeScript","Rust","Cloudflare","Postgres","Kubernetes"].map(ch=>(
+              <span key={ch} className="px-3 py-1.5 rounded-full bg-bg-soft border border-border text-text-muted">{ch}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Profile / Hero Object */}
+        <div className="glass rounded-[22px] p-5 bg-bg-elev/40">
+          {cms.heroObject.kind !== "none" && cms.heroObject.src ? (
+            cms.heroObject.kind === "model3d" ? (
+              <div className="aspect-square rounded-xl bg-black/30 flex items-center justify-center text-xs text-text-faint">
+                {/* model-viewer lazy */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={cms.heroObject.posterSrc || "/brand/logo.png"} alt={cms.heroObject.alt || ""} className="max-h-full object-contain" />
+                <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js" async></script>
+              </div>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cms.heroObject.src} alt={cms.heroObject.alt || ""} className="rounded-xl w-full object-cover aspect-square" />
+            )
+          ) : (
+            <>
+              <div className="text-xs text-text-faint mb-3 font-mono">profile.json</div>
+              <div className="space-y-3 text-sm">
+                <div><span className="text-text-faint">location:</span> {resolve(cms.identity.location)}</div>
+                <div><span className="text-text-faint">email:</span> {cms.identity.email}</div>
+                <div><span className="text-text-faint">experience:</span> {cms.identity.yearsExperience} yrs</div>
+                <div><span className="text-text-faint">status:</span> <span className="text-success">available</span></div>
+                <div><span className="text-text-faint">handle:</span> @{cms.identity.handle}</div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

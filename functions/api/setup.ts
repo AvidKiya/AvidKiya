@@ -1,3 +1,10 @@
-import { isAuthed, json, readJson } from './_auth';
-async function cf(url:string, token:string, init:any={}){ const r=await fetch(url,{...init,headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',...(init.headers||{})}}); const d=await r.json().catch(()=>({})); return {ok:r.ok&&d.success!==false,status:r.status,data:d}; }
-export const onRequestPost = async ({ request, env }: any) => { if(!(await isAuthed(request,env))) return json({ok:false,error:'Unauthorized'},401); const { action, token, accountId, projectName='avidkiya-portfolio' }=await readJson(request); if(!token) return json({ok:false,error:'Cloudflare token required'},400); if(action==='test'){const a=await cf('https://api.cloudflare.com/client/v4/accounts',token); return json({ok:a.ok,accounts:a.data.result||[],errors:a.data.errors});} if(action==='create-kv'){const r=await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces`,token,{method:'POST',body:JSON.stringify({title:'AVIDKIYA_KV'})}); return json({ok:r.ok,result:r.data.result,errors:r.data.errors});} if(action==='bind-kv'){const {namespaceId}=await readJson(request); const r=await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,token,{method:'PATCH',body:JSON.stringify({deployment_configs:{production:{kv_namespaces:{AVIDKIYA_KV:{namespace_id:namespaceId}}},preview:{kv_namespaces:{AVIDKIYA_KV:{namespace_id:namespaceId}}}}})}); return json({ok:r.ok,result:r.data.result,errors:r.data.errors});} return json({ok:false,error:'Unknown action'},400); };
+// Cloudflare setup helper – verifies token and lists KV etc.
+export const onRequestPost: PagesFunction<any> = async ({ request }) => {
+  const { token, action } = await request.json().catch(()=>({}));
+  if(!token) return Response.json({ ok:false, error:"token required" }, { status:400 });
+  // proxy to CF API to test token
+  const r = await fetch("https://api.cloudflare.com/client/v4/accounts", { headers: { Authorization: `Bearer ${token}` }});
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) return Response.json({ ok:false, error: data.errors?.[0]?.message || "invalid token" }, { status:400 });
+  return Response.json({ ok:true, accounts: data.result });
+};

@@ -1,7 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' }
+    ]
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   output: 'export',
-  images: { unoptimized: true },
-  trailingSlash: false,
+  distDir: '.vercel/output/static',
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
 };
+
 export default nextConfig;

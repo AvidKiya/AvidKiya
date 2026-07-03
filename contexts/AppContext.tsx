@@ -1,37 +1,50 @@
-'use client';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import type { Lang, Theme } from '@/lib/cms/schema';
+"use client";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Lang, Theme } from "@/lib/cms/schema";
 
-interface AppCtx { lang: Lang; theme: Theme; setLang: (v:Lang)=>void; setTheme:(v:Theme)=>void; toggleTheme:()=>void; }
-const AppContext = createContext<AppCtx | null>(null);
-export function AppProvider({ children, defaultLang='fa', defaultTheme='dark' }: { children: React.ReactNode; defaultLang?: Lang; defaultTheme?: Theme }) {
+type AppCtx = {
+  lang: Lang;
+  setLang: (l: Lang)=>void;
+  theme: Theme;
+  setTheme: (t: Theme)=>void;
+  dir: "rtl" | "ltr";
+  toggleLang: ()=>void;
+  toggleTheme: ()=>void;
+};
+
+const Ctx = createContext<AppCtx | null>(null);
+
+export function AppProvider({ children, defaultLang = "fa", defaultTheme = "dark" }: { children: React.ReactNode, defaultLang?: Lang, defaultTheme?: Theme }) {
   const [lang, setLangState] = useState<Lang>(defaultLang);
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
-  useEffect(() => {
-    try {
-      const l = (localStorage.getItem('avidkiya_lang') as Lang) || defaultLang;
-      const t = (localStorage.getItem('avidkiya_theme') as Theme) || defaultTheme;
-      setLangState(l === 'en' ? 'en' : 'fa');
-      setThemeState(t === 'light' ? 'light' : 'dark');
-    } catch {}
-  }, [defaultLang, defaultTheme]);
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dataset.lang = lang;
-    document.documentElement.dir = 'ltr';
-    const root = document.getElementById('app-root');
-    if (root) root.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
-    document.body.classList.toggle('lang-fa', lang === 'fa');
-    document.body.classList.toggle('lang-en', lang === 'en');
-    try { localStorage.setItem('avidkiya_lang', lang); } catch {}
-  }, [lang]);
-  useEffect(() => {
-    document.documentElement.classList.toggle('light', theme === 'light');
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem('avidkiya_theme', theme); } catch {}
-  }, [theme]);
-  const value = useMemo(() => ({ lang, theme, setLang:(v:Lang)=>setLangState(v), setTheme:(v:Theme)=>setThemeState(v), toggleTheme:()=>setThemeState(t=>t==='dark'?'light':'dark') }), [lang, theme]);
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+
+  useEffect(()=>{
+    const savedLang = localStorage.getItem("ak_lang") as Lang | null;
+    const savedTheme = localStorage.getItem("ak_theme") as Theme | null;
+    if(savedLang) setLangState(savedLang);
+    if(savedTheme) setThemeState(savedTheme);
+  }, []);
+
+  const setLang = (l: Lang) => { setLangState(l); localStorage.setItem("ak_lang", l); document.documentElement.setAttribute("lang", l); document.documentElement.setAttribute("dir", l==="fa" ? "rtl" : "ltr"); };
+  const setTheme = (t: Theme) => { setThemeState(t); localStorage.setItem("ak_theme", t); };
+
+  useEffect(()=>{
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang==="fa" ? "rtl" : "ltr");
+    if(theme==="light") document.documentElement.classList.add("light");
+    else document.documentElement.classList.remove("light");
+  }, [lang, theme]);
+
+  const toggleLang = ()=> setLang(lang==="fa" ? "en" : "fa");
+  const toggleTheme = ()=> setTheme(theme==="dark" ? "light" : "dark");
+
+  return <Ctx.Provider value={{ lang, setLang, theme, setTheme, dir: lang==="fa" ? "rtl" : "ltr", toggleLang, toggleTheme }}>
+    {children}
+  </Ctx.Provider>
 }
-export function useApp() { const ctx = useContext(AppContext); if (!ctx) throw new Error('useApp must be used inside AppProvider'); return ctx; }
+
+export const useApp = ()=> {
+  const v = useContext(Ctx);
+  if(!v) throw new Error("AppProvider missing");
+  return v;
+};

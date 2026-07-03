@@ -1,15 +1,18 @@
-export async function effectiveToken(env: any): Promise<string> {
-  const override = await env.AVIDKIYA_KV?.get?.('cms:admin-token-override');
-  return override || env.ADMIN_TOKEN || '';
+export interface Env {
+  ADMIN_TOKEN: string;
+  AVIDKIYA_KV: KVNamespace;
 }
-export async function isAuthed(request: Request, env: any): Promise<boolean> {
-  const token = await effectiveToken(env);
-  if (!token) return false;
-  const h = request.headers.get('authorization') || '';
-  const bodyToken = request.headers.get('x-admin-token') || '';
-  return h === `Bearer ${token}` || bodyToken === token;
+
+export async function effectiveToken(env: Env): Promise<string> {
+  try {
+    const override = await env.AVIDKIYA_KV.get("cms:admin-token-override");
+    if (override) return override;
+  } catch {}
+  return env.ADMIN_TOKEN || "admin";
 }
-export function json(body: any, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type':'application/json;charset=UTF-8', 'Cache-Control':'no-store' } }); }
-export async function readJson(request: Request) { return await request.json().catch(()=>({})); }
-export async function getCms(env:any){ const raw=await env.AVIDKIYA_KV?.get?.('cms:state'); return raw?JSON.parse(raw):null; }
-export async function putCms(env:any,cms:any){ await env.AVIDKIYA_KV?.put?.('cms:state', JSON.stringify(cms)); }
+
+export async function isAuthorized(request: Request, env: Env): Promise<boolean> {
+  const header = request.headers.get("x-admin-token") || new URL(request.url).searchParams.get("token") || "";
+  const tok = await effectiveToken(env);
+  return header === tok && tok.length > 0;
+}

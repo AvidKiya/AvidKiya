@@ -1,70 +1,549 @@
 // deployer.js — Cloudflare Worker (single file)
 // Deploy this to a Worker → visit its URL → paste your CF API token → auto-installs AvidKiya portfolio
+// AvidKiya OS Auto-Deployer v1.0.0
 
 const CURRENT_VERSION = "1.0.0";
-const DEFAULT_PROJECT = "avidkiya-portfolio";
-const SOURCE_ZIP_URL = "https://github.com/IR-NETLIFY/avidkiya-portfolio/archive/refs/heads/deploy.zip";
-const SOURCE_FILES_URL = "https://api.github.com/repos/IR-NETLIFY/avidkiya-portfolio/contents/.vercel/output/static?ref=deploy";
-const TOKEN_URL = "https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22pages%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22workers_subdomain%22%2C%22type%22%3A%22edit%22%7D%5D&accountId=*&zoneId=all&name=AvidKiya-Deployer";
+const SOURCE_ZIP_URL = "https://github.com/IR-NETLIFY/avidkiya-portfolio/archive/refs/heads/main.zip";
+const SOURCE_REPO = "IR-NETLIFY/avidkiya-portfolio";
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (request.method === "GET" && url.pathname === "/") return html(getHtmlContent());
-    if (request.method === "POST" && url.pathname === "/api/verify-token") return handleVerify(request);
-    if (request.method === "POST" && url.pathname === "/api/deploy") return handleDeploy(request, env);
-    if (request.method === "POST" && url.pathname === "/api/list-deployments") return handleList(request);
-    if (request.method === "POST" && url.pathname === "/api/update-deployment") return handleUpdate(request);
-    if (request.method === "POST" && url.pathname === "/api/delete-deployment") return handleDelete(request);
-    if (request.method === "POST" && url.pathname === "/api/rotate-token") return handleRotateToken(request);
-    if (request.method === "POST" && url.pathname === "/api/get-info") return handleGetInfo(request);
-    return new Response("Not Found", { status: 404 });
+    const cors = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    };
+    if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+
+    try {
+      if (request.method === "GET" && url.pathname === "/") {
+        return html(getHtmlContent());
+      }
+      if (request.method === "POST" && url.pathname === "/api/verify-token") {
+        return json(await handleVerify(request), 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/api/deploy") {
+        return json(await handleDeploy(request), 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/api/list-deployments") {
+        return json(await handleList(request), 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/api/update-deployment") {
+        return json(await handleUpdate(request), 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/api/delete-deployment") {
+        return json(await handleDelete(request), 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/api/rotate-token") {
+        return json(await handleRotateToken(request), 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/api/get-info") {
+        return json(await handleGetInfo(request), 200, cors);
+      }
+      return new Response("Not Found", { status: 404, headers: cors });
+    } catch (e) {
+      return json({ ok: false, error: e.message || String(e) }, 500, cors);
+    }
   },
 };
-function json(body, status = 200) { return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json;charset=UTF-8", "Cache-Control":"no-store" } }); }
-function html(body) { return new Response(body, { headers: { "Content-Type": "text/html;charset=UTF-8" } }); }
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-async function cf(url, token, init = {}, tries = 3) {
-  let last;
-  for (let i=0;i<tries;i++) {
-    const res = await fetch(url, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(init.headers || {}) } });
-    const data = await res.json().catch(() => ({}));
-    last = { ok: res.ok && data.success !== false, status: res.status, data };
-    if (last.ok || ![429,500,502,503,504].includes(res.status)) break;
-    await sleep(650 * (i + 1));
-  }
-  await sleep(500);
-  return last;
-}
-function genToken() { const arr = new Uint8Array(24); crypto.getRandomValues(arr); return Array.from(arr, b => b.toString(16).padStart(2, "0")).join(""); }
-function cleanName(name) { return String(name || DEFAULT_PROJECT).toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "").slice(0,58) || DEFAULT_PROJECT; }
-function cfError(r, fallback="خطای Cloudflare") { const msg = r?.data?.errors?.[0]?.message || r?.data?.message || fallback; return translateError(msg); }
-function translateError(msg) { const s = String(msg || ""); if (/subdomain|workers.dev|terms|tos/i.test(s)) return "برای workers.dev باید یک‌بار در داشبورد Cloudflare بخش Workers را باز کنید و قوانین/Terms را بپذیرید."; if (/already exists|conflict/i.test(s)) return "نام پروژه قبلاً استفاده شده است؛ نام دیگری انتخاب کنید یا از مدیریت نصب‌ها استفاده کنید."; if (/permission|not authorized|forbidden|scope/i.test(s)) return "توکن دسترسی کافی ندارد. توکن را با دسترسی Pages Edit، Workers KV Edit، Account Read و Workers Subdomain Edit بسازید."; if (/rate/i.test(s)) return "محدودیت نرخ Cloudflare فعال شد؛ چند ثانیه بعد دوباره امتحان کنید."; return s; }
-async function getAccount(token, prefer) { const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token); if (!acc.ok || !acc.data.result?.length) throw new Error(cfError(acc, "توکن نامعتبر یا بدون دسترسی به حساب")); return acc.data.result.find(a => a.id === prefer) || acc.data.result[0]; }
-async function ensureWorkersDev(accountId, token) { let sub = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`, token); let devSub = sub.data?.result?.subdomain; if (!devSub) { const newSub = `avidkiya-${genToken().slice(0, 6)}`; const create = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`, token, { method:"PUT", body: JSON.stringify({ subdomain: newSub }) }); if (!create.ok) throw new Error(cfError(create)); devSub = newSub; } return devSub; }
-async function ensureKv(accountId, token, projectName) { const title = `${projectName}-AVIDKIYA_KV`; const list = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces?per_page=100`, token); const existing = (list.data?.result || []).find(n => n.title === title); if (existing) return existing.id; const kv = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces`, token, { method:"POST", body: JSON.stringify({ title }) }); if (!kv.ok) throw new Error("خطا در ساخت KV: " + cfError(kv)); return kv.data.result.id; }
-function configPayload(projectName, adminToken, kvId) { return { name: projectName, production_branch:"main", deployment_configs: { production: { env_vars: { ADMIN_TOKEN: { value: adminToken } }, kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } }, compatibility_date:"2024-09-01", compatibility_flags:["nodejs_compat"] }, preview: { env_vars: { ADMIN_TOKEN: { value: adminToken } }, kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } }, compatibility_date:"2024-09-01", compatibility_flags:["nodejs_compat"] } } }; }
-async function ensureProject(accountId, token, projectName, adminToken, kvId) { const payload = configPayload(projectName, adminToken, kvId); let proj = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`, token, { method:"POST", body: JSON.stringify(payload) }); if (proj.ok) return proj.data.result; const msg = proj.data?.errors?.[0]?.message || ""; if (/exists|already|conflict/i.test(msg)) { const patch = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`, token, { method:"PATCH", body: JSON.stringify({ deployment_configs: payload.deployment_configs }) }); if (!patch.ok) throw new Error("پروژه موجود است اما پیکربندی نشد: " + cfError(patch)); return patch.data.result; } throw new Error("خطا در ساخت پروژه Pages: " + cfError(proj)); }
-async function directUploadFallback(accountId, token, projectName, adminToken) {
-  // Best-effort direct upload of a minimal landing page. If repository assets are available, connect GitHub or run wrangler pages deploy for full build.
-  const index = `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AvidKiya OS</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#171717;color:#f1f5f9;font-family:system-ui}main{max-width:760px;padding:32px;border:1px solid rgba(93,122,230,.35);border-radius:28px;background:#1f1f22}b{color:#5d7ae6}a{color:#34d399}</style><main><h1>AvidKiya OS نصب شد ✅</h1><p>Pages Project، KV و ADMIN_TOKEN تنظیم شد. برای نسخه کامل، پروژه را به GitHub repo وصل کنید یا خروجی <b>.vercel/output/static</b> را با wrangler deploy کنید.</p><p>ورود ادمین: <a href="/admin">/admin</a></p></main></html>`;
-  try {
-    const fd = new FormData();
-    fd.append("manifest", new File([JSON.stringify({ "/index.html":"index.html" })], "manifest.json", { type:"application/json" }));
-    fd.append("index.html", new File([index], "index.html", { type:"text/html;charset=utf-8" }));
-    const r = await cf(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`, token, { method:"POST", body: fd });
-    return r.ok ? { ok:true, result:r.data.result } : { ok:false, error:cfError(r) };
-  } catch (e) { return { ok:false, error:e.message }; }
-}
-async function recordDeployment(env, item) { try { if (!env?.DEPLOYER_KV) return; const key="settings.deployments"; const arr=JSON.parse(await env.DEPLOYER_KV.get(key) || "[]"); arr.unshift(item); await env.DEPLOYER_KV.put(key, JSON.stringify(arr.slice(0,50))); } catch {} }
-async function handleVerify(request) { try { const { token } = await request.json(); if (!token) throw new Error("توکن نمی‌تواند خالی باشد"); const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token); if (!acc.ok || !acc.data.result?.length) throw new Error(cfError(acc, "توکن نامعتبر یا بدون دسترسی به حساب")); const account = acc.data.result[0]; const projs = await cf(`https://api.cloudflare.com/client/v4/accounts/${account.id}/pages/projects?per_page=50`, token); const mine = (projs.data.result || []).filter(p => p.name.startsWith("avidkiya")); return json({ ok:true, accountId: account.id, accountName: account.name, accounts: acc.data.result, existing: mine }); } catch(e) { return json({ ok:false, error:e.message }, 400); } }
-async function handleDeploy(request, env) { try { const body = await request.json(); const token = body.token; const projectName = cleanName(body.projectName); if (!token) throw new Error("توکن الزامی است"); const account = await getAccount(token, body.accountId); const accountId = account.id; const devSub = await ensureWorkersDev(accountId, token); const kvId = await ensureKv(accountId, token, projectName); const adminToken = body.adminToken?.trim() || genToken(); const project = await ensureProject(accountId, token, projectName, adminToken, kvId); const upload = await directUploadFallback(accountId, token, projectName, adminToken); const finalUrl = `https://${projectName}.pages.dev`; await recordDeployment(env, { projectName, accountId, kvId, url:finalUrl, createdAt:new Date().toISOString(), version:CURRENT_VERSION }); return json({ ok:true, url:finalUrl, adminToken, accountId, accountName:account.name, workersDevSubdomain:devSub, kvId, upload, project, note: upload.ok ? "یک صفحه اولیه deploy شد. برای نسخه کامل، repository را به Cloudflare Pages وصل کنید یا build آماده را direct-upload کنید." : "پروژه، KV و env ساخته شد؛ direct upload اولیه انجام نشد. در Cloudflare Dashboard → Pages پروژه را به GitHub repository وصل کنید: IR-NETLIFY/avidkiya-portfolio" }); } catch(e) { return json({ ok:false, error:e.message }, 400); } }
-async function handleList(request) { try { const { token, accountId:aid } = await request.json(); const account=await getAccount(token,aid); const projs=await cf(`https://api.cloudflare.com/client/v4/accounts/${account.id}/pages/projects?per_page=100`,token); if(!projs.ok) throw new Error(cfError(projs)); const projects=(projs.data.result||[]).filter(p=>p.name.startsWith("avidkiya")).map(p=>({name:p.name,url:`https://${p.name}.pages.dev`,createdAt:p.created_on,productionBranch:p.production_branch,domains:p.domains||[]})); return json({ok:true,accountId:account.id,projects}); } catch(e){return json({ok:false,error:e.message},400);} }
-async function handleUpdate(request) { try { const { token, projectName, accountId:aid } = await request.json(); const account=await getAccount(token,aid); const upload=await directUploadFallback(account.id,token,cleanName(projectName)); return json({ok:upload.ok,upload}); } catch(e){return json({ok:false,error:e.message},400);} }
-async function handleDelete(request) { try { const { token, projectName, accountId:aid } = await request.json(); const account=await getAccount(token,aid); const r=await cf(`https://api.cloudflare.com/client/v4/accounts/${account.id}/pages/projects/${cleanName(projectName)}`,token,{method:"DELETE"}); if(!r.ok) throw new Error(cfError(r,"خطا در حذف")); return json({ok:true}); } catch(e){return json({ok:false,error:e.message},400);} }
-async function handleRotateToken(request) { try { const { token, projectName, accountId:aid } = await request.json(); const account=await getAccount(token,aid); const newAdmin=genToken(); const r=await cf(`https://api.cloudflare.com/client/v4/accounts/${account.id}/pages/projects/${cleanName(projectName)}`,token,{method:"PATCH",body:JSON.stringify({deployment_configs:{production:{env_vars:{ADMIN_TOKEN:{value:newAdmin}}},preview:{env_vars:{ADMIN_TOKEN:{value:newAdmin}}}}})}); if(!r.ok) throw new Error(cfError(r,"خطا در تعویض توکن")); return json({ok:true,adminToken:newAdmin}); } catch(e){return json({ok:false,error:e.message},400);} }
-async function handleGetInfo(request) { try { const { token, projectName, accountId:aid } = await request.json(); const account=await getAccount(token,aid); const r=await cf(`https://api.cloudflare.com/client/v4/accounts/${account.id}/pages/projects/${cleanName(projectName)}`,token); if(!r.ok) throw new Error(cfError(r,"پروژه پیدا نشد")); return json({ok:true,project:r.data.result,url:`https://${cleanName(projectName)}.pages.dev`}); } catch(e){return json({ok:false,error:e.message},400);} }
 
-function getHtmlContent() { return `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AvidKiya OS — Auto Deployer</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet"><style>body{font-family:Vazirmatn,system-ui,sans-serif;background:#030712;color:#e5e7eb}.glass{background:rgba(13,17,23,.86);border:1px solid rgba(93,122,230,.22);box-shadow:0 0 60px rgba(93,122,230,.18);backdrop-filter:blur(18px)}.grad{background:linear-gradient(135deg,#2141a8,#5d7ae6)}.orange{background:linear-gradient(135deg,#f97316,#f59e0b)}.green{background:linear-gradient(135deg,#059669,#34d399)}input,button{font-family:inherit}.toast{position:fixed;top:20px;left:20px;z-index:99}.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.7);z-index:80}.modal.show{display:grid}</style></head><body class="min-h-screen p-4"><div class="fixed inset-0 -z-10" style="background:radial-gradient(circle at 15% 0%,rgba(93,122,230,.22),transparent 40%),radial-gradient(circle at 90% 10%,rgba(52,211,153,.12),transparent 35%)"></div><main class="mx-auto flex min-h-screen max-w-5xl items-center justify-center"><section class="glass w-full max-w-xl overflow-hidden rounded-[2rem] p-7"><div class="text-center"><div class="mx-auto grid h-20 w-20 place-items-center rounded-3xl border border-blue-400/50 bg-blue-950/60 text-3xl font-black text-blue-300">AK</div><h1 class="mt-5 text-3xl font-black">نصب خودکار پرتفولیو</h1><p class="mt-2 text-sm text-gray-400">AvidKiya OS v${CURRENT_VERSION} روی Cloudflare Pages + KV</p></div><div class="mt-6 space-y-3"><a class="orange block rounded-2xl px-4 py-4 text-center text-lg font-black text-white shadow-lg" target="_blank" href="${TOKEN_URL}">📥 دریافت توکن کلادفلر</a><div class="relative"><input id="apiToken" type="password" class="w-full rounded-2xl border border-blue-900/50 bg-black/30 px-4 py-4 pl-12 font-mono text-sm outline-none focus:border-blue-400" placeholder="Cloudflare API Token"><button onclick="toggleToken()" class="absolute inset-y-0 left-3 text-gray-400">👁</button></div><input id="projectName" value="${DEFAULT_PROJECT}" class="w-full rounded-2xl border border-blue-900/50 bg-black/30 px-4 py-3 outline-none focus:border-blue-400" placeholder="نام پروژه"><input id="adminToken" class="w-full rounded-2xl border border-blue-900/50 bg-black/30 px-4 py-3 font-mono text-sm outline-none focus:border-blue-400" placeholder="ADMIN_TOKEN اختیاری — خالی = خودکار"><button id="deployBtn" onclick="startDeploy()" class="green w-full rounded-2xl px-4 py-4 text-lg font-black text-white">🚀 شروع نصب</button><button onclick="listDeployments()" class="w-full rounded-2xl border border-blue-700/60 bg-blue-950/30 px-4 py-3 font-bold text-blue-300">مدیریت نصب‌های موجود</button><div id="status" class="hidden rounded-2xl border border-blue-900/50 bg-black/30 p-4"><div class="mb-2 flex justify-between text-xs font-bold"><span id="statusText">شروع...</span><span id="statusPct" class="text-blue-300">۰٪</span></div><div class="h-2 overflow-hidden rounded-full bg-gray-800"><div id="progressBar" class="h-full rounded-full bg-blue-400 transition-all" style="width:0%"></div></div></div><div id="result" class="hidden rounded-2xl border border-emerald-700 bg-emerald-950/30 p-4 text-sm"></div><div id="error" class="hidden rounded-2xl border border-red-700 bg-red-950/30 p-4 text-sm text-red-300"></div></div><footer class="mt-6 flex justify-center gap-4 text-xs text-gray-500"><a href="https://github.com/IR-NETLIFY/avidkiya-portfolio" target="_blank">GitHub</a><a href="https://t.me/avidkiya" target="_blank">Telegram</a><a href="#">Donate</a></footer></section></main><div id="toast" class="toast hidden rounded-xl bg-gray-900 px-4 py-3 text-sm shadow-xl"></div><div id="manager" class="modal"><div class="glass max-h-[82vh] w-[min(900px,94vw)] overflow-auto rounded-[2rem] p-6"><div class="mb-4 flex items-center justify-between"><h2 class="text-2xl font-black">مدیریت نصب‌ها</h2><button onclick="closeManager()" class="rounded-xl border border-gray-700 px-3 py-2">بستن</button></div><div id="projectList" class="grid gap-3"></div></div></div><script>
-const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);function qs(id){return document.getElementById(id)}function toggleToken(){const e=qs('apiToken');e.type=e.type==='password'?'text':'password'}function toast(m){const t=qs('toast');t.textContent=m;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2800)}function setStatus(text,p){qs('status').classList.remove('hidden');qs('statusText').textContent=text;qs('statusPct').textContent=fa(p)+'٪';qs('progressBar').style.width=p+'%'}function showError(m){qs('error').classList.remove('hidden');qs('error').textContent='⚠️ '+m;toast('خطا: '+m)}function clearBoxes(){qs('error').classList.add('hidden');qs('result').classList.add('hidden')}async function api(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}async function startDeploy(){clearBoxes();const token=qs('apiToken').value.trim(),projectName=qs('projectName').value.trim()||'${DEFAULT_PROJECT}',adminToken=qs('adminToken').value.trim();if(!token)return showError('توکن الزامی است');qs('deployBtn').disabled=true;qs('deployBtn').textContent='در حال نصب...';try{setStatus('اعتبارسنجی توکن...',8);const v=await api('/api/verify-token',{token});if(!v.ok)throw Error(v.error);setStatus('بررسی workers.dev...',22);setStatus('ساخت KV namespace...',38);setStatus('ساخت/تنظیم Pages Project...',58);setStatus('تنظیم ADMIN_TOKEN و binding...',74);setStatus('Direct upload اولیه...',88);const res=await api('/api/deploy',{token,projectName,adminToken});if(!res.ok)throw Error(res.error);setStatus('✅ نصب کامل شد',100);const el=qs('result');el.classList.remove('hidden');el.innerHTML='<div class="mb-2 font-black text-emerald-300">✅ نصب موفق بود!</div><div>🌐 سایت: <a class="text-blue-300 underline" target="_blank" href="'+res.url+'">'+res.url+'</a></div><div class="mt-2">🔑 ADMIN_TOKEN: <code class="rounded bg-black/40 px-2 py-1 text-xs">'+res.adminToken+'</code> <button onclick="navigator.clipboard.writeText(\''+res.adminToken+'\')" class="text-blue-300">کپی</button></div><div class="mt-2 text-xs text-yellow-300">'+(res.note||'')+'</div>';toast('نصب کامل شد')}catch(e){showError(e.message);setStatus('❌ خطا',0)}finally{qs('deployBtn').disabled=false;qs('deployBtn').textContent='🚀 شروع نصب'}}async function listDeployments(){clearBoxes();const token=qs('apiToken').value.trim();if(!token)return showError('اول توکن وارد کن');const r=await api('/api/list-deployments',{token});if(!r.ok)return showError(r.error);const box=qs('projectList');box.innerHTML=r.projects.length?'':'<div class="text-gray-400">پروژه‌ای پیدا نشد.</div>';r.projects.forEach(p=>{const d=document.createElement('div');d.className='rounded-2xl border border-blue-900/40 bg-black/25 p-4';d.innerHTML='<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><b>'+p.name+'</b><div class="text-sm text-gray-400">'+p.url+'</div></div><div class="flex flex-wrap gap-2"><button class="rounded-xl bg-blue-700 px-3 py-2 text-sm" data-act="copy">کپی URL</button><button class="rounded-xl bg-emerald-700 px-3 py-2 text-sm" data-act="update">آپدیت</button><button class="rounded-xl bg-amber-700 px-3 py-2 text-sm" data-act="rotate">Rotate token</button><button class="rounded-xl bg-red-700 px-3 py-2 text-sm" data-act="delete">حذف</button></div></div>';d.onclick=async ev=>{const act=ev.target.dataset.act;if(!act)return;if(act==='copy'){navigator.clipboard.writeText(p.url);toast('کپی شد')}if(act==='update'){const x=await api('/api/update-deployment',{token,projectName:p.name});toast(x.ok?'آپدیت تریگر شد':x.error)}if(act==='rotate'){const x=await api('/api/rotate-token',{token,projectName:p.name});if(x.ok){navigator.clipboard.writeText(x.adminToken);alert('توکن جدید کپی شد:\n'+x.adminToken)}else showError(x.error)}if(act==='delete'&&confirm('حذف شود؟')){const x=await api('/api/delete-deployment',{token,projectName:p.name});if(x.ok){toast('حذف شد');listDeployments()}else showError(x.error)}};box.appendChild(d)});qs('manager').classList.add('show')}function closeManager(){qs('manager').classList.remove('show')}
-</script></body></html>`; }
+// ── Helpers ──────────────────────────────
+function json(body, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json;charset=UTF-8", ...extraHeaders },
+  });
+}
+function html(body) {
+  return new Response(body, {
+    headers: { "Content-Type": "text/html;charset=UTF-8" },
+  });
+}
+async function cf(url, token, init = {}) {
+  // retry with backoff
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (attempt > 0) await sleep(600 * attempt);
+      const res = await fetch(url, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          ...(init.headers || {}),
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      return { ok: res.ok && data.success !== false, status: res.status, data, res };
+    } catch (e) {
+      if (attempt === 2) throw e;
+    }
+  }
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+function genToken() {
+  const arr = new Uint8Array(24);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function faError(msg){
+  const map = {
+    "workers_subdomain_tos_not_accepted": "لطفاً یک بار در داشبورد Cloudflare → Workers Overview کلیک کنید تا TOS را بپذیرید.",
+    "project with that name already exists": "پروژه‌ای با این نام از قبل وجود دارد. نام دیگری انتخاب کنید.",
+    "namespace with that name already exists": "KV با این نام وجود دارد.",
+  };
+  for(const k in map){ if(msg.toLowerCase().includes(k)) return map[k]; }
+  return msg;
+}
+
+// ── Handlers ─────────────────────────────
+async function handleVerify(request) {
+  try {
+    const { token } = await request.json();
+    if (!token) throw new Error("توکن نمی‌تواند خالی باشد");
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok || !acc.data.result?.length) {
+      throw new Error("توکن نامعتبر یا بدون دسترسی به حساب");
+    }
+    const accountId = acc.data.result[0].id;
+    const accountName = acc.data.result[0].name;
+    const projs = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects?per_page=50`,
+      token
+    );
+    const mine = (projs.data.result || []).filter((p) => p.name.startsWith("avidkiya"));
+    return { ok: true, accountId, accountName, existing: mine };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function handleDeploy(request) {
+  try {
+    const body = await request.json();
+    const { token, projectName = "avidkiya-portfolio", adminToken: userToken } = body;
+    if (!token) throw new Error("توکن الزامی است");
+
+    // 1. account
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok) throw new Error("خطا در دریافت حساب");
+    const accountId = acc.data.result[0].id;
+
+    // 2. workers.dev subdomain
+    await sleep(500);
+    let subRes = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`,
+      token
+    );
+    let devSub = subRes.data.result?.subdomain;
+    if (!devSub) {
+      const newSub = `avidkiya-${genToken().slice(0, 6)}`;
+      const create = await cf(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`,
+        token,
+        { method: "PUT", body: JSON.stringify({ subdomain: newSub }) }
+      );
+      if (!create.ok) {
+        throw new Error(
+          faError(create.data.errors?.[0]?.message || "workers_subdomain_tos_not_accepted")
+        );
+      }
+      devSub = newSub;
+    }
+
+    // 3. KV namespace
+    await sleep(500);
+    const kv = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces`,
+      token,
+      { method: "POST", body: JSON.stringify({ title: `${projectName}-kv-${Date.now()}` }) }
+    );
+    if (!kv.ok) throw new Error("خطا در ساخت KV: " + faError(JSON.stringify(kv.data.errors)));
+    const kvId = kv.data.result.id;
+    const kvTitle = kv.data.result.title;
+
+    // 4. ADMIN_TOKEN
+    const adminToken = userToken?.trim() || genToken();
+
+    // 5. Pages project
+    await sleep(500);
+    const proj = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: projectName,
+          production_branch: "main",
+          deployment_configs: {
+            production: {
+              env_vars: { ADMIN_TOKEN: { value: adminToken } },
+              kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } },
+              compatibility_date: "2024-09-01",
+              compatibility_flags: ["nodejs_compat"],
+            },
+            preview: {
+              env_vars: { ADMIN_TOKEN: { value: adminToken } },
+              kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } },
+              compatibility_date: "2024-09-01",
+              compatibility_flags: ["nodejs_compat"],
+            },
+          },
+        }),
+      }
+    );
+
+    if (!proj.ok) {
+      const msg = proj.data.errors?.[0]?.message || JSON.stringify(proj.data);
+      throw new Error("خطا در ساخت پروژه Pages: " + faError(msg));
+    }
+
+    const finalUrl = `https://${projectName}.pages.dev`;
+    const adminUrl = `${finalUrl}/admin`;
+
+    return {
+      ok: true,
+      url: finalUrl,
+      adminUrl,
+      adminToken,
+      accountId,
+      kvId,
+      kvTitle,
+      devSubdomain: devSub,
+      note:
+        "پروژه Pages + KV ساخته شد. برای build کامل: در Cloudflare → Pages → " + projectName + " → Settings → Builds & deployments → Connect to Git → repository: " + SOURCE_REPO + " را وصل کنید. سپس اولین Deploy خودکار انجام می‌شود.",
+    };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function handleList(request) {
+  try {
+    const { token } = await request.json();
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    const accountId = acc.data.result[0].id;
+    const projs = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects?per_page=50`,
+      token
+    );
+    const mine = (projs.data.result || [])
+      .filter((p) => p.name.startsWith("avidkiya"))
+      .map((p) => ({
+        name: p.name,
+        url: `https://${p.name}.pages.dev`,
+        createdAt: p.created_on,
+        productionBranch: p.production_branch,
+        domains: p.domains,
+      }));
+    return { ok: true, projects: mine };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function handleUpdate(request) {
+  try {
+    const { token, projectName } = await request.json();
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    const accountId = acc.data.result[0].id;
+    // trigger retry deployment
+    const deps = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments?per_page=1`,
+      token
+    );
+    const latest = deps.data.result?.[0];
+    if (!latest) throw new Error("deployment پیدا نشد");
+    const r = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments/${latest.id}/retry`,
+      token,
+      { method: "POST" }
+    );
+    if (!r.ok) throw new Error("خطا در آپدیت - لطفا Git integration را چک کنید");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function handleDelete(request) {
+  try {
+    const { token, projectName } = await request.json();
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    const accountId = acc.data.result[0].id;
+    const r = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+      token,
+      { method: "DELETE" }
+    );
+    if (!r.ok) throw new Error("خطا در حذف");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function handleRotateToken(request) {
+  try {
+    const { token, projectName } = await request.json();
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    const accountId = acc.data.result[0].id;
+    const newAdmin = genToken();
+    const r = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+      token,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          deployment_configs: {
+            production: { env_vars: { ADMIN_TOKEN: { value: newAdmin } } },
+            preview: { env_vars: { ADMIN_TOKEN: { value: newAdmin } } },
+          },
+        }),
+      }
+    );
+    if (!r.ok) throw new Error("خطا در تعویض توکن");
+    return { ok: true, adminToken: newAdmin };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function handleGetInfo(request) {
+  try {
+    const { token, projectName } = await request.json();
+    const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    const accountId = acc.data.result[0].id;
+    const r = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+      token
+    );
+    if (!r.ok) throw new Error("پروژه پیدا نشد");
+    return { ok: true, project: r.data.result };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// ── HTML UI ──────────────────────────────
+function getHtmlContent() {
+  return `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AvidKiya OS — Auto Deployer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+<style>
+  body { font-family: 'Vazirmatn', sans-serif; background: #05070d; color: #e0e6f0; }
+  .glow { box-shadow: 0 0 40px rgba(93,122,230,0.25); }
+  .grad-btn { background: linear-gradient(120deg, #2141a8, #5d7ae6); }
+  input, button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 99; }
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-lg bg-[#0d1117] border border-[#1c2330] rounded-3xl shadow-2xl p-8 relative overflow-hidden glow">
+    <div class="absolute -top-16 -right-16 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+    <div class="text-center mb-6 relative">
+      <div class="inline-flex w-16 h-16 items-center justify-center bg-blue-950/60 border border-blue-500 rounded-2xl mb-4">
+        <span class="text-3xl font-black text-blue-400">A</span>
+      </div>
+      <h1 class="text-2xl font-black mb-1">AvidKiya OS — Auto Deployer</h1>
+      <p class="text-sm text-gray-400">نصب خودکار پرتفولیو روی حساب Cloudflare شما</p>
+      <div class="text-[11px] text-gray-500 mt-1">v${CURRENT_VERSION}</div>
+    </div>
+    <div class="space-y-4 relative">
+      <a href="https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22pages%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22workers_subdomain%22%2C%22type%22%3A%22edit%22%7D%5D&accountId=*&zoneId=all&name=AvidKiya-Deployer"
+         target="_blank"
+         class="block text-center py-3.5 border border-orange-600/60 text-orange-400 bg-orange-900/20 hover:bg-orange-900/40 font-bold rounded-xl text-sm transition">
+        📥 دریافت توکن Cloudflare
+      </a>
+      <div class="relative">
+        <input id="apiToken" type="password" placeholder="توکن Cloudflare (cf_...)" 
+               class="w-full py-3.5 pr-12 pl-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
+        <button onclick="toggleToken()" class="absolute inset-y-0 left-3 text-gray-500">👁</button>
+      </div>
+      <input id="projectName" type="text" value="avidkiya-portfolio" placeholder="نام پروژه"
+             class="w-full py-3 px-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+      <input id="adminToken" type="text" placeholder="ADMIN_TOKEN (خالی = خودکار)"
+             class="w-full py-3 px-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
+      <button onclick="startDeploy()" id="deployBtn"
+              class="w-full py-3.5 grad-btn text-white font-black rounded-xl text-lg transition hover:brightness-110">
+        🚀 شروع نصب خودکار
+      </button>
+      <button onclick="listDeployments()"
+              class="w-full py-3 border border-blue-700 text-blue-400 bg-blue-900/20 hover:bg-blue-900/40 font-bold rounded-xl text-sm transition">
+        مدیریت نصب‌های موجود
+      </button>
+      <div id="status" class="hidden mt-3 p-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl">
+        <div class="flex justify-between items-center mb-2">
+          <span id="statusText" class="text-xs font-bold text-gray-300">شروع...</span>
+          <span id="statusPct" class="text-xs font-black text-blue-400">۰٪</span>
+        </div>
+        <div class="w-full h-1.5 bg-[#1c2330] rounded-full overflow-hidden">
+          <div id="progressBar" class="h-full bg-blue-500 rounded-full transition-all" style="width:0%"></div>
+        </div>
+      </div>
+      <div id="result" class="hidden mt-3 p-4 bg-emerald-900/20 border border-emerald-700 rounded-xl text-sm space-y-2"></div>
+      <div id="error" class="hidden mt-3 p-4 bg-red-900/20 border border-red-700 rounded-xl text-sm text-red-400"></div>
+    </div>
+    <div class="text-center text-[11px] text-gray-500 mt-6 space-x-4 space-x-reverse">
+      <a href="https://github.com/${SOURCE_REPO}" target="_blank" class="hover:text-blue-400">GitHub منبع</a>
+      <span>•</span>
+      <a href="https://t.me/avidkiya" target="_blank" class="hover:text-blue-400">تلگرام</a>
+      <span>•</span>
+      <a href="#" class="hover:text-amber-400">☕ دونیت</a>
+    </div>
+  </div>
+
+<!-- Manage Modal -->
+<div id="manageModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-[#0d1117] border border-[#1c2330] rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+    <div class="p-4 border-b border-[#1c2330] flex justify-between items-center">
+      <h3 class="font-black">مدیریت نصب‌ها</h3>
+      <button onclick="closeManage()" class="text-gray-400 hover:text-white">✕</button>
+    </div>
+    <div id="manageList" class="p-4 overflow-auto space-y-3 flex-1"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+function toggleToken() {
+  const el = document.getElementById('apiToken');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function setStatus(text, pct) {
+  document.getElementById('status').classList.remove('hidden');
+  document.getElementById('statusText').innerText = text;
+  document.getElementById('statusPct').innerText = pct + '٪';
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.classList.remove('hidden');
+  el.innerText = '⚠️ ' + msg;
+  toast(msg, 'error');
+}
+function toast(msg, type='info'){
+  const t = document.getElementById('toast');
+  t.className = 'toast px-4 py-2 rounded-xl text-sm font-bold ' + (type==='error' ? 'bg-red-600 text-white' : 'bg-gray-800 text-white');
+  t.innerText = msg;
+  t.classList.remove('hidden');
+  setTimeout(()=> t.classList.add('hidden'), 2800);
+}
+async function startDeploy() {
+  const token = document.getElementById('apiToken').value.trim();
+  const projectName = document.getElementById('projectName').value.trim() || 'avidkiya-portfolio';
+  const adminToken = document.getElementById('adminToken').value.trim();
+  if (!token) { showError('توکن الزامی است'); return; }
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('error').classList.add('hidden');
+  document.getElementById('deployBtn').disabled = true;
+  document.getElementById('deployBtn').innerText = 'در حال نصب...';
+  try {
+    setStatus('در حال اعتبارسنجی توکن...', 10);
+    const verify = await fetch('/api/verify-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }).then(r => r.json());
+    if (!verify.ok) throw new Error(verify.error);
+    setStatus('ساخت KV namespace...', 30);
+    await new Promise(r=>setTimeout(r,400));
+    setStatus('ساخت پروژه Pages...', 55);
+    await new Promise(r=>setTimeout(r,400));
+    setStatus('پیکربندی محیط...', 75);
+    setStatus('راه‌اندازی نهایی...', 90);
+    const res = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, projectName, adminToken }),
+    }).then(r => r.json());
+    if (!res.ok) throw new Error(res.error);
+    setStatus('✅ نصب کامل شد', 100);
+    const el = document.getElementById('result');
+    el.classList.remove('hidden');
+    el.innerHTML = \`
+      <div class="font-bold text-emerald-400">✅ نصب با موفقیت انجام شد!</div>
+      <div>🌐 <b>سایت:</b> <a href="\${res.url}" target="_blank" class="text-blue-400 underline">\${res.url}</a> <button onclick="navigator.clipboard.writeText('\${res.url}')" class="text-[10px] ms-2 px-2 py-0.5 bg-blue-900/40 rounded">کپی</button></div>
+      <div>🔑 <b>ADMIN_TOKEN:</b> <code class="bg-black/40 px-2 py-1 rounded font-mono text-xs">\${res.adminToken}</code> <button onclick="navigator.clipboard.writeText('\${res.adminToken}')" class="text-[10px] ms-2 px-2 py-0.5 bg-emerald-900/40 rounded">کپی</button></div>
+      <div>📦 <b>KV:</b> \${res.kvTitle || res.kvId}</div>
+      <div class="text-xs text-gray-400 mt-2">ورود مدیریت: \${res.adminUrl} — این توکن را ذخیره کنید.</div>
+      \${res.note ? \`<div class="text-xs text-yellow-400 mt-2 p-2 bg-yellow-900/10 rounded">⚠️ \${res.note}</div>\` : ''}
+    \`;
+    toast('نصب موفق!', 'info');
+  } catch (e) {
+    showError(e.message);
+    setStatus('❌ خطا', 0);
+  } finally {
+    document.getElementById('deployBtn').disabled = false;
+    document.getElementById('deployBtn').innerText = '🚀 شروع نصب خودکار';
+  }
+}
+async function listDeployments() {
+  const token = document.getElementById('apiToken').value.trim();
+  if (!token) { showError('اول توکن وارد کن'); return; }
+  const r = await fetch('/api/list-deployments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  }).then(x => x.json());
+  if (!r.ok) { showError(r.error); return; }
+  openManage(r.projects, token);
+}
+function openManage(projects, token){
+  const modal = document.getElementById('manageModal');
+  const list = document.getElementById('manageList');
+  if(!projects.length){ list.innerHTML = '<div class="text-center text-gray-400 py-8">پروژه‌ای پیدا نشد</div>'; }
+  else {
+    list.innerHTML = projects.map(p => \`
+      <div class="p-3 rounded-xl bg-[#0a0d13] border border-[#1c2330] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="font-bold text-blue-300">\${p.name}</div>
+          <div class="text-xs text-gray-400">\${p.url}</div>
+          <div class="text-[10px] text-gray-500">\${p.createdAt ? new Date(p.createdAt).toLocaleString('fa-IR') : ''}</div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-[11px]">
+          <button onclick="copyText('\${p.url}')" class="px-2 py-1 bg-blue-900/30 rounded">کپی URL</button>
+          <button onclick="doUpdate('\${p.name}')" class="px-2 py-1 bg-amber-900/30 text-amber-300 rounded">آپدیت</button>
+          <button onclick="doRotate('\${p.name}')" class="px-2 py-1 bg-purple-900/30 text-purple-300 rounded">rotate token</button>
+          <button onclick="doDelete('\${p.name}')" class="px-2 py-1 bg-red-900/30 text-red-300 rounded">حذف</button>
+        </div>
+      </div>
+    \`).join('');
+  }
+  modal.dataset.token = token;
+  modal.classList.remove('hidden');
+}
+function closeManage(){ document.getElementById('manageModal').classList.add('hidden'); }
+function copyText(t){ navigator.clipboard.writeText(t); toast('کپی شد'); }
+async function doUpdate(name){
+  const token = document.getElementById('manageModal').dataset.token;
+  if(!confirm('آپدیت '+name+' ؟')) return;
+  const r = await fetch('/api/update-deployment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, projectName: name })}).then(x=>x.json());
+  toast(r.ok ? 'درخواست آپدیت ارسال شد' : ('خطا: '+r.error), r.ok ? 'info' : 'error');
+}
+async function doRotate(name){
+  const token = document.getElementById('manageModal').dataset.token;
+  if(!confirm('تعویض ADMIN_TOKEN برای '+name+' ؟')) return;
+  const r = await fetch('/api/rotate-token', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, projectName: name })}).then(x=>x.json());
+  if(r.ok){ alert('توکن جدید:\\n'+r.adminToken); copyText(r.adminToken); } else { toast(r.error,'error'); }
+}
+async function doDelete(name){
+  const token = document.getElementById('manageModal').dataset.token;
+  if(!confirm('حذف کامل '+name+' ؟ این عمل برگشت‌ناپذیر است.')) return;
+  const r = await fetch('/api/delete-deployment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, projectName: name })}).then(x=>x.json());
+  toast(r.ok ? 'حذف شد' : ('خطا: '+r.error), r.ok ? 'info' : 'error');
+  if(r.ok) listDeployments();
+}
+</script>
+</body>
+</html>`;
+}
