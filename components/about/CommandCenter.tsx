@@ -83,12 +83,14 @@ export default function CommandCenter() {
                 boxShadow: "0 0 10px rgba(33,241,168,0.4)",
               }}
             />
-            <Editable
-              path="about.version"
-              editable={a.version}
-              className="font-bold tracking-widest text-sm"
-              style={{ color: "var(--primary)" }}
-            />
+            {resolveEditable(a.version) && (
+              <Editable
+                path="about.version"
+                editable={a.version}
+                className="font-bold tracking-widest text-sm"
+                style={{ color: "var(--primary)" }}
+              />
+            )}
           </Link>
           <nav
             className="hidden xl:flex gap-6 text-xs font-bold uppercase tracking-wider opacity-70"

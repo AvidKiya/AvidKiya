@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppProvider } from "@/contexts/AppContext";
 import { CmsProvider } from "@/contexts/CmsContext";
 import EditModeBar from "@/components/cms/EditModeBar";
+import BgMusic from "@/components/ui/BgMusic";
 
 export const metadata: Metadata = {
   title: "AVID KIYA — Systems Architect Portfolio",
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CmsProvider>
             {children}
             <EditModeBar />
+            <BgMusic />
           </CmsProvider>
         </AppProvider>
       </body>

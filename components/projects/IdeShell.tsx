@@ -101,21 +101,24 @@ export default function IdeShell() {
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
       {/* ─── Title bar (VS Code style) ───────────────────────── */}
       <header
-        className="h-10 flex items-center justify-between px-4 border-b shrink-0"
+        className="ide-chrome h-10 flex items-center justify-between px-4 border-b shrink-0"
         style={{
-          background: "var(--surface-container-lowest, #08100b)",
+          background: "var(--surface-container-solid)",
           borderColor: "var(--outline-variant)",
+          color: "var(--on-surface)",
         }}
       >
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2.5">
             <Logo size={22} radius={5} />
-            <span
-              className="font-mono text-[11px] tracking-widest opacity-60"
-              style={{ color: "var(--on-surface-variant)" }}
-            >
-              {t("ideTitle")}
-            </span>
+            {t("ideTitle") && (
+              <span
+                className="font-mono text-[11px] tracking-widest opacity-60"
+                style={{ color: "var(--on-surface-variant)" }}
+              >
+                {t("ideTitle")}
+              </span>
+            )}
           </Link>
           <nav
             className="hidden md:flex items-center text-xs gap-4"
@@ -133,7 +136,7 @@ export default function IdeShell() {
           <div
             className="rounded-md px-3 py-1 flex items-center gap-2 text-xs border"
             style={{
-              background: "rgba(255,255,255,0.03)",
+              background: "var(--chip-bg)",
               borderColor: "var(--outline-variant)",
               color: "var(--on-surface-variant)",
             }}
@@ -163,7 +166,7 @@ export default function IdeShell() {
         <aside
           className="w-12 flex flex-col items-center py-4 gap-6 shrink-0 border-inline-end"
           style={{
-            background: "var(--surface-container-lowest, #08100b)",
+            background: "var(--surface-container-solid)",
             borderColor: "var(--outline-variant)",
             borderInlineEndWidth: 1,
             borderInlineEndStyle: "solid",
@@ -734,7 +737,7 @@ function MetaTile({
       className="p-3 rounded-lg border"
       style={{
         background: "rgba(0,0,0,0.2)",
-        borderColor: "rgba(255,255,255,0.05)",
+        borderColor: "var(--chip-bg)",
       }}
     >
       <div className="mb-1 opacity-60" style={{ color: "var(--on-surface-variant)" }}>
@@ -759,7 +762,7 @@ function TerminalPanel({
     <div
       className="h-40 border-t flex flex-col shrink-0"
       style={{
-        background: "var(--surface-container-lowest, #08100b)",
+        background: "var(--surface-container-solid)",
         borderColor: "var(--outline-variant)",
       }}
     >

@@ -18,6 +18,7 @@ import AnnouncementsEditor from "./sections/AnnouncementsEditor";
 import CommentsEditor from "./sections/CommentsEditor";
 import ShopEditor from "./sections/ShopEditor";
 import MessagesEditor from "./sections/MessagesEditor";
+import MediaEditor from "./sections/MediaEditor";
 import SettingsEditor from "./sections/SettingsEditor";
 import Icon from "@/components/ui/Icon";
 
@@ -34,6 +35,7 @@ type SectionId =
   | "comments"
   | "shop"
   | "messages"
+  | "media"
   | "settings";
 
 export default function AdminPanel() {
@@ -76,6 +78,11 @@ export default function AdminPanel() {
       label: t("adminMessages"),
       icon: "inbox",
       badge: state.messages.filter((m) => !m.read).length || undefined,
+    },
+    {
+      id: "media",
+      label: language === "fa" ? "رسانه (موسیقی/شیء)" : "Media (music/hero)",
+      icon: "rocket_launch",
     },
     { id: "settings", label: t("adminSettings"), icon: "settings" },
   ];
@@ -246,6 +253,7 @@ export default function AdminPanel() {
           {section === "comments" && <CommentsEditor />}
           {section === "shop" && <ShopEditor />}
           {section === "messages" && <MessagesEditor />}
+          {section === "media" && <MediaEditor />}
           {section === "settings" && <SettingsEditor />}
         </main>
       </div>

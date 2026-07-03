@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useCms } from "@/contexts/CmsContext";
+import { useApp } from "@/contexts/AppContext";
 import { I18nText } from "@/lib/cms/schema";
 import Icon from "@/components/ui/Icon";
 
@@ -169,6 +170,7 @@ export function ListShell<T>({
   gridCols?: 1 | 2 | 3;
 }) {
   const { removeFromList, moveInList } = useCms();
+  const { language } = useApp();
   const gridClass =
     gridCols === 2
       ? "grid grid-cols-1 md:grid-cols-2 gap-3"
@@ -195,7 +197,8 @@ export function ListShell<T>({
                 icon="delete"
                 danger
                 onClick={() => {
-                  if (confirm("Delete this item?")) removeFromList(path, i);
+                  if (confirm(language === "fa" ? "این آیتم حذف شود؟" : "Delete this item?"))
+                    removeFromList(path, i);
                 }}
               />
             </div>

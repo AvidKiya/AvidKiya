@@ -5,14 +5,16 @@ import { useApp } from "@/contexts/AppContext";
 import { useCms } from "@/contexts/CmsContext";
 import Editable from "@/components/cms/Editable";
 import Icon from "@/components/ui/Icon";
+import HeroObject from "./HeroObject";
 
 export default function HeroSection() {
   const { dir } = useApp();
   const { state } = useCms();
   const d = state.dashboard;
+  const hasHeroObject = state.heroObject.kind !== "none" && state.heroObject.src;
 
   return (
-    <section className="flex flex-col md:flex-row gap-10 items-start md:items-end">
+    <section className="flex flex-col md:flex-row gap-10 items-center">
       <div className="flex-1 space-y-5">
         <Editable
           path="dashboard.heroTag"
@@ -68,6 +70,11 @@ export default function HeroSection() {
           </Link>
         </div>
       </div>
+      {hasHeroObject && (
+        <div className="w-full md:w-2/5 shrink-0">
+          <HeroObject />
+        </div>
+      )}
     </section>
   );
 }

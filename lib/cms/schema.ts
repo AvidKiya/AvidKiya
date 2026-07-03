@@ -253,6 +253,25 @@ export interface CmsState {
     products: Product[];
     categories: I18nText[];
   };
+
+  // Background music (auto-plays on site entry)
+  music: {
+    enabled: boolean;
+    autoplay: boolean;
+    loop: boolean;
+    volume: number;              // 0..1
+    src: string;                 // https url or data URL
+    title?: string;
+  };
+
+  // Hero showcase — 3D model / image beside the hero text
+  heroObject: {
+    kind: "image" | "model3d" | "none";
+    src: string;                 // image URL/data or .glb model URL
+    posterSrc?: string;          // fallback image for model
+    autoRotate?: boolean;
+    alt?: I18nText;
+  };
 }
 
 export interface DonationLink {
@@ -809,5 +828,22 @@ export const defaultCmsState: CmsState = {
         createdAt: new Date().toISOString(),
       },
     ],
+  },
+
+  music: {
+    enabled: false,
+    autoplay: true,
+    loop: true,
+    volume: 0.4,
+    src: "",
+    title: "",
+  },
+
+  heroObject: {
+    kind: "none",
+    src: "",
+    posterSrc: "",
+    autoRotate: true,
+    alt: { fa: "شیء نمایشی", en: "Hero showcase" },
   },
 };

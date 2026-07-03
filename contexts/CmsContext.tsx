@@ -23,6 +23,38 @@ const LS_STATE = "avidkiya:cms";
 const LS_EDIT_MODE = "avidkiya:editMode";
 const LS_TOKEN = "avidkiya:admin-token";
 
+/**
+ * Some early releases seeded strings like COMMAND_CENTER.v3 / AVIDKIYA_IDE_V1.0
+ * that users have asked to remove. When we load a state from localStorage or
+ * KV, replace those legacy labels so old caches don't override the new empty
+ * strings.
+ */
+function migrateLegacyLabels(state: any): any {
+  if (!state || typeof state !== "object") return state;
+  const REPLACE_MAP: Record<string, { fa: string; en: string }> = {
+    "COMMAND_CENTER.v3": { fa: "", en: "" },
+    "COMMAND CENTER.v3": { fa: "", en: "" },
+    "AVIDKIYA_IDE_V1.0": { fa: "پروژه‌ها", en: "PROJECTS" },
+    "AVIDKIYA IDE V1.0": { fa: "پروژه‌ها", en: "PROJECTS" },
+  };
+  function walk(node: any): any {
+    if (!node || typeof node !== "object") return node;
+    if (Array.isArray(node)) return node.map(walk);
+    const out: any = {};
+    for (const [k, v] of Object.entries(node)) {
+      if (typeof v === "string" && REPLACE_MAP[v]) {
+        const rep = REPLACE_MAP[v];
+        // Replace either fa or en depending on which key it belongs to
+        out[k] = k === "fa" ? rep.fa : rep.en;
+      } else {
+        out[k] = walk(v);
+      }
+    }
+    return out;
+  }
+  return walk(state);
+}
+
 /* ─── Path helpers (no lodash) ──────────────────────────────── */
 function setByPath(obj: any, path: string, value: any): any {
   const parts = path.split(".");
@@ -109,7 +141,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         const raw = localStorage.getItem(LS_STATE);
         if (raw) {
           const parsed = JSON.parse(raw);
-          setState({ ...defaultCmsState, ...parsed });
+          // Migration: strip old brand-name-in-header labels that users
+          // asked to remove but which are still in older cached states.
+          const migrated = migrateLegacyLabels(parsed);
+          setState({ ...defaultCmsState, ...migrated });
         }
         setToken(localStorage.getItem(LS_TOKEN));
         setEditModeState(localStorage.getItem(LS_EDIT_MODE) === "yes");
@@ -120,7 +155,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         setSyncStatus("syncing");
         const remote = await fetchRemoteState();
         if (remote) {
-          setState({ ...defaultCmsState, ...remote });
+          const migrated = migrateLegacyLabels(remote);
+          setState({ ...defaultCmsState, ...migrated });
           try {
             localStorage.setItem(LS_STATE, JSON.stringify(remote));
           } catch {}
@@ -172,14 +208,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (t: string) => {
-    // 1) See if the API is reachable at all (i.e. we're on Cloudflare Pages
-    //    with Functions deployed).
+    // Only ADMIN_TOKEN from Cloudflare env is accepted.
+    // No hardcoded backdoor.
     const ping = await pingApi();
 
     if (ping.apiReachable) {
-      // 2) Verify against the server. Only ADMIN_TOKEN from Cloudflare env
-      //    is accepted — no offline password bypass in production, otherwise
-      //    the local fallback would defeat the whole auth scheme.
       const v = await verifyToken(t);
       if (v.ok) {
         setToken(t);
@@ -191,11 +224,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    // 3) API unreachable → we're on localhost / static preview.
-    //    Accept the dev password so the panel remains usable offline.
-    if (t === "avidkiya-2026") {
+    // Local dev without API: we can't verify server-side. Accept any non-empty
+    // string so the offline UI works during `npm run dev`, but do NOT persist
+    // the token so it can't be used to talk to the deployed API by accident.
+    if (typeof window !== "undefined" && window.location.hostname === "localhost" && t.length > 0) {
       setToken(t);
-      localStorage.setItem(LS_TOKEN, t);
       setSyncStatus("offline");
       return true;
     }

@@ -158,21 +158,14 @@ export default function LoginScreen() {
                 className="text-[10px] uppercase tracking-widest opacity-50 mb-2"
                 style={{ color: "var(--on-surface-variant)" }}
               >
-                Local / offline mode
+                Local dev mode
               </div>
               <p
                 className="text-xs opacity-80"
                 style={{ color: "var(--on-surface-variant)" }}
               >
-                The Cloudflare API is not reachable (you're probably running{" "}
-                <code>npm run dev</code>). Use{" "}
-                <code
-                  className="px-1.5 py-0.5 rounded"
-                  style={{ background: "rgba(0,0,0,0.3)", color: "var(--primary)" }}
-                >
-                  avidkiya-2026
-                </code>{" "}
-                to unlock local editing.
+                Set <code>ADMIN_TOKEN</code> in Cloudflare Pages settings and
+                paste it here to unlock everything.
               </p>
             </>
           ) : (

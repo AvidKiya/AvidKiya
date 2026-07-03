@@ -47,7 +47,7 @@ export default function LangThemeSwitcher() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors hover:opacity-100 opacity-80"
         style={{
           borderColor: "var(--outline-variant)",
-          background: "rgba(255,255,255,0.03)",
+          background: "var(--chip-bg)",
         }}
         aria-expanded={open}
         aria-haspopup="menu"

@@ -45,7 +45,7 @@ export default function EditModeBar() {
         onClick={syncNow}
         title={lastSyncAt ? `Last: ${new Date(lastSyncAt).toLocaleTimeString()}` : "Sync now"}
         className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
-        style={{ color: m.color, background: "rgba(255,255,255,0.03)" }}
+        style={{ color: m.color, background: "var(--chip-bg)" }}
       >
         <Icon name={m.icon} size={14} />
         <span className="hidden sm:inline">{m.label}</span>

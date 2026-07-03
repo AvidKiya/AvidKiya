@@ -60,7 +60,7 @@ export default function ProjectGrid() {
                       key={tag}
                       className="text-[10px] px-2 py-0.5 rounded font-mono"
                       style={{
-                        background: "rgba(255,255,255,0.05)",
+                        background: "var(--chip-bg)",
                         color: "var(--on-surface-variant)",
                       }}
                     >

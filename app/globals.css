@@ -31,6 +31,8 @@
   --primary-fixed: #48ffb6;
   --primary-dim: #00e29c;
   --on-primary: #003824;
+  --chip-bg: rgba(255, 255, 255, 0.05);
+  --chip-border: rgba(255, 255, 255, 0.08);
   --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(33, 241, 168, 0.1);
   --glass-border-hover: rgba(33, 241, 168, 0.3);
@@ -40,40 +42,54 @@
   --watermark-opacity: 0.05;
 }
 
-/* ─── LIGHT THEME ─────────────────────────────────────────────
-   Warm beige/cream palette matching the reference mockup.
-   Body: soft off-white, accents in dark charcoal. */
+/* ─── LIGHT THEME — Cyprus green + Sand palette ─────────────
+   Reference: Cyprus #004741 (deep emerald) + Sand #F0EDE4 (warm cream).
+   Cyprus is used as the PRIMARY accent (buttons, highlights, headings).
+   Sand is the base background. Everything guaranteed high contrast. */
 .light {
-  --bg: #f2ede4;
-  --bg-radial-a: #ede6d8;
-  --bg-radial-b: #f7f2e8;
+  --bg: #f0ede4;
+  --bg-radial-a: #ebe6d8;
+  --bg-radial-b: #f6f2e6;
   --surface: #ffffff;
   --surface-container: rgba(255, 253, 247, 0.92);
-  --surface-container-solid: #fbf7ee;
-  --surface-container-low: #f2ede4;
-  --surface-container-high: #e8e0cf;
-  --surface-container-highest: #ddd3bf;
+  --surface-container-solid: #fbf7ec;
+  --surface-container-low: #ebe6d8;
+  --surface-container-high: #ddd6c2;
+  --surface-container-highest: #ccc4ac;
   --surface-bright: #ffffff;
-  --on-surface: #1a1814;
-  --on-surface-variant: #4a4638;
-  --outline: #6b6656;
-  --outline-variant: rgba(74, 70, 56, 0.28);
-  --primary: #1a1814;
-  --primary-fixed: #ede6d8;
-  --primary-dim: #3a3628;
-  --on-primary: #f5efe3;
+  --on-surface: #0e2320;         /* very dark green-grey text */
+  --on-surface-variant: #40544f;
+  --outline: #667a75;
+  --outline-variant: rgba(0, 71, 65, 0.25);
+  --primary: #004741;            /* Cyprus */
+  --primary-fixed: #006e5c;
+  --primary-dim: #002824;
+  --on-primary: #f0ede4;         /* Sand on green */
+  --chip-bg: rgba(0, 71, 65, 0.06);
+  --chip-border: rgba(0, 71, 65, 0.18);
   --glass-bg: rgba(255, 253, 247, 0.85);
-  --glass-border: rgba(74, 70, 56, 0.18);
-  --glass-border-hover: rgba(26, 24, 20, 0.4);
-  --glass-shadow: 0 6px 24px 0 rgba(74, 60, 30, 0.12);
-  --glass-shadow-hover: 0 8px 30px rgba(74, 60, 30, 0.20);
-  --nav-bg: rgba(242, 237, 228, 0.9);
-  --watermark-opacity: 0.05;
+  --glass-border: rgba(0, 71, 65, 0.20);
+  --glass-border-hover: rgba(0, 71, 65, 0.5);
+  --glass-shadow: 0 6px 24px 0 rgba(0, 71, 65, 0.12);
+  --glass-shadow-hover: 0 8px 30px rgba(0, 71, 65, 0.18);
+  --nav-bg: rgba(240, 237, 228, 0.92);
+  --watermark-opacity: 0.06;
 }
 
+/* Light-mode fixes: force text/icon colour on any dark card so it never
+   ends up "black on black". Any admin section, IDE card, terminal chrome
+   in light mode still stays readable. */
 .light .glass-panel {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
+  color: var(--on-surface);
+}
+
+/* IDE title-bar in projects page had a hard-coded dark background — override */
+.light [class*="surface-container-lowest"],
+.light .ide-chrome {
+  background: var(--surface-container-solid) !important;
+  color: var(--on-surface) !important;
 }
 
 * {
