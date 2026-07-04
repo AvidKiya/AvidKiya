@@ -1,7 +1,12 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "avidkiya-portfolio"
 compatibility_date = "2024-09-01"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
 
 [[kv_namespaces]]
 binding = "AVIDKIYA_KV"
-# Set this to your actual KV namespace ID from the Cloudflare dashboard
-id = "YOUR_KV_NAMESPACE_ID"
+id = ""
+
+[vars]
+# ADMIN_TOKEN should be set as a secret, not here
