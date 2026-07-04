@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Comment } from '@/lib/cms/schema';
 
-// In-memory storage for local development
+export const runtime = 'edge';
+
+// In-memory storage for development
 const comments: Comment[] = [];
 
 export async function GET(request: NextRequest) {
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
     comments.push(comment);
     
     return NextResponse.json({ success: true, data: comment });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -61,7 +63,7 @@ export async function PUT(request: NextRequest) {
     comments[index] = { ...comments[index], ...body };
     
     return NextResponse.json({ success: true, data: comments[index] });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -87,7 +89,7 @@ export async function DELETE(request: NextRequest) {
     comments.splice(index, 1);
     
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

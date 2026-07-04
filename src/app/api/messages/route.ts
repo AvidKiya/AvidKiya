@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Message } from '@/lib/cms/schema';
 
-// In-memory storage for local development
+export const runtime = 'edge';
+
+// In-memory storage for development
 const messages: Message[] = [];
 
 export async function GET(request: NextRequest) {
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
     messages.push(message);
     
     return NextResponse.json({ success: true, data: message });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

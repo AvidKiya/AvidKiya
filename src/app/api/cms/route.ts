@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { defaultCmsState } from '@/lib/cms/schema';
 
-// In-memory storage for local development
+export const runtime = 'edge';
+
+// In-memory storage for development (on Cloudflare, use KV)
 let cmsData = { ...defaultCmsState };
 
 export async function GET() {
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
     cmsData = { ...cmsData, ...body };
     
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

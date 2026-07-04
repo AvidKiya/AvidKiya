@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -22,7 +24,7 @@ export async function POST(request: NextRequest) {
       success: false, 
       error: 'Invalid token' 
     }, { status: 401 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ 
       success: false, 
       error: 'Internal Server Error' 
