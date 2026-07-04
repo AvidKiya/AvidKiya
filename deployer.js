@@ -1,86 +1,83 @@
 // deployer.js — Cloudflare Worker (single file)
 // Deploy this to a Worker → visit its URL → paste your CF API token → auto-installs AvidKiya portfolio
-// AvidKiya OS Auto-Deployer v1.0.0
+// Usage: Cloudflare Dashboard → Workers & Pages → Create Worker → paste this code → Save & Deploy
 
 const CURRENT_VERSION = "1.0.0";
-const SOURCE_ZIP_URL = "https://github.com/IR-NETLIFY/avidkiya-portfolio/archive/refs/heads/main.zip";
-const SOURCE_REPO = "IR-NETLIFY/avidkiya-portfolio";
+const SOURCE_REPO = "avidkiya/avidkiya-portfolio";
+const SOURCE_BRANCH = "deploy";
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const cors = {
+    const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
     };
-    if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
 
     try {
       if (request.method === "GET" && url.pathname === "/") {
         return html(getHtmlContent());
       }
       if (request.method === "POST" && url.pathname === "/api/verify-token") {
-        return json(await handleVerify(request), 200, cors);
+        return await handleVerify(request, corsHeaders);
       }
       if (request.method === "POST" && url.pathname === "/api/deploy") {
-        return json(await handleDeploy(request), 200, cors);
+        return await handleDeploy(request, corsHeaders);
       }
       if (request.method === "POST" && url.pathname === "/api/list-deployments") {
-        return json(await handleList(request), 200, cors);
+        return await handleList(request, corsHeaders);
       }
       if (request.method === "POST" && url.pathname === "/api/update-deployment") {
-        return json(await handleUpdate(request), 200, cors);
+        return await handleUpdate(request, corsHeaders);
       }
       if (request.method === "POST" && url.pathname === "/api/delete-deployment") {
-        return json(await handleDelete(request), 200, cors);
+        return await handleDelete(request, corsHeaders);
       }
       if (request.method === "POST" && url.pathname === "/api/rotate-token") {
-        return json(await handleRotateToken(request), 200, cors);
+        return await handleRotateToken(request, corsHeaders);
       }
       if (request.method === "POST" && url.pathname === "/api/get-info") {
-        return json(await handleGetInfo(request), 200, cors);
+        return await handleGetInfo(request, corsHeaders);
       }
-      return new Response("Not Found", { status: 404, headers: cors });
+      return new Response("Not Found", { status: 404 });
     } catch (e) {
-      return json({ ok: false, error: e.message || String(e) }, 500, cors);
+      return json({ ok: false, error: e.message }, 500, corsHeaders);
     }
   },
 };
 
 // ── Helpers ──────────────────────────────
+
 function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json;charset=UTF-8", ...extraHeaders },
   });
 }
+
 function html(body) {
   return new Response(body, {
     headers: { "Content-Type": "text/html;charset=UTF-8" },
   });
 }
+
 async function cf(url, token, init = {}) {
-  // retry with backoff
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      if (attempt > 0) await sleep(600 * attempt);
-      const res = await fetch(url, {
-        ...init,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          ...(init.headers || {}),
-        },
-      });
-      const data = await res.json().catch(() => ({}));
-      return { ok: res.ok && data.success !== false, status: res.status, data, res };
-    } catch (e) {
-      if (attempt === 2) throw e;
-    }
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    ...(init.headers || {}),
+  };
+  if (!init.headers?.["Content-Type"] && !(init.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
   }
+  const res = await fetch(url, { ...init, headers });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok && data.success !== false, status: res.status, data };
 }
-function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
 function genToken() {
   const arr = new Uint8Array(24);
@@ -88,56 +85,60 @@ function genToken() {
   return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function faError(msg){
-  const map = {
-    "workers_subdomain_tos_not_accepted": "لطفاً یک بار در داشبورد Cloudflare → Workers Overview کلیک کنید تا TOS را بپذیرید.",
-    "project with that name already exists": "پروژه‌ای با این نام از قبل وجود دارد. نام دیگری انتخاب کنید.",
-    "namespace with that name already exists": "KV با این نام وجود دارد.",
-  };
-  for(const k in map){ if(msg.toLowerCase().includes(k)) return map[k]; }
-  return msg;
+async function delay(ms) {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 // ── Handlers ─────────────────────────────
-async function handleVerify(request) {
+
+async function handleVerify(request, cors) {
   try {
     const { token } = await request.json();
     if (!token) throw new Error("توکن نمی‌تواند خالی باشد");
+
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
     if (!acc.ok || !acc.data.result?.length) {
       throw new Error("توکن نامعتبر یا بدون دسترسی به حساب");
     }
+
     const accountId = acc.data.result[0].id;
     const accountName = acc.data.result[0].name;
+
+    await delay(500);
+
     const projs = await cf(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects?per_page=50`,
       token
     );
-    const mine = (projs.data.result || []).filter((p) => p.name.startsWith("avidkiya"));
-    return { ok: true, accountId, accountName, existing: mine };
+    const mine = (projs.data.result || []).filter((p) =>
+      p.name.startsWith("avidkiya")
+    );
+
+    return json({ ok: true, accountId, accountName, existing: mine }, 200, cors);
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
-async function handleDeploy(request) {
+async function handleDeploy(request, cors) {
   try {
     const body = await request.json();
     const { token, projectName = "avidkiya-portfolio", adminToken: userToken } = body;
     if (!token) throw new Error("توکن الزامی است");
 
-    // 1. account
+    // 1. Get account
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
-    if (!acc.ok) throw new Error("خطا در دریافت حساب");
+    if (!acc.ok || !acc.data.result?.length) throw new Error("خطا در دریافت حساب");
     const accountId = acc.data.result[0].id;
 
-    // 2. workers.dev subdomain
-    await sleep(500);
+    await delay(500);
+
+    // 2. Check/create workers.dev subdomain
     let subRes = await cf(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`,
       token
     );
-    let devSub = subRes.data.result?.subdomain;
+    let devSub = subRes.data?.result?.subdomain;
     if (!devSub) {
       const newSub = `avidkiya-${genToken().slice(0, 6)}`;
       const create = await cf(
@@ -147,84 +148,148 @@ async function handleDeploy(request) {
       );
       if (!create.ok) {
         throw new Error(
-          faError(create.data.errors?.[0]?.message || "workers_subdomain_tos_not_accepted")
+          "لطفاً یک بار در داشبورد Cloudflare → Workers Overview کلیک کنید تا Terms of Service رو بپذیرید، بعد دوباره امتحان کنید."
         );
       }
       devSub = newSub;
     }
 
-    // 3. KV namespace
-    await sleep(500);
-    const kv = await cf(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces`,
-      token,
-      { method: "POST", body: JSON.stringify({ title: `${projectName}-kv-${Date.now()}` }) }
-    );
-    if (!kv.ok) throw new Error("خطا در ساخت KV: " + faError(JSON.stringify(kv.data.errors)));
-    const kvId = kv.data.result.id;
-    const kvTitle = kv.data.result.title;
+    await delay(500);
 
-    // 4. ADMIN_TOKEN
+    // 3. Create KV namespace
+    const kvTitle = `${projectName}-kv`;
+    let kvId = null;
+
+    // Check if KV already exists
+    const existingKvs = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces?per_page=100`,
+      token
+    );
+    if (existingKvs.ok && existingKvs.data.result) {
+      const existing = existingKvs.data.result.find((ns) => ns.title === kvTitle);
+      if (existing) kvId = existing.id;
+    }
+
+    if (!kvId) {
+      const kv = await cf(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces`,
+        token,
+        { method: "POST", body: JSON.stringify({ title: kvTitle }) }
+      );
+      if (!kv.ok) {
+        const errMsg = kv.data.errors?.[0]?.message || JSON.stringify(kv.data.errors);
+        throw new Error("خطا در ساخت KV: " + errMsg);
+      }
+      kvId = kv.data.result.id;
+    }
+
+    await delay(500);
+
+    // 4. Generate ADMIN_TOKEN
     const adminToken = userToken?.trim() || genToken();
 
-    // 5. Pages project
-    await sleep(500);
-    const proj = await cf(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
-      token,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          name: projectName,
-          production_branch: "main",
-          deployment_configs: {
-            production: {
-              env_vars: { ADMIN_TOKEN: { value: adminToken } },
-              kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } },
-              compatibility_date: "2024-09-01",
-              compatibility_flags: ["nodejs_compat"],
-            },
-            preview: {
-              env_vars: { ADMIN_TOKEN: { value: adminToken } },
-              kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } },
-              compatibility_date: "2024-09-01",
-              compatibility_flags: ["nodejs_compat"],
-            },
-          },
-        }),
-      }
+    // 5. Check if Pages project exists
+    const existCheck = await cf(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+      token
     );
 
-    if (!proj.ok) {
-      const msg = proj.data.errors?.[0]?.message || JSON.stringify(proj.data);
-      throw new Error("خطا در ساخت پروژه Pages: " + faError(msg));
+    const deployConfig = {
+      env_vars: { ADMIN_TOKEN: { value: adminToken } },
+      kv_namespaces: { AVIDKIYA_KV: { namespace_id: kvId } },
+      compatibility_date: "2024-09-01",
+      compatibility_flags: ["nodejs_compat"],
+    };
+
+    if (existCheck.ok) {
+      // Project exists — update config
+      const patch = await cf(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+        token,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            deployment_configs: {
+              production: deployConfig,
+              preview: deployConfig,
+            },
+          }),
+        }
+      );
+      if (!patch.ok) {
+        throw new Error("خطا در آپدیت تنظیمات پروژه: " + (patch.data.errors?.[0]?.message || "Unknown"));
+      }
+    } else {
+      // Create new Pages project
+      const proj = await cf(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
+        token,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: projectName,
+            production_branch: "main",
+            deployment_configs: {
+              production: deployConfig,
+              preview: deployConfig,
+            },
+          }),
+        }
+      );
+      if (!proj.ok) {
+        const errMsg = proj.data.errors?.[0]?.message || JSON.stringify(proj.data);
+        if (errMsg.includes("already exists") || errMsg.includes("duplicate")) {
+          // Try patch instead
+          await cf(
+            `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+            token,
+            {
+              method: "PATCH",
+              body: JSON.stringify({
+                deployment_configs: {
+                  production: deployConfig,
+                  preview: deployConfig,
+                },
+              }),
+            }
+          );
+        } else {
+          throw new Error("خطا در ساخت پروژه Pages: " + errMsg);
+        }
+      }
     }
 
     const finalUrl = `https://${projectName}.pages.dev`;
-    const adminUrl = `${finalUrl}/admin`;
 
-    return {
-      ok: true,
-      url: finalUrl,
-      adminUrl,
-      adminToken,
-      accountId,
-      kvId,
-      kvTitle,
-      devSubdomain: devSub,
-      note:
-        "پروژه Pages + KV ساخته شد. برای build کامل: در Cloudflare → Pages → " + projectName + " → Settings → Builds & deployments → Connect to Git → repository: " + SOURCE_REPO + " را وصل کنید. سپس اولین Deploy خودکار انجام می‌شود.",
-    };
+    return json(
+      {
+        ok: true,
+        url: finalUrl,
+        adminToken,
+        accountId,
+        kvId,
+        note:
+          "پروژه Pages ساخته شد و تنظیمات (ADMIN_TOKEN + KV) اعمال شد. " +
+          "حالا در داشبورد Cloudflare → Pages → پروژه → Settings → Builds & Deployments → " +
+          `Git integration را به ریپوی ${SOURCE_REPO} وصل کنید تا build خودکار انجام شود.`,
+      },
+      200,
+      cors
+    );
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
-async function handleList(request) {
+async function handleList(request, cors) {
   try {
     const { token } = await request.json();
+    if (!token) throw new Error("توکن الزامی است");
+
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok || !acc.data.result?.length) throw new Error("خطا در دریافت حساب");
     const accountId = acc.data.result[0].id;
+
     const projs = await cf(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects?per_page=50`,
       token
@@ -236,60 +301,68 @@ async function handleList(request) {
         url: `https://${p.name}.pages.dev`,
         createdAt: p.created_on,
         productionBranch: p.production_branch,
-        domains: p.domains,
+        domains: p.domains || [],
       }));
-    return { ok: true, projects: mine };
+
+    return json({ ok: true, projects: mine }, 200, cors);
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
-async function handleUpdate(request) {
+async function handleUpdate(request, cors) {
   try {
     const { token, projectName } = await request.json();
+    if (!token || !projectName) throw new Error("توکن و نام پروژه الزامی است");
+
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok) throw new Error("خطا در دریافت حساب");
     const accountId = acc.data.result[0].id;
-    // trigger retry deployment
-    const deps = await cf(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments?per_page=1`,
-      token
-    );
-    const latest = deps.data.result?.[0];
-    if (!latest) throw new Error("deployment پیدا نشد");
+
+    // Trigger a retry hook / new deployment
     const r = await cf(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments/${latest.id}/retry`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
       token,
       { method: "POST" }
     );
-    if (!r.ok) throw new Error("خطا در آپدیت - لطفا Git integration را چک کنید");
-    return { ok: true };
+
+    return json({ ok: true, message: "درخواست آپدیت ارسال شد" }, 200, cors);
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
-async function handleDelete(request) {
+async function handleDelete(request, cors) {
   try {
     const { token, projectName } = await request.json();
+    if (!token || !projectName) throw new Error("توکن و نام پروژه الزامی است");
+
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok) throw new Error("خطا در دریافت حساب");
     const accountId = acc.data.result[0].id;
+
     const r = await cf(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
       token,
       { method: "DELETE" }
     );
-    if (!r.ok) throw new Error("خطا در حذف");
-    return { ok: true };
+    if (!r.ok && r.status !== 404) throw new Error("خطا در حذف پروژه");
+
+    return json({ ok: true }, 200, cors);
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
-async function handleRotateToken(request) {
+async function handleRotateToken(request, cors) {
   try {
     const { token, projectName } = await request.json();
+    if (!token || !projectName) throw new Error("توکن و نام پروژه الزامی است");
+
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok) throw new Error("خطا در دریافت حساب");
     const accountId = acc.data.result[0].id;
+
     const newAdmin = genToken();
     const r = await cf(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
@@ -305,29 +378,36 @@ async function handleRotateToken(request) {
       }
     );
     if (!r.ok) throw new Error("خطا در تعویض توکن");
-    return { ok: true, adminToken: newAdmin };
+
+    return json({ ok: true, adminToken: newAdmin }, 200, cors);
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
-async function handleGetInfo(request) {
+async function handleGetInfo(request, cors) {
   try {
     const { token, projectName } = await request.json();
+    if (!token || !projectName) throw new Error("توکن و نام پروژه الزامی است");
+
     const acc = await cf("https://api.cloudflare.com/client/v4/accounts", token);
+    if (!acc.ok) throw new Error("خطا در دریافت حساب");
     const accountId = acc.data.result[0].id;
+
     const r = await cf(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
       token
     );
     if (!r.ok) throw new Error("پروژه پیدا نشد");
-    return { ok: true, project: r.data.result };
+
+    return json({ ok: true, project: r.data.result }, 200, cors);
   } catch (e) {
-    return { ok: false, error: e.message };
+    return json({ ok: false, error: e.message }, 400, cors);
   }
 }
 
 // ── HTML UI ──────────────────────────────
+
 function getHtmlContent() {
   return `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -335,215 +415,338 @@ function getHtmlContent() {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AvidKiya OS — Auto Deployer</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+<script src="https://cdn.tailwindcss.com"><\/script>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 <style>
   body { font-family: 'Vazirmatn', sans-serif; background: #05070d; color: #e0e6f0; }
-  .glow { box-shadow: 0 0 40px rgba(93,122,230,0.25); }
-  .grad-btn { background: linear-gradient(120deg, #2141a8, #5d7ae6); }
-  input, button { font-family: inherit; }
-  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 99; }
+  .glow { box-shadow: 0 0 60px rgba(93,122,230,0.2), 0 0 120px rgba(93,122,230,0.05); }
+  .grad-btn { background: linear-gradient(135deg, #2141a8, #5d7ae6); }
+  .grad-btn:hover { background: linear-gradient(135deg, #1a3590, #4d6ad6); }
+  input, button, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }
+  @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+  .toast { animation: slideIn 0.3s ease-out; }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
 </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- Toast container -->
+  <div id="toasts" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+  <!-- Modal container -->
+  <div id="modal" class="fixed inset-0 z-40 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-[#0d1117] border border-[#1c2330] rounded-2xl shadow-2xl max-h-[80vh] overflow-auto" id="modalContent">
+    </div>
+  </div>
+
+  <!-- Main card -->
   <div class="w-full max-w-lg bg-[#0d1117] border border-[#1c2330] rounded-3xl shadow-2xl p-8 relative overflow-hidden glow">
-    <div class="absolute -top-16 -right-16 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+    <!-- Glow decorations -->
+    <div class="absolute -top-20 -right-20 w-48 h-48 bg-blue-500/15 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl"></div>
+
+    <!-- Header -->
     <div class="text-center mb-6 relative">
-      <div class="inline-flex w-16 h-16 items-center justify-center bg-blue-950/60 border border-blue-500 rounded-2xl mb-4">
+      <div class="inline-flex w-16 h-16 items-center justify-center bg-blue-950/60 border border-blue-500/40 rounded-2xl mb-4">
         <span class="text-3xl font-black text-blue-400">A</span>
       </div>
       <h1 class="text-2xl font-black mb-1">AvidKiya OS — Auto Deployer</h1>
       <p class="text-sm text-gray-400">نصب خودکار پرتفولیو روی حساب Cloudflare شما</p>
-      <div class="text-[11px] text-gray-500 mt-1">v${CURRENT_VERSION}</div>
+      <p class="text-[10px] text-gray-600 mt-1">نسخه ${CURRENT_VERSION}</p>
     </div>
+
     <div class="space-y-4 relative">
+      <!-- Get token button -->
       <a href="https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22pages%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22workers_subdomain%22%2C%22type%22%3A%22edit%22%7D%5D&accountId=*&zoneId=all&name=AvidKiya-Deployer"
          target="_blank"
-         class="block text-center py-3.5 border border-orange-600/60 text-orange-400 bg-orange-900/20 hover:bg-orange-900/40 font-bold rounded-xl text-sm transition">
+         class="block text-center py-3.5 border border-orange-500/40 text-orange-400 bg-orange-900/15 hover:bg-orange-900/30 font-bold rounded-xl text-sm transition">
         📥 دریافت توکن Cloudflare
       </a>
+
+      <!-- Token input -->
       <div class="relative">
-        <input id="apiToken" type="password" placeholder="توکن Cloudflare (cf_...)" 
-               class="w-full py-3.5 pr-12 pl-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
-        <button onclick="toggleToken()" class="absolute inset-y-0 left-3 text-gray-500">👁</button>
+        <input id="apiToken" type="password" placeholder="توکن Cloudflare API"
+               class="w-full py-3.5 pr-4 pl-12 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-mono transition">
+        <button onclick="toggleToken()" class="absolute inset-y-0 left-3 text-gray-500 hover:text-gray-300 transition" type="button">👁</button>
       </div>
+
+      <!-- Project name -->
       <input id="projectName" type="text" value="avidkiya-portfolio" placeholder="نام پروژه"
-             class="w-full py-3 px-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-      <input id="adminToken" type="text" placeholder="ADMIN_TOKEN (خالی = خودکار)"
-             class="w-full py-3 px-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
+             class="w-full py-3 px-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm transition">
+
+      <!-- Admin token -->
+      <input id="adminToken" type="text" placeholder="ADMIN_TOKEN (خالی = تولید خودکار)"
+             class="w-full py-3 px-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-mono transition">
+
+      <!-- Deploy button -->
       <button onclick="startDeploy()" id="deployBtn"
-              class="w-full py-3.5 grad-btn text-white font-black rounded-xl text-lg transition hover:brightness-110">
+              class="w-full py-3.5 grad-btn text-white font-black rounded-xl text-lg transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
         🚀 شروع نصب خودکار
       </button>
+
+      <!-- Manage button -->
       <button onclick="listDeployments()"
-              class="w-full py-3 border border-blue-700 text-blue-400 bg-blue-900/20 hover:bg-blue-900/40 font-bold rounded-xl text-sm transition">
-        مدیریت نصب‌های موجود
+              class="w-full py-3 border border-blue-700/40 text-blue-400 bg-blue-900/15 hover:bg-blue-900/30 font-bold rounded-xl text-sm transition">
+        📋 مدیریت نصب‌های موجود
       </button>
+
+      <!-- Status panel -->
       <div id="status" class="hidden mt-3 p-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl">
         <div class="flex justify-between items-center mb-2">
           <span id="statusText" class="text-xs font-bold text-gray-300">شروع...</span>
           <span id="statusPct" class="text-xs font-black text-blue-400">۰٪</span>
         </div>
-        <div class="w-full h-1.5 bg-[#1c2330] rounded-full overflow-hidden">
-          <div id="progressBar" class="h-full bg-blue-500 rounded-full transition-all" style="width:0%"></div>
+        <div class="w-full h-2 bg-[#1c2330] rounded-full overflow-hidden">
+          <div id="progressBar" class="h-full rounded-full transition-all duration-500" style="width:0%; background: linear-gradient(90deg, #2141a8, #5d7ae6);"></div>
         </div>
       </div>
-      <div id="result" class="hidden mt-3 p-4 bg-emerald-900/20 border border-emerald-700 rounded-xl text-sm space-y-2"></div>
-      <div id="error" class="hidden mt-3 p-4 bg-red-900/20 border border-red-700 rounded-xl text-sm text-red-400"></div>
+
+      <!-- Result panel -->
+      <div id="result" class="hidden mt-3 p-4 bg-emerald-900/15 border border-emerald-700/40 rounded-xl text-sm space-y-2"></div>
+
+      <!-- Error panel -->
+      <div id="error" class="hidden mt-3 p-4 bg-red-900/15 border border-red-700/40 rounded-xl text-sm text-red-400"></div>
     </div>
-    <div class="text-center text-[11px] text-gray-500 mt-6 space-x-4 space-x-reverse">
-      <a href="https://github.com/${SOURCE_REPO}" target="_blank" class="hover:text-blue-400">GitHub منبع</a>
+
+    <!-- Footer -->
+    <div class="mt-6 pt-4 border-t border-[#1c2330] flex items-center justify-center gap-4 text-xs text-gray-500">
+      <a href="https://github.com/${SOURCE_REPO}" target="_blank" class="hover:text-gray-300 transition">GitHub</a>
       <span>•</span>
-      <a href="https://t.me/avidkiya" target="_blank" class="hover:text-blue-400">تلگرام</a>
+      <a href="https://t.me/avidkiya" target="_blank" class="hover:text-gray-300 transition">Telegram</a>
       <span>•</span>
-      <a href="#" class="hover:text-amber-400">☕ دونیت</a>
+      <span>AvidKiya © 2024</span>
     </div>
   </div>
-
-<!-- Manage Modal -->
-<div id="manageModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-[#0d1117] border border-[#1c2330] rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-    <div class="p-4 border-b border-[#1c2330] flex justify-between items-center">
-      <h3 class="font-black">مدیریت نصب‌ها</h3>
-      <button onclick="closeManage()" class="text-gray-400 hover:text-white">✕</button>
-    </div>
-    <div id="manageList" class="p-4 overflow-auto space-y-3 flex-1"></div>
-  </div>
-</div>
-
-<div id="toast" class="toast hidden"></div>
 
 <script>
+// ── Helpers ──
 function toggleToken() {
   const el = document.getElementById('apiToken');
   el.type = el.type === 'password' ? 'text' : 'password';
 }
+
+function fa(n) {
+  return String(n).replace(/\\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+
 function setStatus(text, pct) {
-  document.getElementById('status').classList.remove('hidden');
+  const panel = document.getElementById('status');
+  panel.classList.remove('hidden');
   document.getElementById('statusText').innerText = text;
-  document.getElementById('statusPct').innerText = pct + '٪';
+  document.getElementById('statusPct').innerText = fa(pct) + '٪';
   document.getElementById('progressBar').style.width = pct + '%';
 }
+
 function showError(msg) {
   const el = document.getElementById('error');
   el.classList.remove('hidden');
   el.innerText = '⚠️ ' + msg;
-  toast(msg, 'error');
 }
-function toast(msg, type='info'){
-  const t = document.getElementById('toast');
-  t.className = 'toast px-4 py-2 rounded-xl text-sm font-bold ' + (type==='error' ? 'bg-red-600 text-white' : 'bg-gray-800 text-white');
-  t.innerText = msg;
-  t.classList.remove('hidden');
-  setTimeout(()=> t.classList.add('hidden'), 2800);
+
+function hideError() {
+  document.getElementById('error').classList.add('hidden');
 }
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toasts');
+  const toast = document.createElement('div');
+  const bgClass = type === 'success' ? 'bg-emerald-900/90 border-emerald-600' :
+                  type === 'error' ? 'bg-red-900/90 border-red-600' :
+                  'bg-blue-900/90 border-blue-600';
+  toast.className = 'toast pointer-events-auto px-4 py-2 rounded-lg border text-sm font-bold ' + bgClass;
+  toast.innerText = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+function showModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modal').classList.add('flex');
+}
+
+function hideModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal').classList.remove('flex');
+}
+
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal')) hideModal();
+});
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('کپی شد ✓', 'success'));
+}
+
+// ── API calls ──
+
 async function startDeploy() {
   const token = document.getElementById('apiToken').value.trim();
   const projectName = document.getElementById('projectName').value.trim() || 'avidkiya-portfolio';
   const adminToken = document.getElementById('adminToken').value.trim();
-  if (!token) { showError('توکن الزامی است'); return; }
+
+  if (!token) { showError('لطفاً توکن Cloudflare را وارد کنید'); return; }
+
   document.getElementById('result').classList.add('hidden');
-  document.getElementById('error').classList.add('hidden');
-  document.getElementById('deployBtn').disabled = true;
-  document.getElementById('deployBtn').innerText = 'در حال نصب...';
+  hideError();
+
+  const btn = document.getElementById('deployBtn');
+  btn.disabled = true;
+  btn.innerText = '⏳ در حال نصب...';
+
   try {
-    setStatus('در حال اعتبارسنجی توکن...', 10);
+    setStatus('اعتبارسنجی توکن...', 10);
     const verify = await fetch('/api/verify-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     }).then(r => r.json());
     if (!verify.ok) throw new Error(verify.error);
+    showToast('✓ توکن معتبر — حساب: ' + verify.accountName, 'success');
+
     setStatus('ساخت KV namespace...', 30);
-    await new Promise(r=>setTimeout(r,400));
-    setStatus('ساخت پروژه Pages...', 55);
-    await new Promise(r=>setTimeout(r,400));
-    setStatus('پیکربندی محیط...', 75);
-    setStatus('راه‌اندازی نهایی...', 90);
+    await new Promise(r => setTimeout(r, 500));
+
+    setStatus('ساخت پروژه Pages...', 50);
+    await new Promise(r => setTimeout(r, 500));
+
+    setStatus('پیکربندی محیط و bindings...', 70);
+
     const res = await fetch('/api/deploy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, projectName, adminToken }),
     }).then(r => r.json());
     if (!res.ok) throw new Error(res.error);
-    setStatus('✅ نصب کامل شد', 100);
+
+    setStatus('✅ نصب کامل شد!', 100);
+    showToast('نصب با موفقیت انجام شد! 🎉', 'success');
+
     const el = document.getElementById('result');
     el.classList.remove('hidden');
     el.innerHTML = \`
-      <div class="font-bold text-emerald-400">✅ نصب با موفقیت انجام شد!</div>
-      <div>🌐 <b>سایت:</b> <a href="\${res.url}" target="_blank" class="text-blue-400 underline">\${res.url}</a> <button onclick="navigator.clipboard.writeText('\${res.url}')" class="text-[10px] ms-2 px-2 py-0.5 bg-blue-900/40 rounded">کپی</button></div>
-      <div>🔑 <b>ADMIN_TOKEN:</b> <code class="bg-black/40 px-2 py-1 rounded font-mono text-xs">\${res.adminToken}</code> <button onclick="navigator.clipboard.writeText('\${res.adminToken}')" class="text-[10px] ms-2 px-2 py-0.5 bg-emerald-900/40 rounded">کپی</button></div>
-      <div>📦 <b>KV:</b> \${res.kvTitle || res.kvId}</div>
-      <div class="text-xs text-gray-400 mt-2">ورود مدیریت: \${res.adminUrl} — این توکن را ذخیره کنید.</div>
-      \${res.note ? \`<div class="text-xs text-yellow-400 mt-2 p-2 bg-yellow-900/10 rounded">⚠️ \${res.note}</div>\` : ''}
+      <div class="font-bold text-emerald-400 text-base mb-3">✅ نصب با موفقیت انجام شد!</div>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <span>🌐 <b>سایت:</b></span>
+          <div class="flex items-center gap-2">
+            <a href="\${res.url}" target="_blank" class="text-blue-400 underline font-mono text-xs">\${res.url}</a>
+            <button onclick="copyText('\${res.url}')" class="text-gray-500 hover:text-white text-xs">📋</button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span>🔑 <b>ADMIN_TOKEN:</b></span>
+          <div class="flex items-center gap-2">
+            <code class="bg-black/40 px-2 py-1 rounded font-mono text-xs text-emerald-300">\${res.adminToken}</code>
+            <button onclick="copyText('\${res.adminToken}')" class="text-gray-500 hover:text-white text-xs">📋</button>
+          </div>
+        </div>
+      </div>
+      <div class="text-xs text-gray-400 mt-3 p-2 bg-black/20 rounded-lg">
+        💡 این توکن را ذخیره کنید — برای ورود به پنل ادمین (<b>/admin</b>) استفاده می‌شود.
+      </div>
+      \${res.note ? \`<div class="text-xs text-yellow-400 mt-2 p-2 bg-yellow-900/20 rounded-lg">⚠️ \${res.note}</div>\` : ''}
     \`;
-    toast('نصب موفق!', 'info');
+
   } catch (e) {
     showError(e.message);
     setStatus('❌ خطا', 0);
+    showToast(e.message, 'error');
   } finally {
-    document.getElementById('deployBtn').disabled = false;
-    document.getElementById('deployBtn').innerText = '🚀 شروع نصب خودکار';
+    btn.disabled = false;
+    btn.innerText = '🚀 شروع نصب خودکار';
   }
 }
+
 async function listDeployments() {
   const token = document.getElementById('apiToken').value.trim();
-  if (!token) { showError('اول توکن وارد کن'); return; }
-  const r = await fetch('/api/list-deployments', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-  }).then(x => x.json());
-  if (!r.ok) { showError(r.error); return; }
-  openManage(r.projects, token);
-}
-function openManage(projects, token){
-  const modal = document.getElementById('manageModal');
-  const list = document.getElementById('manageList');
-  if(!projects.length){ list.innerHTML = '<div class="text-center text-gray-400 py-8">پروژه‌ای پیدا نشد</div>'; }
-  else {
-    list.innerHTML = projects.map(p => \`
-      <div class="p-3 rounded-xl bg-[#0a0d13] border border-[#1c2330] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div class="font-bold text-blue-300">\${p.name}</div>
-          <div class="text-xs text-gray-400">\${p.url}</div>
-          <div class="text-[10px] text-gray-500">\${p.createdAt ? new Date(p.createdAt).toLocaleString('fa-IR') : ''}</div>
+  if (!token) { showError('لطفاً اول توکن را وارد کنید'); return; }
+
+  try {
+    const r = await fetch('/api/list-deployments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }).then(x => x.json());
+
+    if (!r.ok) { showError(r.error); return; }
+
+    if (!r.projects.length) {
+      showToast('پروژه‌ای با نام avidkiya پیدا نشد', 'info');
+      return;
+    }
+
+    let html = '<div class="p-6"><h2 class="text-lg font-black mb-4">📋 پروژه‌های نصب شده</h2><div class="space-y-3">';
+
+    for (const p of r.projects) {
+      html += \`
+        <div class="p-4 bg-[#0a0d13] border border-[#1c2330] rounded-xl">
+          <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+            <div>
+              <span class="font-bold text-blue-400">\${p.name}</span>
+              <a href="\${p.url}" target="_blank" class="text-xs text-gray-400 ms-2 hover:text-white">🔗 باز کردن</a>
+            </div>
+            <span class="text-[10px] text-gray-500">\${new Date(p.createdAt).toLocaleDateString('fa-IR')}</span>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button onclick="handleRotate('\${p.name}')" class="text-[11px] px-2.5 py-1 rounded-lg border border-amber-700/40 text-amber-400 hover:bg-amber-900/20">🔄 تعویض توکن</button>
+            <button onclick="copyText('\${p.url}')" class="text-[11px] px-2.5 py-1 rounded-lg border border-blue-700/40 text-blue-400 hover:bg-blue-900/20">📋 کپی URL</button>
+            <button onclick="handleDeleteProject('\${p.name}')" class="text-[11px] px-2.5 py-1 rounded-lg border border-red-700/40 text-red-400 hover:bg-red-900/20">🗑 حذف</button>
+          </div>
         </div>
-        <div class="flex flex-wrap gap-2 text-[11px]">
-          <button onclick="copyText('\${p.url}')" class="px-2 py-1 bg-blue-900/30 rounded">کپی URL</button>
-          <button onclick="doUpdate('\${p.name}')" class="px-2 py-1 bg-amber-900/30 text-amber-300 rounded">آپدیت</button>
-          <button onclick="doRotate('\${p.name}')" class="px-2 py-1 bg-purple-900/30 text-purple-300 rounded">rotate token</button>
-          <button onclick="doDelete('\${p.name}')" class="px-2 py-1 bg-red-900/30 text-red-300 rounded">حذف</button>
-        </div>
-      </div>
-    \`).join('');
+      \`;
+    }
+
+    html += '</div><button onclick="hideModal()" class="mt-4 w-full py-2 border border-gray-700 rounded-xl text-sm text-gray-400 hover:bg-gray-800">بستن</button></div>';
+
+    showModal(html);
+
+  } catch (e) {
+    showError(e.message);
   }
-  modal.dataset.token = token;
-  modal.classList.remove('hidden');
 }
-function closeManage(){ document.getElementById('manageModal').classList.add('hidden'); }
-function copyText(t){ navigator.clipboard.writeText(t); toast('کپی شد'); }
-async function doUpdate(name){
-  const token = document.getElementById('manageModal').dataset.token;
-  if(!confirm('آپدیت '+name+' ؟')) return;
-  const r = await fetch('/api/update-deployment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, projectName: name })}).then(x=>x.json());
-  toast(r.ok ? 'درخواست آپدیت ارسال شد' : ('خطا: '+r.error), r.ok ? 'info' : 'error');
+
+async function handleRotate(projectName) {
+  const token = document.getElementById('apiToken').value.trim();
+  if (!confirm('آیا از تعویض توکن ادمین مطمئن هستید؟')) return;
+
+  try {
+    const r = await fetch('/api/rotate-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, projectName }),
+    }).then(x => x.json());
+
+    if (!r.ok) throw new Error(r.error);
+    showToast('توکن جدید: ' + r.adminToken, 'success');
+    copyText(r.adminToken);
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
 }
-async function doRotate(name){
-  const token = document.getElementById('manageModal').dataset.token;
-  if(!confirm('تعویض ADMIN_TOKEN برای '+name+' ؟')) return;
-  const r = await fetch('/api/rotate-token', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, projectName: name })}).then(x=>x.json());
-  if(r.ok){ alert('توکن جدید:\\n'+r.adminToken); copyText(r.adminToken); } else { toast(r.error,'error'); }
+
+async function handleDeleteProject(projectName) {
+  const token = document.getElementById('apiToken').value.trim();
+  if (!confirm('آیا از حذف پروژه ' + projectName + ' مطمئن هستید؟ این عمل غیرقابل بازگشت است!')) return;
+
+  try {
+    const r = await fetch('/api/delete-deployment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, projectName }),
+    }).then(x => x.json());
+
+    if (!r.ok) throw new Error(r.error);
+    showToast('پروژه حذف شد ✓', 'success');
+    hideModal();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
 }
-async function doDelete(name){
-  const token = document.getElementById('manageModal').dataset.token;
-  if(!confirm('حذف کامل '+name+' ؟ این عمل برگشت‌ناپذیر است.')) return;
-  const r = await fetch('/api/delete-deployment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, projectName: name })}).then(x=>x.json());
-  toast(r.ok ? 'حذف شد' : ('خطا: '+r.error), r.ok ? 'info' : 'error');
-  if(r.ok) listDeployments();
-}
-</script>
+<\/script>
 </body>
 </html>`;
 }
