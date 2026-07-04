@@ -32,11 +32,12 @@ export function PersianCalendar() {
   const todayOccasion = getTodayOccasion(jalali.jm, jalali.jd, language);
   const nextOccasion = !todayOccasion ? getNextOccasion(jalali.jm, jalali.jd, language) : null;
   
-  // Get calendar days
+  // Get calendar days for the full month
   const monthLength = jalaaliMonthLength(jalali.jy, jalali.jm);
   const firstDayOfMonth = toGregorian(jalali.jy, jalali.jm, 1);
   const firstWeekday = getPersianWeekday(firstDayOfMonth);
   
+  // Build calendar grid
   const calendarDays: (number | null)[] = [];
   // Add empty cells for days before the 1st
   for (let i = 0; i < firstWeekday; i++) {
@@ -45,6 +46,10 @@ export function PersianCalendar() {
   // Add days of the month
   for (let d = 1; d <= monthLength; d++) {
     calendarDays.push(d);
+  }
+  // Fill remaining cells to complete the grid
+  while (calendarDays.length % 7 !== 0) {
+    calendarDays.push(null);
   }
   
   const formatTime = (date: Date) => {
@@ -59,29 +64,29 @@ export function PersianCalendar() {
   const weekdays = language === 'fa' ? PERSIAN_WEEKDAYS_FA : PERSIAN_WEEKDAYS_EN;
   
   return (
-    <div className="glass-card-strong p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="glass-card-strong p-6 lg:p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Section 1: Clock */}
-        <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-[var(--bg-tertiary)]">
-          <div className="text-5xl font-black tracking-wider gradient-text font-mono">
+        {/* Section 1: Live Clock */}
+        <div className="lg:col-span-3 flex flex-col items-center justify-center p-6 rounded-2xl bg-[var(--bg-tertiary)]">
+          <div className="text-5xl lg:text-6xl font-black tracking-wider gradient-text font-mono mb-2">
             {formatTime(now)}
           </div>
-          <div className="mt-2 text-sm text-[var(--text-muted)]">
+          <div className="text-sm text-[var(--text-muted)]">
             {language === 'fa' ? 'ساعت زنده' : 'Live Clock'}
           </div>
         </div>
         
         {/* Section 2: Today's Date & Occasion */}
-        <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-[var(--bg-tertiary)]">
+        <div className="lg:col-span-4 flex flex-col items-center justify-center p-6 rounded-2xl bg-[var(--bg-tertiary)]">
           {/* Weekday */}
-          <div className="text-lg font-medium text-[var(--text-secondary)]">
+          <div className="text-lg font-medium text-[var(--text-secondary)] mb-1">
             {getPersianWeekdayName(weekday, language, true)}
           </div>
           
           {/* Date */}
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-4xl font-black gradient-text">
+          <div className="flex items-baseline gap-3 mb-2">
+            <span className="text-5xl font-black gradient-text">
               {language === 'fa' ? toPersianDigits(jalali.jd) : jalali.jd}
             </span>
             <span className="text-2xl font-bold text-[var(--text-primary)]">
@@ -93,14 +98,14 @@ export function PersianCalendar() {
           </div>
           
           {/* Hakhameneshi Year */}
-          <div className="mt-2 text-sm text-[var(--accent-amber)]">
+          <div className="text-sm text-[var(--accent-amber)] mb-3">
             {language === 'fa' 
               ? `سال هخامنشی: ${toPersianDigits(hakhameneshiYear)}`
               : `Hakhameneshi Year: ${hakhameneshiYear}`}
           </div>
           
           {/* Occasion */}
-          <div className="mt-3 px-4 py-2 rounded-full bg-[var(--primary-glow)] border border-[var(--primary)]">
+          <div className="px-4 py-2 rounded-full bg-[var(--primary-glow)] border border-[var(--primary)]">
             {todayOccasion ? (
               <span className="text-sm font-medium text-[var(--primary)]">
                 🎉 {todayOccasion}
@@ -111,16 +116,21 @@ export function PersianCalendar() {
                   ? `${nextOccasion.title} در ${toPersianDigits(nextOccasion.daysLeft)} روز`
                   : `${nextOccasion.title} in ${nextOccasion.daysLeft} days`}
               </span>
-            ) : null}
+            ) : (
+              <span className="text-sm text-[var(--text-muted)]">—</span>
+            )}
           </div>
         </div>
         
         {/* Section 3: Full Month Calendar */}
-        <div className="p-4 rounded-xl bg-[var(--bg-tertiary)]">
+        <div className="lg:col-span-5 p-6 rounded-2xl bg-[var(--bg-tertiary)]">
           {/* Month Header */}
-          <div className="text-center mb-3">
-            <span className="font-bold text-[var(--text-primary)]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-lg text-[var(--text-primary)]">
               {getPersianMonthName(jalali.jm, language)} {language === 'fa' ? toPersianDigits(jalali.jy) : jalali.jy}
+            </h3>
+            <span className="text-xs text-[var(--text-muted)]">
+              {language === 'fa' ? `${toPersianDigits(monthLength)} روز` : `${monthLength} days`}
             </span>
           </div>
           
@@ -129,8 +139,8 @@ export function PersianCalendar() {
             {weekdays.map((day, i) => (
               <div
                 key={i}
-                className={`text-center text-xs font-medium py-1 ${
-                  i === 6 ? 'text-[var(--accent-rose)]' : 'text-[var(--text-muted)]'
+                className={`text-center text-xs font-bold py-2 rounded-lg ${
+                  i === 6 ? 'text-[var(--accent-rose)] bg-[var(--accent-rose)]/10' : 'text-[var(--text-muted)]'
                 }`}
               >
                 {day}
@@ -153,12 +163,12 @@ export function PersianCalendar() {
               return (
                 <div
                   key={i}
-                  className={`aspect-square flex items-center justify-center rounded-lg text-sm transition-colors ${
+                  className={`aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-all cursor-default ${
                     isToday
-                      ? 'gradient-bg text-white font-bold'
+                      ? 'gradient-bg text-white font-bold shadow-lg shadow-[var(--primary)]/30 scale-110'
                       : isFriday
-                        ? 'text-[var(--accent-rose)] hover:bg-[var(--bg-secondary)]'
-                        : 'hover:bg-[var(--bg-secondary)]'
+                        ? 'text-[var(--accent-rose)] hover:bg-[var(--accent-rose)]/10'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
                   }`}
                 >
                   {language === 'fa' ? toPersianDigits(day) : day}

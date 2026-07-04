@@ -27,7 +27,7 @@ const tabs: NavTab[] = [
 
 export function TopNav() {
   const pathname = usePathname();
-  const { language, setLanguage, theme, setTheme, dir, isAdmin } = useApp();
+  const { language, setLanguage, theme, setTheme, dir } = useApp();
   const { cms, t } = useCms();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -39,16 +39,23 @@ export function TopNav() {
   
   // Update tab indicator position
   useEffect(() => {
-    const activeIndex = tabs.findIndex(tab => tab.href === pathname);
-    if (activeIndex >= 0 && tabsRef.current[activeIndex]) {
-      const tab = tabsRef.current[activeIndex];
-      if (tab) {
-        setIndicatorStyle({
-          left: tab.offsetLeft,
-          width: tab.offsetWidth
-        });
+    const updateIndicator = () => {
+      const activeIndex = tabs.findIndex(tab => tab.href === pathname);
+      if (activeIndex >= 0 && tabsRef.current[activeIndex]) {
+        const tab = tabsRef.current[activeIndex];
+        if (tab) {
+          setIndicatorStyle({
+            left: tab.offsetLeft,
+            width: tab.offsetWidth
+          });
+        }
       }
-    }
+    };
+    
+    updateIndicator();
+    // Update on resize
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
   }, [pathname]);
 
   // Close switcher on outside click
@@ -62,9 +69,14 @@ export function TopNav() {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
-  // Handle print resume
+  // Handle print resume - opens resume page and prints
   const handlePrintResume = () => {
-    window.open('/resume?print=true', '_blank');
+    const printWindow = window.open('/resume?print=true', '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        setTimeout(() => printWindow.print(), 500);
+      };
+    }
   };
 
   return (
@@ -74,7 +86,7 @@ export function TopNav() {
         <div className="absolute inset-0 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border-color)]" />
         
         <nav className="relative h-full max-w-7xl mx-auto px-4 flex items-center justify-between">
-          {/* Left: Mobile Menu + Logo */}
+          {/* Left: Logo (+ Mobile Menu Button) */}
           <div className="flex items-center gap-3">
             {/* Hamburger - Only Mobile */}
             <button
@@ -90,7 +102,7 @@ export function TopNav() {
             </Link>
           </div>
           
-          {/* Center: Tab Bar - Desktop Only */}
+          {/* Center: Tab Bar - Desktop Only (All Pages) */}
           <div className="hidden lg:flex items-center">
             <div className="relative flex items-center gap-1 p-1.5 rounded-2xl glass-card">
               {/* Animated Indicator */}
@@ -110,7 +122,7 @@ export function TopNav() {
                     key={tab.href}
                     href={tab.href}
                     ref={el => { tabsRef.current[index] = el; }}
-                    className={`relative z-10 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    className={`relative z-10 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive
                         ? 'text-white'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -192,14 +204,16 @@ export function TopNav() {
       {/* Mobile Drawer Overlay */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm drawer-overlay"
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm drawer-overlay lg:hidden"
           onClick={() => setDrawerOpen(false)}
         />
       )}
       
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer - Opens from correct side based on RTL/LTR */}
       <div
-        className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} z-50 h-full w-80 max-w-[85vw] bg-[var(--bg-secondary)] shadow-2xl transform transition-transform duration-300 ${
+        className={`fixed top-0 z-50 h-full w-80 max-w-[85vw] bg-[var(--bg-secondary)] shadow-2xl transform transition-transform duration-300 lg:hidden ${
+          isRTL ? 'right-0' : 'left-0'
+        } ${
           drawerOpen 
             ? 'translate-x-0' 
             : isRTL ? 'translate-x-full' : '-translate-x-full'

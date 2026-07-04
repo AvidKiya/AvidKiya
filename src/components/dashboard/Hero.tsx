@@ -4,14 +4,10 @@ import Link from 'next/link';
 import { useApp, useCms } from '@/contexts/AppContext';
 import { Icon } from '@/components/ui/Icon';
 
-const ASCII_LOGO = `
- █████╗ ██╗   ██╗██╗██████╗     ██████╗ ███████╗██╗   ██╗██╗  ██╗██╗   ██╗██████╗ 
-██╔══██╗██║   ██║██║██╔══██╗    ██╔══██╗██╔════╝██║   ██║██║  ██║██║   ██║██╔══██╗
-███████║██║   ██║██║██║  ██║    ██║  ██║█████╗  ██║   ██║███████║██║   ██║██████╔╝
-██╔══██║╚██╗ ██╔╝██║██║  ██║    ██║  ██║██╔══╝  ╚██╗ ██╔╝██╔══██║██║   ██║██╔══██╗
-██║  ██║ ╚████╔╝ ██║██████╔╝    ██████╔╝███████╗ ╚████╔╝ ██║  ██║╚██████╔╝██████╔╝
-╚═╝  ╚═╝  ╚═══╝  ╚═╝╚═════╝     ╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ 
-`;
+// ASCII Art - Always LTR
+const ASCII_LOGO = `▄▀█ █░█ █ █▀▄   █▄▀ █ █▄█ ▄▀█
+█▀█ ▀▄▀ █ █▄▀   █░█ █ ░█░ █▀█
+░░░ A V I D   D E V H U B ░░░`;
 
 const TECH_CHIPS = ['Go', 'TypeScript', 'Python', 'PostgreSQL', 'Redis', 'Kubernetes', 'Docker', 'gRPC'];
 
@@ -20,7 +16,12 @@ export function Hero() {
   const { cms, t } = useCms();
   
   const handlePrintResume = () => {
-    window.open('/resume?print=true', '_blank');
+    const printWindow = window.open('/resume?print=true', '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        setTimeout(() => printWindow.print(), 500);
+      };
+    }
   };
   
   return (
@@ -33,9 +34,9 @@ export function Hero() {
             {/* Scan Animation */}
             <div className="scan-line pointer-events-none" />
             
-            {/* ASCII Art (Desktop Only) */}
-            <div className="hidden lg:block mb-6 overflow-hidden">
-              <pre className="text-[6px] leading-tight text-[var(--primary)] opacity-60 font-mono whitespace-pre">
+            {/* ASCII Art (Desktop Only) - Always LTR */}
+            <div className="hidden lg:block mb-6 overflow-hidden" dir="ltr">
+              <pre className="text-[10px] leading-tight text-[var(--primary)] opacity-70 font-mono whitespace-pre text-center">
                 {ASCII_LOGO}
               </pre>
             </div>
@@ -103,9 +104,11 @@ export function Hero() {
           <div className="glass-card-strong p-6 lg:p-8">
             {/* Profile Header */}
             <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[var(--border-color)]">
-              <div className="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-3xl font-black text-white">
-                {cms.identity.avatar ? (
-                  <img src={cms.identity.avatar} alt="Avatar" className="w-full h-full rounded-2xl object-cover" />
+              <div className="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-3xl font-black text-white overflow-hidden">
+                {cms.brand.logoImage ? (
+                  <img src={cms.brand.logoImage} alt="Avatar" className="w-full h-full object-cover" />
+                ) : cms.identity.avatar ? (
+                  <img src={cms.identity.avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   cms.brand.logoLetter || 'A'
                 )}

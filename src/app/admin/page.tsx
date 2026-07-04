@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
 import { useApp, useCms } from '@/contexts/AppContext';
 import { Icon } from '@/components/ui/Icon';
 import type { CmsState } from '@/lib/cms/schema';
@@ -26,7 +25,7 @@ const sections: { id: Section; labelFa: string; labelEn: string; icon: string }[
   { id: 'overview', labelFa: 'نمای کلی', labelEn: 'Overview', icon: 'home' },
   { id: 'identity', labelFa: 'هویت', labelEn: 'Identity', icon: 'user' },
   { id: 'socials', labelFa: 'شبکه‌های اجتماعی', labelEn: 'Socials', icon: 'link' },
-  { id: 'dashboard', labelFa: 'صفحه اصلی', labelEn: 'Dashboard', icon: 'layout-dashboard' },
+  { id: 'dashboard', labelFa: 'صفحه اصلی', labelEn: 'Dashboard', icon: 'home' },
   { id: 'about', labelFa: 'درباره من', labelEn: 'About', icon: 'info' },
   { id: 'projects', labelFa: 'پروژه‌ها', labelEn: 'Projects', icon: 'folder' },
   { id: 'resume', labelFa: 'رزومه', labelEn: 'Resume', icon: 'file-text' },
@@ -40,38 +39,38 @@ const sections: { id: Section; labelFa: string; labelEn: string; icon: string }[
 ];
 
 export default function AdminPage() {
-  const router = useRouter();
   const { language, isAdmin, setIsAdmin, adminToken, setAdminToken, syncStatus, setSyncStatus } = useApp();
-  const { cms, setCms, t } = useCms();
+  const { cms, setCms, updateCms, t } = useCms();
   
+  const [hasAccess, setHasAccess] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loginToken, setLoginToken] = useState('');
   const [loginError, setLoginError] = useState('');
   const [activeSection, setActiveSection] = useState<Section>('overview');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [newPassword, setNewPassword] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [passwordChanged, setPasswordChanged] = useState(false);
   
-  // Check hash for hidden access
+  // Check hash for hidden access - MUST have #kiya/panel
   useEffect(() => {
-    const checkAccess = () => {
+    const checkHash = () => {
       const hash = window.location.hash;
-      if (hash !== '#kiya/panel') {
-        router.push('/');
-        return;
-      }
-      
-      // Check if already logged in
-      const savedToken = localStorage.getItem('avidkiya-admin-token');
-      if (savedToken) {
-        verifyToken(savedToken);
+      if (hash === '#kiya/panel') {
+        setHasAccess(true);
+        // Check saved token
+        const savedToken = localStorage.getItem('avidkiya-admin-token');
+        if (savedToken) {
+          verifyToken(savedToken);
+        }
+      } else {
+        setHasAccess(false);
       }
     };
     
-    checkAccess();
-    window.addEventListener('hashchange', checkAccess);
-    return () => window.removeEventListener('hashchange', checkAccess);
-  }, [router]);
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, []);
   
   const verifyToken = async (token: string) => {
     try {
@@ -90,13 +89,13 @@ export default function AdminPage() {
         localStorage.setItem('avidkiya-admin-token', token);
         
         // Check if first login with default password
-        if (token === 'admin') {
+        if (token === 'admin' && !localStorage.getItem('avidkiya-password-changed')) {
           setShowPasswordChange(true);
         }
       } else {
         setLoginError(language === 'fa' ? 'رمز عبور نادرست' : 'Invalid password');
       }
-    } catch (error) {
+    } catch {
       setLoginError(language === 'fa' ? 'خطا در اتصال' : 'Connection error');
     }
   };
@@ -112,7 +111,8 @@ export default function AdminPage() {
     setIsAdmin(false);
     setAdminToken('');
     localStorage.removeItem('avidkiya-admin-token');
-    router.push('/');
+    window.location.hash = '';
+    window.location.href = '/';
   };
   
   const handlePasswordChange = async () => {
@@ -121,15 +121,16 @@ export default function AdminPage() {
       return;
     }
     
-    // In a real app, this would call an API to change the password
-    // For now, we'll just save it locally
+    // Save new password and mark as changed
     localStorage.setItem('avidkiya-admin-token', newPassword);
+    localStorage.setItem('avidkiya-password-changed', 'true');
     setAdminToken(newPassword);
     setShowPasswordChange(false);
-    alert(language === 'fa' ? 'رمز عبور تغییر کرد' : 'Password changed successfully');
+    setPasswordChanged(true);
+    alert(language === 'fa' ? 'رمز عبور تغییر کرد. از این پس از رمز جدید استفاده کنید.' : 'Password changed. Use the new password from now on.');
   };
   
-  const saveCms = async () => {
+  const saveCms = useCallback(async () => {
     setSyncStatus('syncing');
     try {
       const res = await fetch('/api/cms', {
@@ -147,10 +148,10 @@ export default function AdminPage() {
       } else {
         setSyncStatus('error');
       }
-    } catch (error) {
+    } catch {
       setSyncStatus('error');
     }
-  };
+  }, [adminToken, cms, setSyncStatus]);
   
   const exportData = () => {
     const blob = new Blob([JSON.stringify(cms, null, 2)], { type: 'application/json' });
@@ -173,12 +174,24 @@ export default function AdminPage() {
         setCms(data as CmsState);
         saveCms();
         alert(language === 'fa' ? 'داده‌ها وارد شدند' : 'Data imported successfully');
-      } catch (error) {
+      } catch {
         alert(language === 'fa' ? 'خطا در خواندن فایل' : 'Error reading file');
       }
     };
     reader.readAsText(file);
   };
+  
+  // No access - show nothing (hidden admin)
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-[var(--text-muted)]">
+          <Icon name="lock" size={64} className="mx-auto mb-4 opacity-30" />
+          <p className="text-lg">404 - Page Not Found</p>
+        </div>
+      </div>
+    );
+  }
   
   // Login Screen
   if (!isAuthorized) {
@@ -291,7 +304,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className={`admin-sidebar w-64 flex-shrink-0 ${sidebarOpen ? '' : 'hidden lg:block'}`}>
+      <aside className="admin-sidebar w-64 flex-shrink-0 hidden lg:block">
         <div className="sticky top-16 h-[calc(100vh-64px)] overflow-y-auto p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -299,7 +312,7 @@ export default function AdminPage() {
               {language === 'fa' ? 'پنل مدیریت' : 'Admin'}
             </h2>
             <div className={`sync-pill ${syncStatus}`}>
-              {syncStatus === 'syncing' && (language === 'fa' ? 'در حال ذخیره...' : 'Syncing...')}
+              {syncStatus === 'syncing' && (language === 'fa' ? 'ذخیره...' : 'Saving...')}
               {syncStatus === 'synced' && '✓'}
               {syncStatus === 'error' && '✕'}
               {syncStatus === 'idle' && ''}
@@ -357,17 +370,48 @@ export default function AdminPage() {
         </div>
       </aside>
       
+      {/* Mobile Nav */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] p-2">
+        <div className="flex overflow-x-auto gap-1">
+          {sections.slice(0, 6).map(section => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`flex-shrink-0 p-3 rounded-xl ${
+                activeSection === section.id ? 'gradient-bg text-white' : ''
+              }`}
+            >
+              <Icon name={section.icon} size={20} />
+            </button>
+          ))}
+        </div>
+      </div>
+      
       {/* Main Content */}
-      <main className="flex-1 p-6">
-        <AdminSection section={activeSection} />
+      <main className="flex-1 p-6 pb-24 lg:pb-6">
+        <AdminSection 
+          section={activeSection} 
+          cms={cms}
+          updateCms={updateCms}
+          language={language}
+          t={t}
+          saveCms={saveCms}
+        />
       </main>
     </div>
   );
 }
 
-function AdminSection({ section }: { section: Section }) {
-  const { language } = useApp();
-  const { cms, updateCms, t } = useCms();
+interface AdminSectionProps {
+  section: Section;
+  cms: CmsState;
+  updateCms: (path: string, value: unknown) => void;
+  language: 'fa' | 'en';
+  t: (text: { fa: string; en: string } | string | undefined) => string;
+  saveCms: () => Promise<void>;
+}
+
+function AdminSection({ section, cms, updateCms, language, t, saveCms }: AdminSectionProps) {
   
   switch (section) {
     case 'overview':
@@ -377,7 +421,7 @@ function AdminSection({ section }: { section: Section }) {
             {language === 'fa' ? 'نمای کلی' : 'Overview'}
           </h1>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="glass-card-strong p-6">
               <Icon name="eye" size={24} className="text-[var(--primary)] mb-2" />
               <p className="text-2xl font-bold">0</p>
@@ -410,6 +454,16 @@ function AdminSection({ section }: { section: Section }) {
               </p>
             </div>
           </div>
+          
+          {/* Quick Info */}
+          <div className="glass-card-strong p-6">
+            <h2 className="font-bold mb-4">{language === 'fa' ? 'اطلاعات سریع' : 'Quick Info'}</h2>
+            <div className="space-y-2 text-sm">
+              <p><strong>{language === 'fa' ? 'نام:' : 'Name:'}</strong> {t(cms.identity.fullName)}</p>
+              <p><strong>{language === 'fa' ? 'ایمیل:' : 'Email:'}</strong> {cms.identity.email}</p>
+              <p><strong>{language === 'fa' ? 'گیت‌هاب:' : 'GitHub:'}</strong> {cms.settings.githubUsername}</p>
+            </div>
+          </div>
         </div>
       );
     
@@ -420,10 +474,70 @@ function AdminSection({ section }: { section: Section }) {
             {language === 'fa' ? 'هویت' : 'Identity'}
           </h1>
           
-          <div className="glass-card-strong p-6 space-y-4">
+          <div className="glass-card-strong p-6 space-y-6">
+            {/* Logo Upload */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                {language === 'fa' ? 'لوگو / آواتار' : 'Logo / Avatar'}
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 rounded-2xl gradient-bg flex items-center justify-center overflow-hidden">
+                  {cms.brand.logoImage ? (
+                    <img src={cms.brand.logoImage} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-black text-white">{cms.brand.logoLetter}</span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="block px-4 py-2 rounded-xl glass-card hover:border-[var(--border-active)] cursor-pointer text-center">
+                    <Icon name="upload" size={16} className="inline me-2" />
+                    {language === 'fa' ? 'آپلود لوگو' : 'Upload Logo'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            updateCms('brand.logoImage', event.target?.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {cms.brand.logoImage && (
+                    <button
+                      onClick={() => updateCms('brand.logoImage', '')}
+                      className="text-sm text-[var(--accent-rose)]"
+                    >
+                      {language === 'fa' ? 'حذف لوگو' : 'Remove'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Logo Letter */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                {language === 'fa' ? 'حرف لوگو (اگه عکس نباشه)' : 'Logo Letter (fallback)'}
+              </label>
+              <input
+                type="text"
+                maxLength={1}
+                value={cms.brand.logoLetter}
+                onChange={e => updateCms('brand.logoLetter', e.target.value)}
+                className="w-20 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none text-center text-xl font-bold"
+              />
+            </div>
+            
+            {/* Full Name */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-[var(--text-muted)] mb-1">
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
                   {language === 'fa' ? 'نام کامل (فارسی)' : 'Full Name (Persian)'}
                 </label>
                 <input
@@ -434,7 +548,7 @@ function AdminSection({ section }: { section: Section }) {
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--text-muted)] mb-1">
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
                   {language === 'fa' ? 'نام کامل (انگلیسی)' : 'Full Name (English)'}
                 </label>
                 <input
@@ -446,8 +560,35 @@ function AdminSection({ section }: { section: Section }) {
               </div>
             </div>
             
+            {/* Title */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                  {language === 'fa' ? 'عنوان شغلی (فارسی)' : 'Job Title (Persian)'}
+                </label>
+                <input
+                  type="text"
+                  value={cms.identity.title.fa}
+                  onChange={e => updateCms('identity.title.fa', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                  {language === 'fa' ? 'عنوان شغلی (انگلیسی)' : 'Job Title (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={cms.identity.title.en}
+                  onChange={e => updateCms('identity.title.en', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                />
+              </div>
+            </div>
+            
+            {/* Email */}
             <div>
-              <label className="block text-sm text-[var(--text-muted)] mb-1">
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
                 {language === 'fa' ? 'ایمیل' : 'Email'}
               </label>
               <input
@@ -458,50 +599,39 @@ function AdminSection({ section }: { section: Section }) {
               />
             </div>
             
-            <div>
-              <label className="block text-sm text-[var(--text-muted)] mb-1">
-                {language === 'fa' ? 'حرف لوگو' : 'Logo Letter'}
-              </label>
-              <input
-                type="text"
-                maxLength={1}
-                value={cms.brand.logoLetter}
-                onChange={e => updateCms('brand.logoLetter', e.target.value)}
-                className="w-20 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none text-center text-xl font-bold"
-              />
+            {/* Brand Name */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                  {language === 'fa' ? 'نام برند (فارسی)' : 'Brand Name (Persian)'}
+                </label>
+                <input
+                  type="text"
+                  value={cms.brand.brandName.fa}
+                  onChange={e => updateCms('brand.brandName.fa', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                  {language === 'fa' ? 'نام برند (انگلیسی)' : 'Brand Name (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={cms.brand.brandName.en}
+                  onChange={e => updateCms('brand.brandName.en', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                />
+              </div>
             </div>
             
-            <div>
-              <label className="block text-sm text-[var(--text-muted)] mb-1">
-                {language === 'fa' ? 'آپلود لوگو' : 'Upload Logo'}
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={e => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      updateCms('brand.logoImage', event.target?.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                className="w-full"
-              />
-              {cms.brand.logoImage && (
-                <div className="mt-2">
-                  <img src={cms.brand.logoImage} alt="Logo" className="w-20 h-20 rounded-xl object-contain bg-[var(--bg-tertiary)]" />
-                  <button
-                    onClick={() => updateCms('brand.logoImage', '')}
-                    className="text-sm text-[var(--accent-rose)] mt-1"
-                  >
-                    {language === 'fa' ? 'حذف' : 'Remove'}
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Save Button */}
+            <button
+              onClick={saveCms}
+              className="px-6 py-2 rounded-xl gradient-bg text-white font-medium"
+            >
+              {language === 'fa' ? 'ذخیره تغییرات' : 'Save Changes'}
+            </button>
           </div>
         </div>
       );
@@ -563,6 +693,51 @@ function AdminSection({ section }: { section: Section }) {
                 </div>
               </div>
             </div>
+            
+            {/* Password Change */}
+            <div className="glass-card-strong p-6">
+              <h2 className="font-bold mb-4">
+                {language === 'fa' ? 'تغییر رمز عبور' : 'Change Password'}
+              </h2>
+              <p className="text-sm text-[var(--text-muted)] mb-4">
+                {language === 'fa' 
+                  ? 'رمز جدید را وارد کنید و ذخیره کنید.'
+                  : 'Enter a new password and save.'}
+              </p>
+              <div className="flex gap-4">
+                <input
+                  type="password"
+                  placeholder={language === 'fa' ? 'رمز جدید' : 'New password'}
+                  className="flex-1 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                  id="newPasswordInput"
+                />
+                <button
+                  onClick={() => {
+                    const input = document.getElementById('newPasswordInput') as HTMLInputElement;
+                    const newPw = input?.value;
+                    if (newPw && newPw.length >= 4) {
+                      localStorage.setItem('avidkiya-admin-token', newPw);
+                      localStorage.setItem('avidkiya-password-changed', 'true');
+                      alert(language === 'fa' ? 'رمز تغییر کرد!' : 'Password changed!');
+                      input.value = '';
+                    } else {
+                      alert(language === 'fa' ? 'رمز باید حداقل ۴ کاراکتر باشد' : 'Password must be at least 4 characters');
+                    }
+                  }}
+                  className="px-6 py-2 rounded-xl gradient-bg text-white font-medium"
+                >
+                  {language === 'fa' ? 'تغییر' : 'Change'}
+                </button>
+              </div>
+            </div>
+            
+            {/* Save */}
+            <button
+              onClick={saveCms}
+              className="px-6 py-2 rounded-xl gradient-bg text-white font-medium"
+            >
+              {language === 'fa' ? 'ذخیره تغییرات' : 'Save Changes'}
+            </button>
           </div>
         </div>
       );
@@ -571,6 +746,9 @@ function AdminSection({ section }: { section: Section }) {
       return (
         <div className="text-center py-12 text-[var(--text-muted)]">
           <Icon name="settings" size={48} className="mx-auto mb-4 opacity-50" />
+          <p className="text-lg font-medium mb-2">
+            {language === 'fa' ? sections.find(s => s.id === section)?.labelFa : sections.find(s => s.id === section)?.labelEn}
+          </p>
           <p>{language === 'fa' ? 'در حال توسعه...' : 'Coming soon...'}</p>
         </div>
       );

@@ -28,6 +28,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['Github', 'src']));
+  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
   
   // Fetch GitHub repos
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function ProjectsPage() {
       }
       
       try {
-        const res = await fetch(`https://api.github.com/users/${cms.settings.githubUsername}/repos?sort=updated&per_page=20`);
+        const res = await fetch(`https://api.github.com/users/${cms.settings.githubUsername}/repos?sort=updated&per_page=30`);
         if (res.ok) {
           const data = await res.json();
           setRepos(data);
@@ -160,6 +161,9 @@ export default function ProjectsPage() {
                       />
                       <Icon name="folder" size={14} className="text-[#dcb67a]" />
                       <span>{item.name}</span>
+                      {item.name === 'Github' && (
+                        <span className="ms-auto text-xs text-gray-500">{repos.length}</span>
+                      )}
                     </button>
                     
                     {expandedFolders.has(item.name) && item.children && (
@@ -169,9 +173,18 @@ export default function ProjectsPage() {
                             key={child.name}
                             onClick={() => {
                               setSelectedFile(child.name);
-                              if (child.name === 'About.md') setActiveTab('about');
-                              else if (child.name === 'Skills.json') setActiveTab('skills');
-                              else if (child.name === 'Contact.sh') setActiveTab('contact');
+                              if (child.name === 'About.md') {
+                                setActiveTab('about');
+                                setSelectedRepo(null);
+                              } else if (child.name === 'Skills.json') {
+                                setActiveTab('skills');
+                                setSelectedRepo(null);
+                              } else if (child.name === 'Contact.sh') {
+                                setActiveTab('contact');
+                                setSelectedRepo(null);
+                              } else if (child.repo) {
+                                setSelectedRepo(child.repo);
+                              }
                             }}
                             className={`w-full flex items-center gap-1 px-2 py-1 text-sm hover:bg-[#37373d] rounded ${
                               selectedFile === child.name ? 'bg-[#37373d] text-white' : 'text-gray-400'
@@ -196,9 +209,12 @@ export default function ProjectsPage() {
                 {tabs.map(tab => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setSelectedRepo(null);
+                    }}
                     className={`flex items-center gap-2 px-4 py-2 text-sm border-r border-[#3c3c3c] ${
-                      activeTab === tab.id
+                      activeTab === tab.id && !selectedRepo
                         ? 'bg-[#1e1e1e] text-white border-t-2 border-t-[#007acc]'
                         : 'text-gray-500 hover:bg-[#2d2d2d]'
                     }`}
@@ -207,13 +223,98 @@ export default function ProjectsPage() {
                     {tab.name}
                   </button>
                 ))}
+                {selectedRepo && (
+                  <button
+                    className="flex items-center gap-2 px-4 py-2 text-sm bg-[#1e1e1e] text-white border-t-2 border-t-[#007acc] border-r border-[#3c3c3c]"
+                  >
+                    <Icon name="folder" size={14} />
+                    {selectedRepo.name}
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedRepo(null);
+                      }}
+                      className="ms-2 hover:text-red-400"
+                    >
+                      ×
+                    </span>
+                  </button>
+                )}
               </div>
               
               {/* Editor Content */}
               <div className="flex-1 overflow-y-auto p-6">
                 
-                {/* About Tab - GitHub Projects */}
-                {activeTab === 'about' && (
+                {/* Selected Repo View */}
+                {selectedRepo && (
+                  <div>
+                    <div className="flex items-start justify-between gap-4 mb-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                          <GitHubIcon size={28} />
+                          {selectedRepo.name}
+                        </h2>
+                        <p className="text-gray-400">
+                          {selectedRepo.description || (language === 'fa' ? 'بدون توضیحات' : 'No description')}
+                        </p>
+                      </div>
+                      <a
+                        href={selectedRepo.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded-lg font-medium flex items-center gap-2"
+                      >
+                        <Icon name="external-link" size={16} />
+                        {language === 'fa' ? 'باز کردن در گیت‌هاب' : 'Open in GitHub'}
+                      </a>
+                    </div>
+                    
+                    {/* Repo Preview */}
+                    <div className="rounded-xl overflow-hidden bg-[#0d1117] border border-[#30363d] mb-6">
+                      <img
+                        src={`https://opengraph.githubassets.com/1/${selectedRepo.full_name}`}
+                        alt={selectedRepo.name}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    {/* Stats */}
+                    <div className="grid grid-cols-4 gap-4 mb-6">
+                      <div className="p-4 bg-[#252526] rounded-lg text-center">
+                        <Icon name="star" size={20} className="text-yellow-500 mx-auto mb-2" />
+                        <p className="text-xl font-bold text-white">{selectedRepo.stargazers_count}</p>
+                        <p className="text-xs text-gray-500">{language === 'fa' ? 'ستاره' : 'Stars'}</p>
+                      </div>
+                      <div className="p-4 bg-[#252526] rounded-lg text-center">
+                        <Icon name="git-branch" size={20} className="text-blue-500 mx-auto mb-2" />
+                        <p className="text-xl font-bold text-white">{selectedRepo.forks_count}</p>
+                        <p className="text-xs text-gray-500">{language === 'fa' ? 'فورک' : 'Forks'}</p>
+                      </div>
+                      <div className="p-4 bg-[#252526] rounded-lg text-center">
+                        <Icon name="hard-drive" size={20} className="text-green-500 mx-auto mb-2" />
+                        <p className="text-xl font-bold text-white">{Math.round(selectedRepo.size / 1024)} MB</p>
+                        <p className="text-xs text-gray-500">{language === 'fa' ? 'حجم' : 'Size'}</p>
+                      </div>
+                      <div className="p-4 bg-[#252526] rounded-lg text-center">
+                        <Icon name="code" size={20} className="text-purple-500 mx-auto mb-2" />
+                        <p className="text-xl font-bold text-white">{selectedRepo.language || '—'}</p>
+                        <p className="text-xs text-gray-500">{language === 'fa' ? 'زبان' : 'Language'}</p>
+                      </div>
+                    </div>
+                    
+                    <a
+                      href={selectedRepo.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full py-3 bg-[#007acc] hover:bg-[#0066b8] text-white rounded-lg font-bold text-center"
+                    >
+                      {language === 'fa' ? 'مشاهده در گیت‌هاب' : 'View on GitHub'} →
+                    </a>
+                  </div>
+                )}
+                
+                {/* About Tab - GitHub Projects Grid */}
+                {activeTab === 'about' && !selectedRepo && (
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-6">
                       # {language === 'fa' ? 'پروژه‌های گیت‌هاب' : 'GitHub Projects'}
@@ -230,12 +331,10 @@ export default function ProjectsPage() {
                     ) : (
                       <div className="grid md:grid-cols-2 gap-4">
                         {repos.map(repo => (
-                          <a
+                          <button
                             key={repo.id}
-                            href={repo.html_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block p-4 bg-[#252526] rounded-lg border border-[#3c3c3c] hover:border-[#007acc] transition-colors group"
+                            onClick={() => setSelectedRepo(repo)}
+                            className="text-start p-4 bg-[#252526] rounded-lg border border-[#3c3c3c] hover:border-[#007acc] transition-colors group"
                           >
                             {/* Preview Image */}
                             <div className="aspect-video mb-3 rounded overflow-hidden bg-[#1e1e1e]">
@@ -280,7 +379,7 @@ export default function ProjectsPage() {
                                 {repo.forks_count}
                               </span>
                             </div>
-                          </a>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -288,7 +387,7 @@ export default function ProjectsPage() {
                 )}
                 
                 {/* Skills Tab */}
-                {activeTab === 'skills' && (
+                {activeTab === 'skills' && !selectedRepo && (
                   <div>
                     <pre className="text-sm text-gray-300 font-mono">
                       <code>{`{
@@ -364,7 +463,7 @@ export default function ProjectsPage() {
                 )}
                 
                 {/* Contact Tab */}
-                {activeTab === 'contact' && (
+                {activeTab === 'contact' && !selectedRepo && (
                   <div className="font-mono text-sm">
                     <div className="text-[#6a9955]"># Contact Information</div>
                     <br />

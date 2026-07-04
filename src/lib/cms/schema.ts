@@ -292,26 +292,26 @@ export interface CmsState {
   };
 }
 
-// Default CMS State
+// Default CMS State - با نام صحیح Avid Kiya
 export const defaultCmsState: CmsState = {
   version: 1,
   
   identity: {
-    fullName: { fa: 'اوید کیا', en: 'Avid Kia' },
+    fullName: { fa: 'اَوید کیا', en: 'Avid Kiya' },
     title: { fa: 'معمار سیستم و مهندس بک‌اند', en: 'System Architect & Backend Engineer' },
     location: { fa: 'تهران، ایران', en: 'Tehran, Iran' },
-    email: 'hello@avidkia.dev',
+    email: 'hello@avidkiya.dev',
     yearsExperience: 8,
     bio: {
       fa: 'علاقه‌مند به طراحی سیستم‌های مقیاس‌پذیر و معماری‌های توزیع‌شده',
       en: 'Passionate about scalable system design and distributed architectures'
     },
-    handle: '@avidkia'
+    handle: '@avidkiya'
   },
   
   brand: {
     logoLetter: 'A',
-    brandName: { fa: 'اوید دِوهاب', en: 'AVID DEVHUB' },
+    brandName: { fa: 'اَوید کیا', en: 'Avid Kiya' },
     primaryColor: '#5d7ae6',
     accentColor: '#34d399'
   },
@@ -319,22 +319,22 @@ export const defaultCmsState: CmsState = {
   settings: {
     defaultLanguage: 'fa',
     defaultTheme: 'dark',
-    githubUsername: 'avidkia',
+    githubUsername: 'avidkiya',
     editMode: false
   },
   
   socials: [
-    { id: '1', platform: 'github', url: 'https://github.com/avidkia', label: { fa: 'گیت‌هاب', en: 'GitHub' }, enabled: true },
-    { id: '2', platform: 'telegram', url: 'https://t.me/avidkia', label: { fa: 'تلگرام', en: 'Telegram' }, enabled: true },
-    { id: '3', platform: 'linkedin', url: 'https://linkedin.com/in/avidkia', label: { fa: 'لینکدین', en: 'LinkedIn' }, enabled: true },
-    { id: '4', platform: 'twitter', url: 'https://x.com/avidkia', label: { fa: 'ایکس', en: 'X (Twitter)' }, enabled: true },
-    { id: '5', platform: 'email', url: 'mailto:hello@avidkia.dev', label: { fa: 'ایمیل', en: 'Email' }, enabled: true }
+    { id: '1', platform: 'github', url: 'https://github.com/avidkiya', label: { fa: 'گیت‌هاب', en: 'GitHub' }, enabled: true },
+    { id: '2', platform: 'telegram', url: 'https://t.me/avidkiya', label: { fa: 'تلگرام', en: 'Telegram' }, enabled: true },
+    { id: '3', platform: 'linkedin', url: 'https://linkedin.com/in/avidkiya', label: { fa: 'لینکدین', en: 'LinkedIn' }, enabled: true },
+    { id: '4', platform: 'twitter', url: 'https://x.com/avidkiya', label: { fa: 'ایکس', en: 'X (Twitter)' }, enabled: true },
+    { id: '5', platform: 'email', url: 'mailto:hello@avidkiya.dev', label: { fa: 'ایمیل', en: 'Email' }, enabled: true }
   ],
   
   dashboard: {
     heroTag: { fa: 'در دسترس برای پروژه‌های جدید', en: 'Available for new projects' },
     heroTitleA: { fa: 'سلام، من', en: "Hi, I'm" },
-    heroTitleB: { fa: 'اوید کیا', en: 'Avid Kia' },
+    heroTitleB: { fa: 'اَوید کیا', en: 'Avid Kiya' },
     heroDescription: {
       fa: 'معمار سیستم و مهندس بک‌اند با بیش از ۸ سال تجربه در طراحی و پیاده‌سازی سیستم‌های مقیاس‌پذیر',
       en: 'System Architect & Backend Engineer with 8+ years of experience in designing scalable systems'
@@ -373,7 +373,7 @@ export const defaultCmsState: CmsState = {
       { id: '3', label: { fa: 'پهنای باند', en: 'Bandwidth' }, percent: 23, color: '#fbbf24' }
     ],
     quickLinks: [
-      { id: '1', label: { fa: 'گیت‌هاب', en: 'GitHub' }, url: 'https://github.com/avidkia', icon: 'github' },
+      { id: '1', label: { fa: 'گیت‌هاب', en: 'GitHub' }, url: 'https://github.com/avidkiya', icon: 'github' },
       { id: '2', label: { fa: 'رزومه', en: 'Resume' }, url: '/resume', icon: 'file-text' },
       { id: '3', label: { fa: 'تماس', en: 'Contact' }, url: '/about', icon: 'mail' }
     ],
@@ -403,7 +403,7 @@ export const defaultCmsState: CmsState = {
       en: 'Software engineer specializing in distributed systems design and microservice architecture'
     },
     phone: '+98 912 xxx xxxx',
-    website: 'avidkia.dev',
+    website: 'avidkiya.dev',
     experience: [
       {
         id: '1',
@@ -479,7 +479,7 @@ export const defaultCmsState: CmsState = {
   },
   
   seo: {
-    siteName: { fa: 'اوید کیا — پرتفولیو', en: 'Avid Kia — Portfolio' },
+    siteName: { fa: 'اَوید کیا — پرتفولیو', en: 'Avid Kiya — Portfolio' },
     description: {
       fa: 'معمار سیستم و مهندس بک‌اند',
       en: 'System Architect & Backend Engineer'
