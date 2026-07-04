@@ -1,139 +1,264 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import RootPageLayout from "@/components/layout/RootPageLayout";
-import { useCms } from "@/contexts/CmsContext";
-import { Icon } from "@/components/ui/Icons";
+import { useState, useEffect } from 'react';
+import { useApp, useCms } from '@/contexts/AppContext';
+import { Icon } from '@/components/ui/Icon';
+import type { Comment } from '@/lib/cms/schema';
 
 export default function CommentsPage() {
-  const { t, state, resolve, locale } = useCms();
-  const [form, setForm] = useState({ name: "", email: "", position: "", rating: 5, text: "" });
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
-
-  const approved = state.comments.filter((c) => c.approved).sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  const { language } = useApp();
+  const { cms } = useCms();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    position: '',
+    rating: 5,
+    text: ''
   });
-
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  
+  // Fetch approved comments
+  useEffect(() => {
+    async function fetchComments() {
+      try {
+        const res = await fetch('/api/comments');
+        if (res.ok) {
+          const data = await res.json();
+          setComments(data.data || []);
+        }
+      } catch (error) {
+        // Use CMS comments as fallback
+        setComments(cms.comments.filter(c => c.approved));
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchComments();
+  }, [cms.comments]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("sending");
+    setSubmitting(true);
+    
     try {
-      await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       });
-      setStatus("sent");
-      setForm({ name: "", email: "", position: "", rating: 5, text: "" });
-      setTimeout(() => setStatus("idle"), 3000);
-    } catch {
-      setStatus("idle");
+      
+      if (res.ok) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', position: '', rating: 5, text: '' });
+        setTimeout(() => setSubmitted(false), 5000);
+      }
+    } catch (error) {
+      console.error('Failed to submit comment:', error);
+    } finally {
+      setSubmitting(false);
     }
   };
-
-  const Stars = ({ count, interactive = false, onChange }: { count: number; interactive?: boolean; onChange?: (n: number) => void }) => (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type={interactive ? "button" : undefined}
-          onClick={() => interactive && onChange?.(n)}
-          className={`${interactive ? "cursor-pointer hover:scale-125" : "cursor-default"} transition`}
-          disabled={!interactive}
-        >
-          <Icon name="Star" size={18} className={n <= count ? "text-amber-400 fill-amber-400" : "text-[var(--color-text-subtle)]"} />
-        </button>
-      ))}
-    </div>
-  );
-
+  
+  const pinnedComments = comments.filter(c => c.pinned);
+  const regularComments = comments.filter(c => !c.pinned);
+  
   return (
-    <RootPageLayout>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
-        <h1 className="text-3xl font-black gradient-text">{t("comments", "title")}</h1>
-
-        {/* Write Comment */}
-        <div className="glass p-6 space-y-4">
-          <h2 className="font-bold text-lg">{t("comments", "writeComment")}</h2>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder={t("comments", "name")}
-                required
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder={t("comments", "email")}
-                type="email"
-                required
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-            </div>
-            <input
-              value={form.position}
-              onChange={(e) => setForm({ ...form, position: e.target.value })}
-              placeholder={t("comments", "position")}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-            />
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-[var(--color-text-muted)]">{t("comments", "rating")}:</span>
-              <Stars count={form.rating} interactive onChange={(n) => setForm({ ...form, rating: n })} />
-            </div>
-            <textarea
-              value={form.text}
-              onChange={(e) => setForm({ ...form, text: e.target.value })}
-              placeholder={t("comments", "text")}
-              required
-              rows={4}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm resize-none"
-            />
-            <button
-              type="submit"
-              disabled={status !== "idle"}
-              className="px-6 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-bold text-sm hover:brightness-110 transition disabled:opacity-50"
-            >
-              {status === "sent" ? "✓ " + t("common", "success") : t("comments", "submit")}
-            </button>
-          </form>
-          <p className="text-xs text-[var(--color-text-subtle)]">{t("comments", "pending")}</p>
+    <div className="min-h-screen py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-black gradient-text mb-4">
+            {language === 'fa' ? 'نظرات' : 'Comments'}
+          </h1>
+          <p className="text-[var(--text-secondary)]">
+            {language === 'fa' ? 'نظرات شما برای من ارزشمند است' : 'Your feedback is valuable to me'}
+          </p>
         </div>
-
-        {/* Comments List */}
-        <div className="space-y-4">
-          {approved.map((comment) => (
-            <div key={comment.id} className={`glass p-6 ${comment.pinned ? "border-[var(--color-amber)]/30" : ""}`}>
-              {comment.pinned && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-xs font-bold mb-3">
-                  <Icon name="Pin" size={10} />
-                  {t("announcements", "pinned")}
-                </div>
-              )}
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white font-bold shrink-0">
-                  {comment.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm">{comment.name}</span>
-                    {comment.position && <span className="text-xs text-[var(--color-text-subtle)]">({comment.position})</span>}
-                    <Stars count={comment.rating} />
-                  </div>
-                  <p className="text-sm text-[var(--color-text-muted)] mt-2 leading-relaxed">{comment.text}</p>
-                  <div className="text-[10px] text-[var(--color-text-subtle)] mt-2">
-                    {new Date(comment.createdAt).toLocaleDateString(locale === "fa" ? "fa-IR" : "en-US")}
-                  </div>
+        
+        {/* Comment Form */}
+        <div className="glass-card-strong p-6 mb-12">
+          <h2 className="text-xl font-bold mb-6">
+            {language === 'fa' ? 'ثبت نظر' : 'Leave a Comment'}
+          </h2>
+          
+          {submitted ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 rounded-full bg-[var(--accent-emerald)]/20 flex items-center justify-center mx-auto mb-4">
+                <Icon name="check" size={32} className="text-[var(--accent-emerald)]" />
+              </div>
+              <p className="font-medium">
+                {language === 'fa' 
+                  ? 'نظر شما ثبت شد و پس از تایید نمایش داده می‌شود'
+                  : 'Your comment has been submitted and will be displayed after approval'}
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder={language === 'fa' ? 'نام' : 'Name'}
+                  value={formData.name}
+                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none transition-colors"
+                />
+                <input
+                  type="email"
+                  placeholder={language === 'fa' ? 'ایمیل' : 'Email'}
+                  value={formData.email}
+                  onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none transition-colors"
+                />
+              </div>
+              
+              <input
+                type="text"
+                placeholder={language === 'fa' ? 'سمت (اختیاری)' : 'Position (optional)'}
+                value={formData.position}
+                onChange={e => setFormData(prev => ({ ...prev, position: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none transition-colors"
+              />
+              
+              {/* Rating */}
+              <div>
+                <label className="block text-sm mb-2 text-[var(--text-secondary)]">
+                  {language === 'fa' ? 'امتیاز' : 'Rating'}
+                </label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Icon
+                        name="star"
+                        size={28}
+                        className={star <= formData.rating ? 'text-[var(--accent-amber)] fill-current' : 'text-[var(--text-muted)]'}
+                      />
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
+              
+              <textarea
+                placeholder={language === 'fa' ? 'نظر شما...' : 'Your comment...'}
+                value={formData.text}
+                onChange={e => setFormData(prev => ({ ...prev, text: e.target.value }))}
+                required
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none transition-colors resize-none"
+              />
+              
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 rounded-xl gradient-bg text-white font-bold hover:brightness-110 transition-all disabled:opacity-50"
+              >
+                {submitting ? (
+                  <Icon name="refresh" size={18} className="animate-spin mx-auto" />
+                ) : (
+                  language === 'fa' ? 'ثبت نظر' : 'Submit Comment'
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+        
+        {/* Comments List */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Icon name="refresh" size={32} className="animate-spin text-[var(--primary)]" />
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="text-center py-12 text-[var(--text-muted)]">
+            <Icon name="message-square" size={48} className="mx-auto mb-4 opacity-50" />
+            <p>{language === 'fa' ? 'هنوز نظری ثبت نشده' : 'No comments yet'}</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Pinned Comments */}
+            {pinnedComments.map(comment => (
+              <CommentCard key={comment.id} comment={comment} pinned />
+            ))}
+            
+            {/* Regular Comments */}
+            {regularComments.map(comment => (
+              <CommentCard key={comment.id} comment={comment} />
+            ))}
+          </div>
+        )}
+        
+      </div>
+    </div>
+  );
+}
+
+interface CommentCardProps {
+  comment: Comment;
+  pinned?: boolean;
+}
+
+function CommentCard({ comment, pinned }: CommentCardProps) {
+  const { language } = useApp();
+  
+  // Generate avatar letter
+  const avatarLetter = comment.name.charAt(0).toUpperCase();
+  
+  return (
+    <div className={`glass-card-strong p-6 ${pinned ? 'ring-2 ring-[var(--accent-amber)]' : ''}`}>
+      <div className="flex items-start gap-4">
+        {/* Avatar */}
+        <div className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-white font-bold flex-shrink-0">
+          {avatarLetter}
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          {/* Header */}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="font-bold">{comment.name}</span>
+            {comment.position && (
+              <span className="text-sm text-[var(--text-muted)]">— {comment.position}</span>
+            )}
+            {pinned && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-amber)]/20 text-[var(--accent-amber)] text-xs font-medium">
+                <Icon name="star" size={10} />
+                {language === 'fa' ? 'پین شده' : 'Pinned'}
+              </span>
+            )}
+          </div>
+          
+          {/* Rating */}
+          <div className="flex gap-1 mb-3">
+            {[1, 2, 3, 4, 5].map(star => (
+              <Icon
+                key={star}
+                name="star"
+                size={16}
+                className={star <= comment.rating ? 'text-[var(--accent-amber)]' : 'text-[var(--text-muted)]'}
+              />
+            ))}
+          </div>
+          
+          {/* Comment Text */}
+          <p className="text-[var(--text-secondary)] leading-relaxed">
+            {comment.text}
+          </p>
+          
+          {/* Date */}
+          <p className="text-xs text-[var(--text-muted)] mt-3">
+            {new Date(comment.createdAt).toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US')}
+          </p>
         </div>
       </div>
-    </RootPageLayout>
+    </div>
   );
 }

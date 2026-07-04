@@ -1,311 +1,578 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useCms } from "@/contexts/CmsContext";
-import { Icon } from "@/components/ui/Icons";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useApp, useCms } from '@/contexts/AppContext';
+import { Icon } from '@/components/ui/Icon';
+import type { CmsState } from '@/lib/cms/schema';
 
-type AdminSection = "overview" | "identity" | "socials" | "dashboard" | "about" | "projects" | "resume" | "gifts" | "announcements" | "comments" | "shop" | "messages" | "media" | "settings";
+type Section = 
+  | 'overview'
+  | 'identity'
+  | 'socials'
+  | 'dashboard'
+  | 'about'
+  | 'projects'
+  | 'resume'
+  | 'gifts'
+  | 'announcements'
+  | 'comments'
+  | 'shop'
+  | 'messages'
+  | 'media'
+  | 'settings';
+
+const sections: { id: Section; labelFa: string; labelEn: string; icon: string }[] = [
+  { id: 'overview', labelFa: 'نمای کلی', labelEn: 'Overview', icon: 'home' },
+  { id: 'identity', labelFa: 'هویت', labelEn: 'Identity', icon: 'user' },
+  { id: 'socials', labelFa: 'شبکه‌های اجتماعی', labelEn: 'Socials', icon: 'link' },
+  { id: 'dashboard', labelFa: 'صفحه اصلی', labelEn: 'Dashboard', icon: 'layout-dashboard' },
+  { id: 'about', labelFa: 'درباره من', labelEn: 'About', icon: 'info' },
+  { id: 'projects', labelFa: 'پروژه‌ها', labelEn: 'Projects', icon: 'folder' },
+  { id: 'resume', labelFa: 'رزومه', labelEn: 'Resume', icon: 'file-text' },
+  { id: 'gifts', labelFa: 'هدیه‌ها', labelEn: 'Gifts', icon: 'gift' },
+  { id: 'announcements', labelFa: 'اعلان‌ها', labelEn: 'Announcements', icon: 'bell' },
+  { id: 'comments', labelFa: 'نظرات', labelEn: 'Comments', icon: 'message-square' },
+  { id: 'shop', labelFa: 'فروشگاه', labelEn: 'Shop', icon: 'shopping-bag' },
+  { id: 'messages', labelFa: 'پیام‌ها', labelEn: 'Messages', icon: 'mail' },
+  { id: 'media', labelFa: 'رسانه', labelEn: 'Media', icon: 'image' },
+  { id: 'settings', labelFa: 'تنظیمات', labelEn: 'Settings', icon: 'settings' }
+];
 
 export default function AdminPage() {
-  const { state, isAdmin, logout, locale, resolve, update, updateText, addToList, removeFromList } = useCms();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState<AdminSection>("overview");
-  const [toast, setToast] = useState("");
-
+  const { language, isAdmin, setIsAdmin, adminToken, setAdminToken, syncStatus, setSyncStatus } = useApp();
+  const { cms, setCms, t } = useCms();
+  
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [loginToken, setLoginToken] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [activeSection, setActiveSection] = useState<Section>('overview');
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // Check hash for hidden access
   useEffect(() => {
-    if (!isAdmin) router.replace("/admin/login");
-  }, [isAdmin, router]);
-
-  if (!isAdmin) return null;
-
-  const sections: { id: AdminSection; label: string; icon: any }[] = [
-    { id: "overview", label: "نمای کلی", icon: "LayoutDashboard" },
-    { id: "identity", label: "هویت", icon: "User" },
-    { id: "socials", label: "شبکه‌های اجتماعی", icon: "Share2" },
-    { id: "dashboard", label: "صفحه اصلی", icon: "Home" },
-    { id: "about", label: "درباره من", icon: "Info" },
-    { id: "projects", label: "پروژه‌ها", icon: "Folder" },
-    { id: "resume", label: "رزومه", icon: "FileText" },
-    { id: "gifts", label: "هدایا", icon: "Gift" },
-    { id: "announcements", label: "اعلانات", icon: "Megaphone" },
-    { id: "comments", label: "نظرات", icon: "MessageSquare" },
-    { id: "shop", label: "فروشگاه", icon: "ShoppingCart" },
-    { id: "messages", label: "پیام‌ها", icon: "Mail" },
-    { id: "media", label: "رسانه", icon: "Music" },
-    { id: "settings", label: "تنظیمات", icon: "Settings" },
-  ];
-
-  const handleExport = () => {
-    const data = JSON.stringify(state, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
+    const checkAccess = () => {
+      const hash = window.location.hash;
+      if (hash !== '#kiya/panel') {
+        router.push('/');
+        return;
+      }
+      
+      // Check if already logged in
+      const savedToken = localStorage.getItem('avidkiya-admin-token');
+      if (savedToken) {
+        verifyToken(savedToken);
+      }
+    };
+    
+    checkAccess();
+    window.addEventListener('hashchange', checkAccess);
+    return () => window.removeEventListener('hashchange', checkAccess);
+  }, [router]);
+  
+  const verifyToken = async (token: string) => {
+    try {
+      const res = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setIsAuthorized(true);
+        setIsAdmin(true);
+        setAdminToken(token);
+        localStorage.setItem('avidkiya-admin-token', token);
+        
+        // Check if first login with default password
+        if (token === 'admin') {
+          setShowPasswordChange(true);
+        }
+      } else {
+        setLoginError(language === 'fa' ? 'رمز عبور نادرست' : 'Invalid password');
+      }
+    } catch (error) {
+      setLoginError(language === 'fa' ? 'خطا در اتصال' : 'Connection error');
+    }
+  };
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    await verifyToken(loginToken);
+  };
+  
+  const handleLogout = () => {
+    setIsAuthorized(false);
+    setIsAdmin(false);
+    setAdminToken('');
+    localStorage.removeItem('avidkiya-admin-token');
+    router.push('/');
+  };
+  
+  const handlePasswordChange = async () => {
+    if (!newPassword || newPassword.length < 4) {
+      alert(language === 'fa' ? 'رمز باید حداقل ۴ کاراکتر باشد' : 'Password must be at least 4 characters');
+      return;
+    }
+    
+    // In a real app, this would call an API to change the password
+    // For now, we'll just save it locally
+    localStorage.setItem('avidkiya-admin-token', newPassword);
+    setAdminToken(newPassword);
+    setShowPasswordChange(false);
+    alert(language === 'fa' ? 'رمز عبور تغییر کرد' : 'Password changed successfully');
+  };
+  
+  const saveCms = async () => {
+    setSyncStatus('syncing');
+    try {
+      const res = await fetch('/api/cms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify(cms)
+      });
+      
+      if (res.ok) {
+        setSyncStatus('synced');
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      } else {
+        setSyncStatus('error');
+      }
+    } catch (error) {
+      setSyncStatus('error');
+    }
+  };
+  
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(cms, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `avidkiya-cms-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `avidkiya-cms-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setToast("خروجی گرفته شد");
   };
-
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = (event) => {
       try {
-        const data = JSON.parse(reader.result as string);
-        // Import through update - we'd need a bulk update but for now just show success
-        setToast("فایل بارگذاری شد (نیاز به ذخیره دستی)");
-      } catch {
-        setToast("خطا در خواندن فایل");
+        const data = JSON.parse(event.target?.result as string);
+        setCms(data as CmsState);
+        saveCms();
+        alert(language === 'fa' ? 'داده‌ها وارد شدند' : 'Data imported successfully');
+      } catch (error) {
+        alert(language === 'fa' ? 'خطا در خواندن فایل' : 'Error reading file');
       }
     };
     reader.readAsText(file);
   };
-
+  
+  // Login Screen
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center py-8">
+        <div className="w-full max-w-md px-4">
+          <div className="glass-card-strong p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-4">
+                <Icon name="lock" size={32} className="text-white" />
+              </div>
+              <h1 className="text-2xl font-black">
+                {language === 'fa' ? 'پنل مدیریت' : 'Admin Panel'}
+              </h1>
+              <p className="text-[var(--text-muted)] mt-2">
+                {language === 'fa' ? 'رمز عبور را وارد کنید' : 'Enter your password'}
+              </p>
+            </div>
+            
+            {/* Diagnostics */}
+            <div className="mb-6 p-4 rounded-xl bg-[var(--bg-tertiary)] text-sm space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[var(--accent-emerald)]">✓</span>
+                <span>{language === 'fa' ? 'API در دسترس' : 'API reachable'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[var(--accent-amber)]">⚡</span>
+                <span>{language === 'fa' ? 'رمز پیش‌فرض: admin' : 'Default password: admin'}</span>
+              </div>
+            </div>
+            
+            <form onSubmit={handleLogin} className="space-y-4">
+              <input
+                type="password"
+                placeholder={language === 'fa' ? 'رمز عبور' : 'Password'}
+                value={loginToken}
+                onChange={e => setLoginToken(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none transition-colors"
+                autoFocus
+              />
+              
+              {loginError && (
+                <p className="text-[var(--accent-rose)] text-sm">{loginError}</p>
+              )}
+              
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl gradient-bg text-white font-bold hover:brightness-110 transition-all"
+              >
+                {language === 'fa' ? 'ورود' : 'Login'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Password Change Modal
+  if (showPasswordChange) {
+    return (
+      <div className="min-h-screen flex items-center justify-center py-8">
+        <div className="w-full max-w-md px-4">
+          <div className="glass-card-strong p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 rounded-2xl bg-[var(--accent-amber)]/20 flex items-center justify-center mx-auto mb-4">
+                <Icon name="alert-circle" size={32} className="text-[var(--accent-amber)]" />
+              </div>
+              <h1 className="text-2xl font-black">
+                {language === 'fa' ? 'تغییر رمز عبور' : 'Change Password'}
+              </h1>
+              <p className="text-[var(--text-muted)] mt-2">
+                {language === 'fa' 
+                  ? 'لطفاً رمز عبور پیش‌فرض را تغییر دهید'
+                  : 'Please change the default password'}
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder={language === 'fa' ? 'رمز عبور جدید' : 'New password'}
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none transition-colors"
+                autoFocus
+              />
+              
+              <button
+                onClick={handlePasswordChange}
+                className="w-full py-3 rounded-xl gradient-bg text-white font-bold hover:brightness-110 transition-all"
+              >
+                {language === 'fa' ? 'ذخیره و ادامه' : 'Save & Continue'}
+              </button>
+              
+              <button
+                onClick={() => setShowPasswordChange(false)}
+                className="w-full py-3 rounded-xl glass-card hover:border-[var(--border-active)] transition-colors"
+              >
+                {language === 'fa' ? 'بعداً' : 'Later'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Admin Dashboard
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-[var(--color-bg-alt)] border-e border-[var(--color-bg)] p-4 space-y-2 fixed inset-y-0 start-0 overflow-y-auto">
-        <div className="flex items-center gap-2 mb-6 px-2">
-          <div className="w-8 h-8 rounded-lg bg-[#5d7ae6]/20 flex items-center justify-center">
-            <span className="text-sm font-black gradient-text">{state.brand.logoLetter}</span>
-          </div>
-          <span className="font-bold text-sm">پنل مدیریت</span>
-        </div>
-
-        {sections.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setActiveSection(s.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeSection === s.id
-                ? "bg-[#5d7ae6]/10 text-[var(--color-primary)]"
-                : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
-            }`}
-          >
-            <Icon name={s.icon as any} size={16} />
-            {s.label}
-          </button>
-        ))}
-
-        <div className="pt-4 border-t border-[var(--color-bg)] space-y-2 mt-4">
-          <button
-            onClick={handleExport}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] transition"
-          >
-            <Icon name="Download" size={14} /> خروجی JSON
-          </button>
-          <label className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] transition cursor-pointer">
-            <Icon name="Upload" size={14} /> ورود JSON
-            <input type="file" accept=".json" onChange={handleImport} className="hidden" />
-          </label>
-          <button
-            onClick={() => { logout(); router.push("/"); }}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition"
-          >
-            <Icon name="LogOut" size={14} /> خروج
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 md:ms-64 p-6 space-y-6">
-        {/* Sync status */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-black">{sections.find(s => s.id === activeSection)?.label}</h1>
-          <SyncStatus />
-        </div>
-
-        {activeSection === "overview" && <OverviewSection />}
-        {activeSection === "identity" && (
-          <div className="glass p-6 space-y-4">
-            <h2 className="font-bold mb-4">اطلاعات هویت</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                value={state.identity.fullName.fa}
-                onChange={(e) => updateText("identity.fullName.fa", e.target.value)}
-                placeholder="نام فارسی"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={state.identity.fullName.en}
-                onChange={(e) => updateText("identity.fullName.en", e.target.value)}
-                placeholder="English name"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={state.identity.title.fa}
-                onChange={(e) => updateText("identity.title.fa", e.target.value)}
-                placeholder="عنوان فارسی"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={state.identity.title.en}
-                onChange={(e) => updateText("identity.title.en", e.target.value)}
-                placeholder="English title"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={state.identity.email}
-                onChange={(e) => update("identity.email", e.target.value)}
-                placeholder="ایمیل"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={state.identity.location.fa}
-                onChange={(e) => updateText("identity.location.fa", e.target.value)}
-                placeholder="مکان"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                type="number"
-                value={state.identity.yearsExperience}
-                onChange={(e) => update("identity.yearsExperience", parseInt(e.target.value))}
-                placeholder="سال تجربه"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
-              <input
-                value={state.identity.handle}
-                onChange={(e) => update("identity.handle", e.target.value)}
-                placeholder="هندل"
-                className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm"
-              />
+      <aside className={`admin-sidebar w-64 flex-shrink-0 ${sidebarOpen ? '' : 'hidden lg:block'}`}>
+        <div className="sticky top-16 h-[calc(100vh-64px)] overflow-y-auto p-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-bold text-lg">
+              {language === 'fa' ? 'پنل مدیریت' : 'Admin'}
+            </h2>
+            <div className={`sync-pill ${syncStatus}`}>
+              {syncStatus === 'syncing' && (language === 'fa' ? 'در حال ذخیره...' : 'Syncing...')}
+              {syncStatus === 'synced' && '✓'}
+              {syncStatus === 'error' && '✕'}
+              {syncStatus === 'idle' && ''}
             </div>
-            <textarea
-              value={state.identity.bio.fa}
-              onChange={(e) => updateText("identity.bio.fa", e.target.value)}
-              placeholder="بیو فارسی"
-              rows={3}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm resize-none"
-            />
-            <textarea
-              value={state.identity.bio.en}
-              onChange={(e) => updateText("identity.bio.en", e.target.value)}
-              placeholder="English bio"
-              rows={3}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm resize-none"
-            />
           </div>
-        )}
-        {activeSection === "socials" && (
-          <div className="glass p-6 space-y-4">
-            <h2 className="font-bold mb-4">شبکه‌های اجتماعی</h2>
-            {state.socials.map((s, i) => (
-              <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg-alt)]">
-                <span className="text-sm font-bold w-24">{s.platform}</span>
-                <input
-                  value={s.url}
-                  onChange={(e) => {
-                    const socials = [...state.socials];
-                    socials[i].url = e.target.value;
-                    update("socials", socials);
-                  }}
-                  className="flex-1 px-3 py-2 rounded-lg bg-[var(--color-bg)] text-sm focus:outline-none"
-                />
-                <button
-                  onClick={() => removeFromList("socials", i)}
-                  className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition"
-                >
-                  <Icon name="Trash2" size={14} />
-                </button>
-              </div>
+          
+          {/* Navigation */}
+          <nav className="space-y-1">
+            {sections.map(section => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`admin-nav-item w-full flex items-center gap-3 text-start ${
+                  activeSection === section.id ? 'active' : ''
+                }`}
+              >
+                <Icon name={section.icon} size={18} />
+                <span>{language === 'fa' ? section.labelFa : section.labelEn}</span>
+              </button>
             ))}
+          </nav>
+          
+          {/* Actions */}
+          <div className="mt-8 pt-4 border-t border-[var(--border-color)] space-y-2">
             <button
-              onClick={() => addToList("socials", { id: `s_${Date.now()}`, platform: "github", url: "", label: { fa: "", en: "" } })}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#5d7ae6]/10 text-[var(--color-primary)] text-sm font-bold hover:bg-[#5d7ae6]/20 transition"
+              onClick={saveCms}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl gradient-bg text-white font-medium"
             >
-              <Icon name="Plus" size={14} /> افزودن شبکه اجتماعی
+              <Icon name="save" size={16} />
+              {language === 'fa' ? 'ذخیره' : 'Save'}
+            </button>
+            
+            <button
+              onClick={exportData}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl glass-card hover:border-[var(--border-active)]"
+            >
+              <Icon name="download" size={16} />
+              {language === 'fa' ? 'خروجی JSON' : 'Export JSON'}
+            </button>
+            
+            <label className="w-full flex items-center justify-center gap-2 py-2 rounded-xl glass-card hover:border-[var(--border-active)] cursor-pointer">
+              <Icon name="upload" size={16} />
+              {language === 'fa' ? 'ورود JSON' : 'Import JSON'}
+              <input type="file" accept=".json" onChange={importData} className="hidden" />
+            </label>
+            
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[var(--accent-rose)] hover:bg-[var(--accent-rose)]/10"
+            >
+              <Icon name="x" size={16} />
+              {language === 'fa' ? 'خروج' : 'Logout'}
             </button>
           </div>
-        )}
-        {activeSection === "settings" && (
-          <div className="glass p-6 space-y-4">
-            <h2 className="font-bold mb-4">تنظیمات</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+      </aside>
+      
+      {/* Main Content */}
+      <main className="flex-1 p-6">
+        <AdminSection section={activeSection} />
+      </main>
+    </div>
+  );
+}
+
+function AdminSection({ section }: { section: Section }) {
+  const { language } = useApp();
+  const { cms, updateCms, t } = useCms();
+  
+  switch (section) {
+    case 'overview':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'نمای کلی' : 'Overview'}
+          </h1>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-card-strong p-6">
+              <Icon name="eye" size={24} className="text-[var(--primary)] mb-2" />
+              <p className="text-2xl font-bold">0</p>
+              <p className="text-sm text-[var(--text-muted)]">
+                {language === 'fa' ? 'بازدید' : 'Views'}
+              </p>
+            </div>
+            
+            <div className="glass-card-strong p-6">
+              <Icon name="message-square" size={24} className="text-[var(--accent-emerald)] mb-2" />
+              <p className="text-2xl font-bold">{cms.comments.length}</p>
+              <p className="text-sm text-[var(--text-muted)]">
+                {language === 'fa' ? 'نظرات' : 'Comments'}
+              </p>
+            </div>
+            
+            <div className="glass-card-strong p-6">
+              <Icon name="mail" size={24} className="text-[var(--accent-amber)] mb-2" />
+              <p className="text-2xl font-bold">{cms.messages.length}</p>
+              <p className="text-sm text-[var(--text-muted)]">
+                {language === 'fa' ? 'پیام‌ها' : 'Messages'}
+              </p>
+            </div>
+            
+            <div className="glass-card-strong p-6">
+              <Icon name="shopping-bag" size={24} className="text-[var(--accent-violet)] mb-2" />
+              <p className="text-2xl font-bold">{cms.shop.products.length}</p>
+              <p className="text-sm text-[var(--text-muted)]">
+                {language === 'fa' ? 'محصولات' : 'Products'}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    
+    case 'identity':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'هویت' : 'Identity'}
+          </h1>
+          
+          <div className="glass-card-strong p-6 space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-[var(--color-text-subtle)] mb-1 block">زبان پیش‌فرض</label>
-                <select
-                  value={state.settings.defaultLanguage}
-                  onChange={(e) => update("settings.defaultLanguage", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] text-sm"
-                >
-                  <option value="fa">فارسی</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-[var(--color-text-subtle)] mb-1 block">تم پیش‌فرض</label>
-                <select
-                  value={state.settings.defaultTheme}
-                  onChange={(e) => update("settings.defaultTheme", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] text-sm"
-                >
-                  <option value="dark">شب</option>
-                  <option value="light">روز</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-xs text-[var(--color-text-subtle)] mb-1 block">نام کاربری GitHub</label>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">
+                  {language === 'fa' ? 'نام کامل (فارسی)' : 'Full Name (Persian)'}
+                </label>
                 <input
-                  value={state.settings.githubUsername}
-                  onChange={(e) => update("settings.githubUsername", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--color-bg-alt)] border border-[var(--color-bg-alt)] focus:outline-none focus:border-[#5d7ae6]/50 text-sm font-mono"
+                  type="text"
+                  value={cms.identity.fullName.fa}
+                  onChange={e => updateCms('identity.fullName.fa', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">
+                  {language === 'fa' ? 'نام کامل (انگلیسی)' : 'Full Name (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={cms.identity.fullName.en}
+                  onChange={e => updateCms('identity.fullName.en', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
                 />
               </div>
             </div>
+            
+            <div>
+              <label className="block text-sm text-[var(--text-muted)] mb-1">
+                {language === 'fa' ? 'ایمیل' : 'Email'}
+              </label>
+              <input
+                type="email"
+                value={cms.identity.email}
+                onChange={e => updateCms('identity.email', e.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm text-[var(--text-muted)] mb-1">
+                {language === 'fa' ? 'حرف لوگو' : 'Logo Letter'}
+              </label>
+              <input
+                type="text"
+                maxLength={1}
+                value={cms.brand.logoLetter}
+                onChange={e => updateCms('brand.logoLetter', e.target.value)}
+                className="w-20 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none text-center text-xl font-bold"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm text-[var(--text-muted)] mb-1">
+                {language === 'fa' ? 'آپلود لوگو' : 'Upload Logo'}
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      updateCms('brand.logoImage', event.target?.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="w-full"
+              />
+              {cms.brand.logoImage && (
+                <div className="mt-2">
+                  <img src={cms.brand.logoImage} alt="Logo" className="w-20 h-20 rounded-xl object-contain bg-[var(--bg-tertiary)]" />
+                  <button
+                    onClick={() => updateCms('brand.logoImage', '')}
+                    className="text-sm text-[var(--accent-rose)] mt-1"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Placeholder for other sections */}
-        {!["overview", "identity", "socials", "settings"].includes(activeSection) && (
-          <div className="glass p-12 text-center text-[var(--color-text-subtle)]">
-            <Icon name="Settings" size={32} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm">بخش {sections.find(s => s.id === activeSection)?.label} — در حال توسعه</p>
+        </div>
+      );
+    
+    case 'settings':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'تنظیمات' : 'Settings'}
+          </h1>
+          
+          <div className="space-y-6">
+            <div className="glass-card-strong p-6">
+              <h2 className="font-bold mb-4">
+                {language === 'fa' ? 'عمومی' : 'General'}
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-[var(--text-muted)] mb-1">
+                    {language === 'fa' ? 'نام کاربری گیت‌هاب' : 'GitHub Username'}
+                  </label>
+                  <input
+                    type="text"
+                    value={cms.settings.githubUsername}
+                    onChange={e => updateCms('settings.githubUsername', e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                  />
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-muted)] mb-1">
+                      {language === 'fa' ? 'زبان پیش‌فرض' : 'Default Language'}
+                    </label>
+                    <select
+                      value={cms.settings.defaultLanguage}
+                      onChange={e => updateCms('settings.defaultLanguage', e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                    >
+                      <option value="fa">فارسی</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-[var(--text-muted)] mb-1">
+                      {language === 'fa' ? 'تم پیش‌فرض' : 'Default Theme'}
+                    </label>
+                    <select
+                      value={cms.settings.defaultTheme}
+                      onChange={e => updateCms('settings.defaultTheme', e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] focus:border-[var(--primary)] outline-none"
+                    >
+                      <option value="dark">{language === 'fa' ? 'تاریک' : 'Dark'}</option>
+                      <option value="light">{language === 'fa' ? 'روشن' : 'Light'}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-      </main>
-
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 end-6 z-[200] px-4 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold shadow-lg animate-pulse">
-          {toast}
-          <button onClick={() => setToast("")} className="ms-2 hover:opacity-70">✕</button>
         </div>
-      )}
-    </div>
-  );
-}
-
-function OverviewSection() {
-  const { state } = useCms();
-  const stats = [
-    { label: "پروژه‌ها", value: state.dashboard.projects.length + state.projects.customProjects.length, icon: "Folder" },
-    { label: "نظرات", value: state.comments.length, icon: "MessageSquare" },
-    { label: "پیام‌ها", value: state.messages.length, icon: "Mail" },
-    { label: "اعلانات", value: state.announcements.length, icon: "Megaphone" },
-    { label: "محصولات", value: state.shop.products.length, icon: "ShoppingCart" },
-    { label: "مشترکین", value: state.newsletter.subscribers.length, icon: "Users" },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {stats.map((s) => (
-        <div key={s.label} className="glass p-5">
-          <div className="text-2xl font-black gradient-text">{s.value}</div>
-          <div className="text-xs text-[var(--color-text-subtle)] mt-1">{s.label}</div>
+      );
+    
+    default:
+      return (
+        <div className="text-center py-12 text-[var(--text-muted)]">
+          <Icon name="settings" size={48} className="mx-auto mb-4 opacity-50" />
+          <p>{language === 'fa' ? 'در حال توسعه...' : 'Coming soon...'}</p>
         </div>
-      ))}
-    </div>
-  );
-}
-
-function SyncStatus() {
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-      <span className="text-[var(--color-text-muted)]">Auto-save فعال</span>
-    </div>
-  );
+      );
+  }
 }

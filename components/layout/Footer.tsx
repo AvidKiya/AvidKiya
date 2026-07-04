@@ -1,29 +1,44 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useCms } from "@/contexts/CmsContext";
-import { BrandIcon } from "@/components/ui/Icons";
+import { useCms, useApp } from '@/contexts/AppContext';
+import { getPlatformIcon } from '@/components/ui/Icon';
 
 export function Footer() {
-  const { state, locale } = useCms();
-
+  const { language } = useApp();
+  const { cms, t } = useCms();
+  
+  const currentYear = new Date().getFullYear();
+  
   return (
-    <footer className="no-print border-t border-[var(--color-bg-alt)] py-8 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-[var(--color-text-subtle)]">
-            © {new Date().getFullYear()} {state.brand.brandName}. {locale === "fa" ? "تمامی حقوق محفوظ است." : "All rights reserved."}
+    <footer className="relative py-12 border-t border-[var(--border-color)]">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Copyright */}
+          <div className="text-center md:text-start">
+            <p className="text-[var(--text-secondary)] text-sm">
+              {language === 'fa' 
+                ? `© ${currentYear} ${t(cms.identity.fullName)}. تمامی حقوق محفوظ است.`
+                : `© ${currentYear} ${t(cms.identity.fullName)}. All rights reserved.`}
+            </p>
+            <p className="text-[var(--text-muted)] text-xs mt-1">
+              {language === 'fa'
+                ? 'ساخته شده با ❤️ و Next.js'
+                : 'Built with ❤️ and Next.js'}
+            </p>
           </div>
+          
+          {/* Social Links */}
           <div className="flex items-center gap-3">
-            {state.socials.map((s) => (
+            {cms.socials.filter(s => s.enabled).map(social => (
               <a
-                key={s.id}
-                href={s.url}
+                key={social.id}
+                href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg hover:bg-[var(--color-bg-alt)] transition text-[var(--color-text-subtle)] hover:text-[var(--color-text)]"
+                className="p-2.5 rounded-xl glass-card hover:border-[var(--border-active)] transition-colors"
+                aria-label={t(social.label)}
               >
-                <BrandIcon platform={s.platform} size={16} />
+                {getPlatformIcon(social.platform, 18)}
               </a>
             ))}
           </div>
@@ -32,3 +47,5 @@ export function Footer() {
     </footer>
   );
 }
+
+export default Footer;

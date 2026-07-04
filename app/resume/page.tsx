@@ -1,162 +1,180 @@
-"use client";
+'use client';
 
-import React, { useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { useCms } from "@/contexts/CmsContext";
-import { Icon } from "@/components/ui/Icons";
+import { useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useApp, useCms } from '@/contexts/AppContext';
+import { Icon } from '@/components/ui/Icon';
 
 function ResumeContent() {
-  const { t, state, resolve, locale } = useCms();
   const searchParams = useSearchParams();
-  const isPrint = searchParams.get("print") === "1";
-
+  const { language } = useApp();
+  const { cms, t } = useCms();
+  
+  // Auto-print if ?print=true
   useEffect(() => {
-    if (isPrint) {
-      setTimeout(() => window.print(), 300);
+    if (searchParams.get('print') === 'true') {
+      setTimeout(() => window.print(), 500);
     }
-  }, [isPrint]);
-
-  const handlePrint = () => window.print();
-
-  const levelLabel = (level: string) => {
-    switch (level) {
-      case "native": return locale === "fa" ? "زبان مادری" : "Native";
-      case "fluent": return locale === "fa" ? "روان" : "Fluent";
-      case "intermediate": return locale === "fa" ? "متوسط" : "Intermediate";
-      case "basic": return locale === "fa" ? "پایه" : "Basic";
-      default: return level;
-    }
+  }, [searchParams]);
+  
+  const handlePrint = () => {
+    window.print();
   };
-
+  
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-      {!isPrint && (
-        <div className="no-print flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-black">{t("resume", "title")}</h1>
+    <div className="min-h-screen py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        
+        {/* Print Button */}
+        <div className="no-print mb-6 flex justify-end">
           <button
             onClick={handlePrint}
-            className="px-5 py-2.5 rounded-xl bg-[#5d7ae6] text-white font-bold text-sm flex items-center gap-2 hover:brightness-110 transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-bg text-white font-medium hover:brightness-110 transition-all"
           >
-            <Icon name="Printer" size={16} />
-            {t("resume", "print")}
+            <Icon name="printer" size={18} />
+            {language === 'fa' ? 'چاپ رزومه' : 'Print Resume'}
           </button>
         </div>
-      )}
-
-      <div className="bg-white text-black rounded-2xl shadow-2xl overflow-hidden" id="resume-content">
-        <div className="bg-gradient-to-r from-[#2141a8] to-[#5d7ae6] text-white p-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-black">{resolve(state.identity.fullName)}</h1>
-              <p className="text-blue-100 text-lg mt-1">{resolve(state.identity.title)}</p>
-            </div>
-            <div className="text-6xl font-black text-white/20">{state.brand.logoLetter}</div>
-          </div>
-          <div className="flex flex-wrap gap-4 mt-4 text-sm text-blue-100">
-            <span className="flex items-center gap-1.5">
-              <Icon name="Mail" size={14} /> {state.identity.email}
-            </span>
-            {state.resume.phone && (
-              <span className="flex items-center gap-1.5">
-                <Icon name="Phone" size={14} /> {state.resume.phone}
+        
+        {/* Resume Content */}
+        <div className="glass-card-strong p-8 lg:p-12 print:bg-white print:shadow-none print:p-0">
+          
+          {/* Header */}
+          <header className="text-center pb-6 mb-6 border-b border-[var(--border-color)] print:border-gray-300">
+            <h1 className="text-4xl font-black gradient-text print:text-black mb-2">
+              {t(cms.identity.fullName)}
+            </h1>
+            <p className="text-xl text-[var(--text-secondary)] print:text-gray-600 mb-4">
+              {t(cms.identity.title)}
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-[var(--text-muted)] print:text-gray-500">
+              <span className="flex items-center gap-1">
+                <Icon name="mail" size={14} />
+                {cms.identity.email}
               </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <Icon name="Globe" size={14} /> {state.resume.website}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Icon name="MapPin" size={14} /> {resolve(state.identity.location)}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-8 space-y-8">
-          <section>
-            <h2 className="text-lg font-black text-[#2141a8] border-b-2 border-[#2141a8]/20 pb-2 mb-3">
-              {t("resume", "summary")}
+              <span className="flex items-center gap-1">
+                <Icon name="phone" size={14} />
+                {cms.resume.phone}
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="globe" size={14} />
+                {cms.resume.website}
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="map-pin" size={14} />
+                {t(cms.identity.location)}
+              </span>
+            </div>
+          </header>
+          
+          {/* Summary */}
+          <section className="mb-8">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <Icon name="user" size={18} className="text-[var(--primary)] print:text-blue-600" />
+              {language === 'fa' ? 'خلاصه' : 'Summary'}
             </h2>
-            <p className="text-gray-700 leading-relaxed">{resolve(state.resume.summary)}</p>
+            <p className="text-[var(--text-secondary)] print:text-gray-600 leading-relaxed">
+              {t(cms.resume.summary)}
+            </p>
           </section>
-
-          <section>
-            <h2 className="text-lg font-black text-[#2141a8] border-b-2 border-[#2141a8]/20 pb-2 mb-3">
-              {t("resume", "experience")}
+          
+          {/* Experience */}
+          <section className="mb-8">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Icon name="briefcase" size={18} className="text-[var(--primary)] print:text-blue-600" />
+              {language === 'fa' ? 'تجربه کاری' : 'Experience'}
             </h2>
-            <div className="space-y-5">
-              {state.resume.experience.map((exp) => (
-                <div key={exp.id} className="relative ps-5 border-s-2 border-[#2141a8]/20">
-                  <div className="absolute -start-[5px] top-1.5 w-2 h-2 rounded-full bg-[#2141a8]" />
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="font-bold text-gray-900">{resolve(exp.role)}</h3>
-                    <span className="text-sm text-gray-500 font-mono">{exp.period}</span>
+            
+            <div className="space-y-6">
+              {cms.resume.experience.map(exp => (
+                <div key={exp.id} className="relative ps-6 border-s-2 border-[var(--border-color)] print:border-gray-300">
+                  <div className="absolute -start-[9px] top-0 w-4 h-4 rounded-full bg-[var(--primary)] print:bg-blue-600" />
+                  
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div>
+                      <h3 className="font-bold">{t(exp.position)}</h3>
+                      <p className="text-[var(--text-secondary)] print:text-gray-600">{t(exp.company)}</p>
+                    </div>
+                    <span className="text-sm text-[var(--text-muted)] print:text-gray-500">
+                      {exp.startDate} — {exp.endDate}
+                    </span>
                   </div>
-                  <div className="text-sm text-[#2141a8] font-medium">
-                    {resolve(exp.company)}
-                    {exp.location && ` • ${resolve(exp.location)}`}
-                  </div>
-                  <ul className="mt-2 space-y-1">
+                  
+                  <ul className="list-disc list-inside space-y-1 text-[var(--text-secondary)] print:text-gray-600">
                     {exp.bullets.map((bullet, i) => (
-                      <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-                        <span className="text-[#2141a8] mt-1">▸</span>
-                        <span>{resolve(bullet)}</span>
-                      </li>
+                      <li key={i}>{t(bullet)}</li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
           </section>
-
-          <section>
-            <h2 className="text-lg font-black text-[#2141a8] border-b-2 border-[#2141a8]/20 pb-2 mb-3">
-              {t("resume", "skills")}
+          
+          {/* Skills */}
+          <section className="mb-8">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Icon name="code" size={18} className="text-[var(--primary)] print:text-blue-600" />
+              {language === 'fa' ? 'مهارت‌ها' : 'Skills'}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {state.resume.skills.map((skill) => (
-                <div key={skill.id} className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700 w-28 truncate">{skill.name}</span>
-                  <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-[#2141a8] to-[#5d7ae6]" style={{ width: `${skill.level}%` }} />
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              {cms.resume.skills.map(skill => (
+                <div key={skill.id}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{skill.name}</span>
+                    <span className="text-[var(--text-muted)] print:text-gray-500">{skill.percent}%</span>
                   </div>
-                  <span className="text-xs font-mono text-gray-500 w-8 text-end">{skill.level}%</span>
+                  <div className="h-2 bg-[var(--bg-tertiary)] print:bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[var(--primary)] print:bg-blue-600 rounded-full"
+                      style={{ width: `${skill.percent}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           </section>
-
-          <section>
-            <h2 className="text-lg font-black text-[#2141a8] border-b-2 border-[#2141a8]/20 pb-2 mb-3">
-              {t("resume", "education")}
+          
+          {/* Education */}
+          <section className="mb-8">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Icon name="award" size={18} className="text-[var(--primary)] print:text-blue-600" />
+              {language === 'fa' ? 'تحصیلات' : 'Education'}
             </h2>
+            
             <div className="space-y-4">
-              {state.resume.education.map((edu) => (
-                <div key={edu.id}>
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="font-bold text-gray-900">{resolve(edu.degree)}</h3>
-                    <span className="text-sm text-gray-500 font-mono">{edu.period}</span>
+              {cms.resume.education.map(edu => (
+                <div key={edu.id} className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold">{t(edu.degree)}</h3>
+                    <p className="text-[var(--text-secondary)] print:text-gray-600">{t(edu.institution)}</p>
                   </div>
-                  <div className="text-sm text-[#2141a8]">
-                    {resolve(edu.school)}
-                    {edu.field && ` — ${resolve(edu.field)}`}
-                  </div>
+                  <span className="text-sm text-[var(--text-muted)] print:text-gray-500 flex-shrink-0">
+                    {edu.year}
+                  </span>
                 </div>
               ))}
             </div>
           </section>
-
+          
+          {/* Languages */}
           <section>
-            <h2 className="text-lg font-black text-[#2141a8] border-b-2 border-[#2141a8]/20 pb-2 mb-3">
-              {t("resume", "languages")}
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Icon name="globe" size={18} className="text-[var(--primary)] print:text-blue-600" />
+              {language === 'fa' ? 'زبان‌ها' : 'Languages'}
             </h2>
-            <div className="flex flex-wrap gap-3">
-              {state.resume.languages.map((lang) => (
-                <div key={lang.id} className="px-4 py-2 rounded-xl bg-gray-100 text-sm">
-                  <span className="font-bold">{lang.name}</span>
-                  <span className="text-gray-500 ms-2">— {levelLabel(lang.level)}</span>
+            
+            <div className="flex flex-wrap gap-4">
+              {cms.resume.languages.map(lang => (
+                <div key={lang.id} className="flex items-center gap-2">
+                  <span className="font-medium">{t(lang.name)}:</span>
+                  <span className="text-[var(--text-secondary)] print:text-gray-600">{t(lang.level)}</span>
                 </div>
               ))}
             </div>
           </section>
+          
         </div>
       </div>
     </div>
@@ -165,7 +183,7 @@ function ResumeContent() {
 
 export default function ResumePage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
       <ResumeContent />
     </Suspense>
   );

@@ -1,147 +1,152 @@
-# AvidKiya OS — Portfolio & CMS
+# AvidKiya OS — Portfolio Website
 
-پرتفولیو شخصی حرفه‌ای با CMS هدلس و Auto-Deployer
+یک وب‌سایت پرتفولیو شخصی حرفه‌ای و کاملاً هدلس (headless CMS) با استایل DevHub OS.
 
-## 🚀 راه‌اندازی
+## 🚀 شروع سریع
 
-### نصب dependencies
+### روش ۱: استفاده از Deployer Worker (توصیه شده)
 
-```bash
-cd avidkiya-portfolio
-npm install
-```
+1. فایل `deployer.js` را در Cloudflare Workers deploy کنید
+2. URL ورکر را باز کنید
+3. توکن Cloudflare API بگیرید و وارد کنید
+4. دکمه "شروع نصب" را بزنید
 
-### توسعه محلی
+### روش ۲: Deploy دستی به Cloudflare Pages
 
-```bash
-npm run dev
-```
-
-### بیلد و دیپلوی روی Cloudflare Pages
-
-```bash
-npm run deploy
-```
-
----
+1. این repository را fork کنید
+2. در داشبورد Cloudflare → Pages → Create Project
+3. Connect to Git → Repository خود را انتخاب کنید
+4. Build settings:
+   - Framework: Next.js
+   - Build command: `npm run build`
+   - Output directory: `.next`
+5. Environment variables:
+   - `ADMIN_TOKEN`: رمز عبور پنل ادمین (پیش‌فرض: `admin`)
+6. KV namespace بسازید و bind کنید به `AVIDKIYA_KV`
 
 ## 📁 ساختار پروژه
 
 ```
-avidkiya-portfolio/
-├── app/                    # Next.js pages
-│   ├── page.tsx            # صفحه اصلی
-│   ├── layout.tsx          # Layout اصلی
-│   ├── globals.css         # استایل‌های جهانی
-│   ├── projects/           # صفحه پروژه‌ها
-│   ├── about/              # صفحه درباره من
-│   ├── resume/             # رزومه (A4 print)
-│   ├── gifts/              # هدایا
-│   ├── announcements/      # اعلانات
-│   ├── comments/           # نظرات
-│   ├── shop/               # فروشگاه
-│   └── admin/              # پنل مدیریت
-│       ├── page.tsx        # پنل اصلی
-│       └── login/          # صفحه ورود
-├── components/             # کامپوننت‌ها
-│   ├── layout/             # TopNav, Footer
-│   └── ui/                 # Icons, PersianCalendar
-├── contexts/               # CmsContext, AppProvider
-├── lib/                    # schema, i18n, persian-calendar
-├── functions/api/          # Cloudflare Functions (KV-backed API)
-├── public/                 # assets, favicon
-├── deployer.js             # Auto-Deployer Worker (مستقل)
-├── wrangler.toml           # Cloudflare config
+├── src/
+│   ├── app/                    # صفحات Next.js
+│   │   ├── page.tsx           # صفحه اصلی
+│   │   ├── projects/          # پروژه‌ها (VS Code style)
+│   │   ├── about/             # درباره من (Command Center)
+│   │   ├── resume/            # رزومه (قابل چاپ A4)
+│   │   ├── gifts/             # هدیه‌ها (دونیت + دانلود)
+│   │   ├── announcements/     # اعلانات
+│   │   ├── comments/          # نظرات
+│   │   ├── shop/              # فروشگاه
+│   │   ├── admin/             # پنل مدیریت
+│   │   └── api/               # API Routes
+│   ├── components/            # کامپوننت‌ها
+│   ├── contexts/              # React Context (AppContext)
+│   └── lib/                   # کتابخانه‌ها (CMS, Calendar, etc.)
+├── public/
+│   ├── fonts/                 # فونت Vazirmatn
+│   ├── favicon.svg
+│   └── _routes.json
+├── deployer.js                # Cloudflare Worker برای نصب خودکار
+├── wrangler.toml              # تنظیمات Cloudflare
 └── package.json
 ```
 
----
+## 🎯 ویژگی‌ها
 
-## 🔑 پنل ادمین
+### صفحات
+- **صفحه اصلی**: Hero + تقویم فارسی/هخامنشی + پروژه‌ها + آمار
+- **پروژه‌ها**: UI مانند VS Code با اتصال به GitHub API
+- **درباره**: Command Center سه ستونه با فرم تماس
+- **رزومه**: قابل چاپ A4 با استایل print-optimized
+- **هدیه‌ها**: دو ستون دونیت و دانلود
+- **اعلانات**: News, Poll, Map, Image, Text
+- **نظرات**: فرم ثبت نظر با moderation
+- **فروشگاه**: محصولات دیجیتال
 
-### دسترسی مخفی
-برای ورود به پنل ادمین، در انتهای URL سایت این hash را اضافه کنید:
+### پنل ادمین
+دسترسی: `yoursite.com/#kiya/panel`
+
+رمز پیش‌فرض: `admin` (بعد از ورود تغییر دهید)
+
+۱۴ بخش مدیریت:
+1. نمای کلی
+2. هویت (+ آپلود لوگو)
+3. شبکه‌های اجتماعی
+4. صفحه اصلی
+5. درباره من
+6. پروژه‌ها
+7. رزومه
+8. هدیه‌ها
+9. اعلانات
+10. نظرات
+11. فروشگاه
+12. پیام‌ها
+13. رسانه
+14. تنظیمات
+
+### قابلیت‌های فنی
+- ✅ دو زبان کامل (فارسی/انگلیسی) با RTL
+- ✅ دو تم (شب/روز)
+- ✅ تقویم فارسی با سال هخامنشی
+- ✅ اتصال زنده به GitHub API
+- ✅ چاپ رزومه A4
+- ✅ CMS هدلس با KV storage
+- ✅ Anti-flash script برای تم و زبان
+- ✅ Mobile responsive
+- ✅ فونت Vazirmatn self-hosted
+
+## 🎨 پالت رنگی
+
+### تم شب (پیش‌فرض)
+- پس‌زمینه: `#171717`
+- Primary: `#5d7ae6`
+- Accents: cyan, emerald, amber, rose, violet
+
+### تم روز
+- پس‌زمینه: `#ffffff`
+- Primary: `#004741` (Cyprus green)
+
+## 🔧 توسعه محلی
+
+```bash
+# نصب وابستگی‌ها
+npm install
+
+# اجرای development server
+npm run dev
+
+# Build
+npm run build
 ```
-https://yoursite.pages.dev#kiya/panel
-```
 
-یا مستقیم:
-```
-https://yoursite.pages.dev/admin/login
-```
+## 📝 Environment Variables
 
-### رمز پیش‌فرض
-```
-admin
-```
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `ADMIN_TOKEN` | رمز عبور پنل ادمین | بله |
+| `AVIDKIYA_KV` | Cloudflare KV binding | برای Cloudflare |
 
-⚠️ **بعد از اولین ورود، حتماً رمز را از بخش تنظیمات تغییر دهید.**
+## 🚀 Deployer Worker
 
----
-
-## 🛠️ Cloudflare Functions API
-
-پروژه از **Cloudflare Pages Functions** با **KV** برای CMS استفاده می‌کند:
-
-| Endpoint | Method | Auth | توضیح |
-|---|---|---|---|
-| `/api/cms` | GET | ❌ | دریافت CMS state |
-| `/api/cms` | POST | ✅ | ذخیره CMS state |
-| `/api/cms` | DELETE | ✅ | ریست CMS |
-| `/api/messages` | POST | ❌ | ارسال پیام |
-| `/api/messages` | GET | ✅ | لیست پیام‌ها |
-| `/api/comments` | POST | ❌ | ثبت نظر |
-| `/api/comments` | GET | ❌/✅ | نظرات (تایید شده / همه) |
-| `/api/newsletter` | POST | ❌ | عضویت خبرنامه |
-
----
-
-## 🚀 Auto-Deployer Worker
-
-فایل `deployer.js` یک **Cloudflare Worker مستقل** است که:
+فایل `deployer.js` یک Cloudflare Worker مستقل است که:
 
 1. توکن Cloudflare API از کاربر می‌گیرد
 2. KV namespace می‌سازد
-3. Pages project می‌سازد
-4. ADMIN_TOKEN ست می‌کند
-5. KV binding وصل می‌کند
+3. Pages Project می‌سازد
+4. ADMIN_TOKEN تصادفی ست می‌کند
+5. Environment variables و KV binding را پیکربندی می‌کند
 
-### استقرار Deployer:
+### نصب Deployer
 
-1. در Cloudflare Dashboard → Workers → Create Worker
-2. محتوای `deployer.js` را Paste کنید
-3. Save & Deploy
-4. به URL Worker بروید و فرآیند نصب را طی کنید
+1. به Cloudflare Dashboard → Workers & Pages بروید
+2. Create Worker کلیک کنید
+3. کد `deployer.js` را paste کنید
+4. Save & Deploy
 
----
+## 📄 License
 
-## 🎨 قابلیت‌ها
-
-- ✅ دو تم کامل (شب/روز)
-- ✅ دو زبان (فارسی/انگلیسی) با RTL mirror کامل
-- ✅ تقویم شمسی + هخامنشی + ساعت زنده
-- ✅ CMS هدلس با auto-save
-- ✅ GitHub API integration (نمایش خودکار ریپوها)
-- ✅ پنل مدیریت ۱۴ بخشی
-- ✅ رزومه A4 قابل چاپ
-- ✅ فروشگاه با چند ارز
-- ✅ سیستم نظرات با moderation
-- ✅ اعلانات (متن، نظرسنجی، نقشه، عکس)
-- ✅ موسیقی پس‌زمینه
-- ✅ Analytics (Plausible + GA)
-- ✅ SEO کامل
-- ✅ Print CSS
-- ✅ Responsive تا 320px
+MIT License
 
 ---
 
-## 📝 نکات مهم
-
-1. **فونت Vazirmatn**: باید در `public/fonts/` قرار گیرد (self-hosted)
-2. **KV binding**: در `wrangler.toml` باید KV namespace ID را وارد کنید
-3. **ADMIN_TOKEN**: به‌صورت Secret در Cloudflare Pages settings ست می‌شود
-4. **GitHub API**: بدون rate limit برای public repos
-
----
-
-Built with ❤️ by Avid Kiya
+ساخته شده با ❤️ توسط [Avid Kia](https://github.com/avidkia)

@@ -1,38 +1,62 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { AppProvider } from "@/contexts/AppProvider";
+import type { Metadata } from 'next';
+import { AppProvider } from '@/contexts/AppContext';
+import { TopNav } from '@/components/layout/TopNav';
+import { Footer } from '@/components/layout/Footer';
+import { BackgroundLayers, ScrollProgress, BackToTop } from '@/components/layout/BackgroundLayers';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "AvidKiya OS — System Architect & Backend Engineer",
-  description: "Portfolio of Avid Kiya — System Architect & Backend Engineer",
+  title: 'Avid Kia — System Architect & Backend Engineer',
+  description: 'Personal portfolio of Avid Kia, a system architect and backend engineer specializing in scalable distributed systems.',
+  keywords: ['developer', 'backend', 'system architect', 'portfolio', 'Go', 'TypeScript'],
+  icons: {
+    icon: '/favicon.svg'
+  }
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// Anti-flash script
+const antiFlashScript = `
+(function() {
+  try {
+    var theme = localStorage.getItem('avidkiya-theme');
+    var lang = localStorage.getItem('avidkiya-lang');
+    if (theme === 'light') document.documentElement.classList.add('light');
+    if (lang === 'fa') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'fa';
+    } else if (lang === 'en') {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = 'en';
+    } else {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'fa';
+    }
+  } catch (e) {}
+})();
+`;
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var locale = localStorage.getItem('avidkiya-locale') || 'fa';
-                  var theme = localStorage.getItem('avidkiya-theme') || 'dark';
-                  document.documentElement.dir = locale === 'fa' ? 'rtl' : 'ltr';
-                  document.documentElement.lang = locale;
-                  if (theme === 'light') {
-                    document.documentElement.classList.add('light');
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
-        />
-        <link rel="icon" href="/favicon.svg" />
+        <script dangerouslySetInnerHTML={{ __html: antiFlashScript }} />
+        <link rel="preconnect" href="https://api.github.com" />
       </head>
-      <body>
-        <AppProvider>{children}</AppProvider>
-        <div id="print-resume-container" />
+      <body className="min-h-screen flex flex-col">
+        <AppProvider>
+          <ScrollProgress />
+          <BackgroundLayers />
+          <TopNav />
+          <main className="flex-1 pt-16">
+            {children}
+          </main>
+          <Footer />
+          <BackToTop />
+        </AppProvider>
       </body>
     </html>
   );

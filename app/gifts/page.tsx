@@ -1,90 +1,125 @@
-"use client";
+'use client';
 
-import React from "react";
-import RootPageLayout from "@/components/layout/RootPageLayout";
-import { useCms } from "@/contexts/CmsContext";
-import { Icon, BrandIcon } from "@/components/ui/Icons";
+import { useApp, useCms } from '@/contexts/AppContext';
+import { Icon } from '@/components/ui/Icon';
 
 export default function GiftsPage() {
-  const { t, state, resolve, locale } = useCms();
-
-  const platformColors: Record<string, string> = {
-    buymeacoffee: "from-amber-400 to-orange-500",
-    bitcoin: "from-orange-400 to-yellow-500",
-    ethereum: "from-blue-400 to-indigo-500",
-    usdt: "from-emerald-400 to-green-500",
-    zarinpal: "from-blue-400 to-cyan-500",
-  };
-
+  const { language } = useApp();
+  const { cms, t } = useCms();
+  
   return (
-    <RootPageLayout>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
+    <div className="min-h-screen py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-black gradient-text">{resolve(state.gifts.title)}</h1>
-          <p className="text-[var(--color-text-muted)]">{resolve(state.gifts.subtitle)}</p>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-black gradient-text mb-4">
+            {t(cms.gifts.title)}
+          </h1>
+          <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
+            {t(cms.gifts.subtitle)}
+          </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Downloads - My Gift to You */}
-          <div className="glass p-6 space-y-4">
-            <h2 className="text-xl font-black flex items-center gap-2">
-              <span className="text-2xl">🎁</span>
-              {resolve(state.gifts.downloadTitle)}
-            </h2>
-            <div className="space-y-3">
-              {state.gifts.downloads.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl bg-[var(--color-bg-alt)] hover:bg-[#1f1f22]/80 transition group">
-                  <div className="w-12 h-12 rounded-xl bg-[#5d7ae6]/10 flex items-center justify-center shrink-0">
-                    <Icon name={item.icon ? (item.icon as any) : "FileDown"} size={22} className="text-[var(--color-primary)]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm">{resolve(item.title)}</h3>
-                    <p className="text-xs text-[var(--color-text-muted)] truncate">{resolve(item.description)}</p>
-                    {item.size && <span className="text-[10px] text-[var(--color-text-subtle)]">{item.size}</span>}
-                  </div>
-                  <a
-                    href={item.url}
-                    download
-                    className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-xs font-bold hover:brightness-110 transition shrink-0 flex items-center gap-1.5"
-                  >
-                    <Icon name="Download" size={12} />
-                    {t("gifts", "download")}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        
+        <div className="grid lg:grid-cols-2 gap-8">
+          
           {/* Donations - Your Gift to Me */}
-          <div className="glass p-6 space-y-4">
-            <h2 className="text-xl font-black flex items-center gap-2">
-              <span className="text-2xl">💝</span>
-              {t("gifts", "yourGifts")}
-            </h2>
-            <div className="space-y-3">
-              {state.gifts.donationLinks.map((link) => (
+          <div className="glass-card-strong p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-[var(--accent-amber)]/20 flex items-center justify-center">
+                <Icon name="heart" size={24} className="text-[var(--accent-amber)]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">
+                  {language === 'fa' ? 'هدیه شما به من' : 'Your Gift to Me'}
+                </h2>
+                <p className="text-sm text-[var(--text-muted)]">
+                  {language === 'fa' ? 'حمایت مالی' : 'Financial Support'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              {cms.gifts.donationLinks.map(link => (
                 <a
                   key={link.id}
                   href={link.url}
                   target="_blank"
-                  rel="noopener"
-                  className={`flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r ${platformColors[link.platform] || "from-gray-400 to-gray-600"} text-white hover:scale-[1.02] transition group`}
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-tertiary)] hover:border hover:border-[var(--border-active)] transition-all group"
+                  style={{ borderColor: 'transparent' }}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <BrandIcon platform={link.platform as any} size={22} />
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${link.color}20` }}
+                  >
+                    <Icon name={link.icon} size={24} className={`text-[${link.color}]`} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold">{resolve(link.label)}</h3>
-                    <p className="text-xs text-white/80">{t("gifts", "donate")}</p>
+                    <h3 className="font-bold group-hover:text-[var(--primary)] transition-colors">
+                      {t(link.label)}
+                    </h3>
+                    <p className="text-sm text-[var(--text-muted)]">
+                      {link.platform}
+                    </p>
                   </div>
-                  <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition" />
+                  <Icon name="arrow-right" size={18} className="text-[var(--text-muted)] group-hover:text-[var(--primary)] transition-colors" />
                 </a>
               ))}
             </div>
           </div>
+          
+          {/* Downloads - My Gift to You */}
+          <div className="glass-card-strong p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-[var(--accent-emerald)]/20 flex items-center justify-center">
+                <Icon name="gift" size={24} className="text-[var(--accent-emerald)]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">
+                  {t(cms.gifts.downloadTitle)}
+                </h2>
+                <p className="text-sm text-[var(--text-muted)]">
+                  {language === 'fa' ? 'دانلودهای رایگان' : 'Free Downloads'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              {cms.gifts.downloads.map(download => (
+                <a
+                  key={download.id}
+                  href={download.url}
+                  download
+                  className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-tertiary)] hover:border hover:border-[var(--border-active)] transition-all group"
+                  style={{ borderColor: 'transparent' }}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-[var(--primary-glow)] flex items-center justify-center">
+                    <Icon name={download.icon} size={24} className="text-[var(--primary)]" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold group-hover:text-[var(--primary)] transition-colors">
+                      {t(download.title)}
+                    </h3>
+                    <p className="text-sm text-[var(--text-muted)]">
+                      {t(download.description)}
+                    </p>
+                    {download.size && (
+                      <span className="text-xs text-[var(--text-muted)]">
+                        {download.size}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3 rounded-xl bg-[var(--primary)] text-white">
+                    <Icon name="download" size={18} />
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+          
         </div>
       </div>
-    </RootPageLayout>
+    </div>
   );
 }

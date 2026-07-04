@@ -1,150 +1,176 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useCms } from "@/contexts/CmsContext";
-import { toPersianDigits, getPersianDate, getHakhmaneshiYear } from "@/lib/persian-calendar";
+import { useState, useEffect } from 'react';
+import { useApp } from '@/contexts/AppContext';
+import {
+  toJalaali,
+  getHakhameneshiYear,
+  getPersianMonthName,
+  getPersianWeekdayName,
+  getTodayOccasion,
+  getNextOccasion,
+  toPersianDigits,
+  jalaaliMonthLength,
+  toGregorian,
+  getPersianWeekday,
+  PERSIAN_WEEKDAYS_FA,
+  PERSIAN_WEEKDAYS_EN
+} from '@/lib/persian-calendar';
 
-export function PersianClock() {
-  const { locale } = useCms();
+export function PersianCalendar() {
+  const { language } = useApp();
   const [now, setNow] = useState(new Date());
-
+  
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const persian = getPersianDate(now);
-  const hakhYear = getHakhmaneshiYear(persian.year);
-
-  const formatTime = () => {
-    const h = now.getHours().toString().padStart(2, "0");
-    const m = now.getMinutes().toString().padStart(2, "0");
-    const s = now.getSeconds().toString().padStart(2, "0");
-    const time = `${h}:${m}:${s}`;
-    return locale === "fa" ? toPersianDigits(time) : time;
+  
+  const jalali = toJalaali(now);
+  const hakhameneshiYear = getHakhameneshiYear(jalali.jy);
+  const weekday = getPersianWeekday(now);
+  const todayOccasion = getTodayOccasion(jalali.jm, jalali.jd, language);
+  const nextOccasion = !todayOccasion ? getNextOccasion(jalali.jm, jalali.jd, language) : null;
+  
+  // Get calendar days
+  const monthLength = jalaaliMonthLength(jalali.jy, jalali.jm);
+  const firstDayOfMonth = toGregorian(jalali.jy, jalali.jm, 1);
+  const firstWeekday = getPersianWeekday(firstDayOfMonth);
+  
+  const calendarDays: (number | null)[] = [];
+  // Add empty cells for days before the 1st
+  for (let i = 0; i < firstWeekday; i++) {
+    calendarDays.push(null);
+  }
+  // Add days of the month
+  for (let d = 1; d <= monthLength; d++) {
+    calendarDays.push(d);
+  }
+  
+  const formatTime = (date: Date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return language === 'fa' 
+      ? `${toPersianDigits(hours)}:${toPersianDigits(minutes)}:${toPersianDigits(seconds)}`
+      : `${hours}:${minutes}:${seconds}`;
   };
-
+  
+  const weekdays = language === 'fa' ? PERSIAN_WEEKDAYS_FA : PERSIAN_WEEKDAYS_EN;
+  
   return (
-    <div className="text-center space-y-1">
-      <div className="text-4xl font-mono font-black tracking-wider gradient-text">
-        {formatTime()}
-      </div>
-      <div className="text-sm text-[var(--color-text-muted)]">
-        {locale === "fa" ? (
-          <>
-            {persian.dayName}، {toPersianDigits(persian.day)} {persian.monthName} {toPersianDigits(persian.year)}
-            <span className="block text-xs mt-0.5">
-              سال هخامنشی: {toPersianDigits(hakhYear)}
+    <div className="glass-card-strong p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Section 1: Clock */}
+        <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-[var(--bg-tertiary)]">
+          <div className="text-5xl font-black tracking-wider gradient-text font-mono">
+            {formatTime(now)}
+          </div>
+          <div className="mt-2 text-sm text-[var(--text-muted)]">
+            {language === 'fa' ? 'ساعت زنده' : 'Live Clock'}
+          </div>
+        </div>
+        
+        {/* Section 2: Today's Date & Occasion */}
+        <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-[var(--bg-tertiary)]">
+          {/* Weekday */}
+          <div className="text-lg font-medium text-[var(--text-secondary)]">
+            {getPersianWeekdayName(weekday, language, true)}
+          </div>
+          
+          {/* Date */}
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-4xl font-black gradient-text">
+              {language === 'fa' ? toPersianDigits(jalali.jd) : jalali.jd}
             </span>
-          </>
-        ) : (
-          <>
-            {persian.dayName}, {persian.day} {persian.monthName} {persian.year}
-            <span className="block text-xs mt-0.5">
-              Achaemenid Year: {hakhYear}
+            <span className="text-2xl font-bold text-[var(--text-primary)]">
+              {getPersianMonthName(jalali.jm, language)}
             </span>
-          </>
-        )}
+            <span className="text-xl text-[var(--text-secondary)]">
+              {language === 'fa' ? toPersianDigits(jalali.jy) : jalali.jy}
+            </span>
+          </div>
+          
+          {/* Hakhameneshi Year */}
+          <div className="mt-2 text-sm text-[var(--accent-amber)]">
+            {language === 'fa' 
+              ? `سال هخامنشی: ${toPersianDigits(hakhameneshiYear)}`
+              : `Hakhameneshi Year: ${hakhameneshiYear}`}
+          </div>
+          
+          {/* Occasion */}
+          <div className="mt-3 px-4 py-2 rounded-full bg-[var(--primary-glow)] border border-[var(--primary)]">
+            {todayOccasion ? (
+              <span className="text-sm font-medium text-[var(--primary)]">
+                🎉 {todayOccasion}
+              </span>
+            ) : nextOccasion ? (
+              <span className="text-sm text-[var(--text-secondary)]">
+                {language === 'fa' 
+                  ? `${nextOccasion.title} در ${toPersianDigits(nextOccasion.daysLeft)} روز`
+                  : `${nextOccasion.title} in ${nextOccasion.daysLeft} days`}
+              </span>
+            ) : null}
+          </div>
+        </div>
+        
+        {/* Section 3: Full Month Calendar */}
+        <div className="p-4 rounded-xl bg-[var(--bg-tertiary)]">
+          {/* Month Header */}
+          <div className="text-center mb-3">
+            <span className="font-bold text-[var(--text-primary)]">
+              {getPersianMonthName(jalali.jm, language)} {language === 'fa' ? toPersianDigits(jalali.jy) : jalali.jy}
+            </span>
+          </div>
+          
+          {/* Weekday Headers */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {weekdays.map((day, i) => (
+              <div
+                key={i}
+                className={`text-center text-xs font-medium py-1 ${
+                  i === 6 ? 'text-[var(--accent-rose)]' : 'text-[var(--text-muted)]'
+                }`}
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+          
+          {/* Days Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((day, i) => {
+              if (day === null) {
+                return <div key={i} className="aspect-square" />;
+              }
+              
+              const isToday = day === jalali.jd;
+              const dayDate = toGregorian(jalali.jy, jalali.jm, day);
+              const dayWeekday = getPersianWeekday(dayDate);
+              const isFriday = dayWeekday === 6;
+              
+              return (
+                <div
+                  key={i}
+                  className={`aspect-square flex items-center justify-center rounded-lg text-sm transition-colors ${
+                    isToday
+                      ? 'gradient-bg text-white font-bold'
+                      : isFriday
+                        ? 'text-[var(--accent-rose)] hover:bg-[var(--bg-secondary)]'
+                        : 'hover:bg-[var(--bg-secondary)]'
+                  }`}
+                >
+                  {language === 'fa' ? toPersianDigits(day) : day}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
       </div>
     </div>
   );
 }
 
-export function PersianCalendarFull() {
-  const { locale } = useCms();
-  const [viewMonth, setViewMonth] = useState(() => {
-    const p = getPersianDate();
-    return { year: p.year, month: p.month };
-  });
-
-  const p = getPersianDate();
-  const isCurrentMonth = viewMonth.year === p.year && viewMonth.month === p.month;
-
-  const prevMonth = () => {
-    let m = viewMonth.month - 1;
-    let y = viewMonth.year;
-    if (m < 1) { m = 12; y--; }
-    setViewMonth({ year: y, month: m });
-  };
-
-  const nextMonth = () => {
-    let m = viewMonth.month + 1;
-    let y = viewMonth.year;
-    if (m > 12) { m = 1; y++; }
-    setViewMonth({ year: y, month: m });
-  };
-
-  // Build calendar grid
-  const daysInMonth = (() => {
-    if (viewMonth.month <= 6) return 31;
-    if (viewMonth.month <= 11) return 30;
-    // Leap year check for month 12
-    const epbase = viewMonth.year - (viewMonth.year >= 0 ? 474 : 473);
-    const epyear = 474 + ((epbase % 2820) + 2820) % 2820;
-    return ((epyear * 8 + 21) % 33 < 8) ? 30 : 29;
-  })();
-
-  // Get first day of week (0=شنبه)
-  const { persianToGregorian: p2g } = require("@/lib/persian-calendar");
-  const firstG = p2g(viewMonth.year, viewMonth.month, 1);
-  const firstDayOfWeek = (firstG.getDay() + 1) % 7;
-
-  const weeks: (number | null)[][] = [];
-  let week: (number | null)[] = [];
-  for (let i = 0; i < firstDayOfWeek; i++) week.push(null);
-  for (let day = 1; day <= daysInMonth; day++) {
-    week.push(day);
-    if (week.length === 7) { weeks.push(week); week = []; }
-  }
-  if (week.length > 0) {
-    while (week.length < 7) week.push(null);
-    weeks.push(week);
-  }
-
-  const monthNames = locale === "fa"
-    ? ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"]
-    : ["Farvardin","Ordibehesht","Khordad","Tir","Mordad","Shahrivar","Mehr","Aban","Azar","Dey","Bahman","Esfand"];
-
-  const weekDays = locale === "fa" ? ["ش","ی","د","س","چ","پ","ج"] : ["S","M","T","W","T","F","S"];
-
-  return (
-    <div className="glass p-4">
-      <div className="flex items-center justify-between mb-3">
-        <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-[var(--color-bg-alt)] transition">
-          {locale === "fa" ? "‹" : "›"}
-        </button>
-        <h3 className="font-bold text-sm">
-          {monthNames[viewMonth.month - 1]} {locale === "fa" ? toPersianDigits(viewMonth.year) : viewMonth.year}
-        </h3>
-        <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-[var(--color-bg-alt)] transition">
-          {locale === "fa" ? "›" : "‹"}
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-0.5 text-center">
-        {weekDays.map((d, i) => (
-          <div key={i} className="text-xs font-bold text-[var(--color-text-subtle)] py-1">{d}</div>
-        ))}
-        {weeks.flat().map((day, idx) => {
-          const isToday = isCurrentMonth && day === p.day;
-          return (
-            <div
-              key={idx}
-              className={`
-                text-xs py-1.5 rounded-lg transition relative
-                ${!day ? "invisible" : ""}
-                ${isToday
-                  ? "bg-[var(--color-primary)] text-white font-bold"
-                  : day && locale === "fa"
-                    ? "hover:bg-[var(--color-bg-alt)]"
-                    : day ? "hover:bg-[var(--color-bg-alt)]" : ""
-                }
-              `}
-            >
-              {day ? (locale === "fa" ? toPersianDigits(day) : day) : ""}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+export default PersianCalendar;
