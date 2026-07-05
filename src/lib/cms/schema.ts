@@ -192,6 +192,14 @@ export interface CmsState {
     defaultTheme: 'dark' | 'light';
     githubUsername: string;
     editMode: boolean;
+    backgroundVideo?: {
+      enabled: boolean;
+      src?: string;
+      poster?: string;
+      autoplay?: boolean;
+      loop?: boolean;
+      muted?: boolean;
+    };
   };
   
   socials: SocialAccount[];
@@ -258,8 +266,15 @@ export interface CmsState {
     autoplay: boolean;
     loop: boolean;
     volume: number;
-    src?: string;
-    title?: string;
+    currentIndex?: number;
+    tracks: {
+      id: string;
+      title?: I18nText | string;
+      artist?: string;
+      src: string;
+      cover?: string;
+      enabled?: boolean;
+    }[];
   };
   
   heroObject: {
@@ -470,7 +485,9 @@ export const defaultCmsState: CmsState = {
     enabled: false,
     autoplay: false,
     loop: true,
-    volume: 0.5
+    volume: 0.5,
+    currentIndex: 0,
+    tracks: []
   },
   
   heroObject: {

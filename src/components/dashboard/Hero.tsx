@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { useApp, useCms } from '@/contexts/AppContext';
 import { Icon } from '@/components/ui/Icon';
 
-// ASCII Art - Always LTR
-const ASCII_LOGO = `▄▀█ █░█ █ █▀▄   █▄▀ █ █▄█ ▄▀█
-█▀█ ▀▄▀ █ █▄▀   █░█ █ ░█░ █▀█
-░░░ A V I D   D E V H U B ░░░`;
+// ASCII Art - Always LTR (bigger)
+const ASCII_LOGO = `▄▀█ █░█ █ █▀▄ █▄▀ █ █▄█ ▄▀█
+█▀█ ▀▄▀ █ █▄▀ █░█ █ ░█░ █▀█
+░░░ A V I D D E V H U B ░░░`;
 
 const TECH_CHIPS = ['Go', 'TypeScript', 'Python', 'PostgreSQL', 'Redis', 'Kubernetes', 'Docker', 'gRPC'];
 
@@ -36,7 +36,7 @@ export function Hero() {
             
             {/* ASCII Art (Desktop Only) - Always LTR */}
             <div className="hidden lg:block mb-6 overflow-hidden" dir="ltr">
-              <pre className="text-[10px] leading-tight text-[var(--primary)] opacity-70 font-mono whitespace-pre text-center">
+              <pre className="text-[14px] lg:text-[18px] leading-tight text-[var(--primary)] opacity-70 font-mono whitespace-pre text-center">
                 {ASCII_LOGO}
               </pre>
             </div>

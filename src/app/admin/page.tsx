@@ -51,11 +51,12 @@ export default function AdminPage() {
   const [newPassword, setNewPassword] = useState('');
   const [passwordChanged, setPasswordChanged] = useState(false);
   
-  // Check hash for hidden access - MUST have #kiya/panel
+  // Check location for hidden access - accept hash (#kiya/panel) or pathname (/kiya/panel)
   useEffect(() => {
-    const checkHash = () => {
+    const checkAccess = () => {
       const hash = window.location.hash;
-      if (hash === '#kiya/panel') {
+      const path = window.location.pathname;
+      if (hash === '#kiya/panel' || path === '/kiya/panel' || path === '/kiya/panel/') {
         setHasAccess(true);
         // Check saved token
         const savedToken = localStorage.getItem('avidkiya-admin-token');
@@ -66,10 +67,15 @@ export default function AdminPage() {
         setHasAccess(false);
       }
     };
-    
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
+
+    checkAccess();
+    window.addEventListener('hashchange', checkAccess);
+    // also listen for pushState/popstate changes (client-side navigation)
+    window.addEventListener('popstate', checkAccess);
+    return () => {
+      window.removeEventListener('hashchange', checkAccess);
+      window.removeEventListener('popstate', checkAccess);
+    };
   }, []);
   
   const verifyToken = async (token: string) => {
@@ -466,6 +472,106 @@ function AdminSection({ section, cms, updateCms, language, t, saveCms }: AdminSe
           </div>
         </div>
       );
+
+      case 'media':
+        return (
+          <div>
+            <h1 className="text-2xl font-black mb-6">
+              {language === 'fa' ? 'رسانه' : 'Media'}
+            </h1>
+
+            <div className="glass-card-strong p-6 space-y-4">
+              <h2 className="font-bold">{language === 'fa' ? 'موسیقی' : 'Music'}</h2>
+
+              <div className="space-y-2">
+                <p className="text-sm text-[var(--text-muted)]">{language === 'fa' ? 'افزودن آهنگ از فایل یا URL' : 'Add track from file or URL'}</p>
+
+                <div className="flex gap-2">
+                  <label className="px-4 py-2 rounded-xl glass-card cursor-pointer">
+                    {language === 'fa' ? 'آپلود فایل' : 'Upload file'}
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          const src = ev.target?.result as string;
+                          const id = Date.now().toString();
+                          const track = { id, title: file.name, src, artist: '', enabled: true };
+                          updateCms('music.tracks', [...(cms.music.tracks || []), track]);
+                          alert(language === 'fa' ? 'آپلود انجام شد' : 'Uploaded');
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <div className="flex-1">
+                    <input type="text" id="musicUrlInput" placeholder={language === 'fa' ? 'لینک مستقیم آهنگ' : 'Direct track URL'} className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]" />
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => {
+                        const input = document.getElementById('musicUrlInput') as HTMLInputElement;
+                        const url = input?.value?.trim();
+                        if (!url) return alert(language === 'fa' ? 'لینک نامعتبر' : 'Invalid URL');
+                        const id = Date.now().toString();
+                        const track = { id, title: url.split('/').pop() || 'Track', src: url, artist: '', enabled: true };
+                        updateCms('music.tracks', [...(cms.music.tracks || []), track]);
+                        input.value = '';
+                      }} className="px-4 py-2 rounded-xl gradient-bg text-white">{language === 'fa' ? 'اضافه' : 'Add'}</button>
+                      <button onClick={() => { updateCms('music.tracks', []); }} className="px-4 py-2 rounded-xl glass-card">{language === 'fa' ? 'پاک کردن همه' : 'Clear All'}</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-2">{language === 'fa' ? 'فهرست پخش' : 'Playlist'}</h3>
+                <div className="space-y-2">
+                  {(cms.music.tracks || []).map((t, i) => (
+                    <div key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-[var(--bg-tertiary)]">
+                      <div>
+                        <div className="font-medium">{typeof t.title === 'string' ? t.title : (t.title?.en || t.title?.fa)}</div>
+                        <div className="text-xs text-[var(--text-muted)]">{t.artist}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => { const arr = [...(cms.music.tracks || [])]; arr.splice(i,1); updateCms('music.tracks', arr); }} className="text-[var(--accent-rose)]">{language === 'fa' ? 'حذف' : 'Remove'}</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-[var(--border-color)]">
+                <h3 className="font-medium mb-2">{language === 'fa' ? 'ویدیوی پس‌زمینه' : 'Background Video'}</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'لینک ویدیو' : 'Video URL'}</label>
+                    <input type="text" id="bgVideoInput" defaultValue={cms.settings?.backgroundVideo?.src || ''} className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'پوستر (اختیاری)' : 'Poster (optional)'}</label>
+                    <input type="text" id="bgPosterInput" defaultValue={cms.settings?.backgroundVideo?.poster || ''} className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]" />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <label className="inline-flex items-center gap-2">
+                    <input type="checkbox" defaultChecked={!!cms.settings?.backgroundVideo?.enabled} id="bgEnabled" /> {language === 'fa' ? 'فعال' : 'Enabled'}
+                  </label>
+                  <button onClick={() => {
+                    const src = (document.getElementById('bgVideoInput') as HTMLInputElement)?.value?.trim();
+                    const poster = (document.getElementById('bgPosterInput') as HTMLInputElement)?.value?.trim();
+                    const enabled = (document.getElementById('bgEnabled') as HTMLInputElement)?.checked;
+                    updateCms('settings.backgroundVideo', { enabled, src: src || undefined, poster: poster || undefined, autoplay: true, loop: true, muted: true });
+                    alert(language === 'fa' ? 'ذخیره شد' : 'Saved');
+                  }} className="px-4 py-2 rounded-xl gradient-bg text-white">{language === 'fa' ? 'ذخیره' : 'Save'}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
     
     case 'identity':
       return (

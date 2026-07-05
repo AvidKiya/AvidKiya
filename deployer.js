@@ -652,7 +652,7 @@ async function startDeploy() {
         </ol>
       </div>
       <div class="mt-3 text-xs text-gray-500">
-        این رمز را ذخیره کنید. برای ورود به پنل ادمین از <code class="bg-black/30 px-1 rounded">\${res.url}#kiya/panel</code> استفاده کنید.
+        این رمز را ذخیره کنید. برای ورود به پنل ادمین از <code class="bg-black/30 px-1 rounded">\${res.url}/kiya/panel</code> استفاده کنید.
       </div>
     \`;
     

@@ -1,10 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useCms } from '@/contexts/AppContext';
 
 export function BackgroundLayers() {
+  const { cms } = useCms();
+
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      {/* Background video (optional) */}
+      {cms.settings?.backgroundVideo?.enabled && cms.settings.backgroundVideo.src && (
+        // video should be under other overlays
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          src={cms.settings.backgroundVideo.src}
+          poster={cms.settings.backgroundVideo.poster}
+          autoPlay={!!cms.settings.backgroundVideo.autoplay}
+          loop={!!cms.settings.backgroundVideo.loop}
+          muted={!!cms.settings.backgroundVideo.muted}
+          playsInline
+        />
+      )}
+
       {/* Base gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-primary)]" />
       

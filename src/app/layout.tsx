@@ -3,6 +3,7 @@ import { AppProvider } from '@/contexts/AppContext';
 import { TopNav } from '@/components/layout/TopNav';
 import { Footer } from '@/components/layout/Footer';
 import { BackgroundLayers, ScrollProgress, BackToTop } from '@/components/layout/BackgroundLayers';
+import MusicPlayer from '@/components/ui/MusicPlayer';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -56,6 +57,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <BackToTop />
+          <MusicPlayer />
         </AppProvider>
       </body>
     </html>
