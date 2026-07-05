@@ -786,7 +786,1372 @@ function AdminSection({ section, cms, updateCms, language, t, saveCms }: AdminSe
           </div>
         </div>
       );
-    
+
+    case 'socials':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'شبکه‌های اجتماعی' : 'Socials'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            {(cms.socials || []).map((social, index) => (
+              <div key={social.id} className="space-y-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-medium">{language === 'fa' ? `ارتباط ${index + 1}` : `Social ${index + 1}`}</div>
+                  <button
+                    onClick={() => updateCms('socials', cms.socials.filter((_, i) => i !== index))}
+                    className="text-[var(--accent-rose)] text-sm"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'پلتفرم' : 'Platform'}</label>
+                    <input
+                      type="text"
+                      value={social.platform}
+                      onChange={e => {
+                        const updated = [...cms.socials];
+                        updated[index] = { ...updated[index], platform: e.target.value as any };
+                        updateCms('socials', updated);
+                      }}
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-[var(--text-muted)] mb-1">URL</label>
+                    <input
+                      type="text"
+                      value={social.url}
+                      onChange={e => {
+                        const updated = [...cms.socials];
+                        updated[index] = { ...updated[index], url: e.target.value };
+                        updateCms('socials', updated);
+                      }}
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={social.label.fa}
+                    onChange={e => {
+                      const updated = [...cms.socials];
+                      updated[index] = { ...updated[index], label: { ...updated[index].label, fa: e.target.value } };
+                      updateCms('socials', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'برچسب فارسی' : 'Label (Persian)'}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={social.label.en}
+                    onChange={e => {
+                      const updated = [...cms.socials];
+                      updated[index] = { ...updated[index], label: { ...updated[index].label, en: e.target.value } };
+                      updateCms('socials', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'برچسب انگلیسی' : 'Label (English)'}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                </div>
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={social.enabled}
+                    onChange={e => {
+                      const updated = [...cms.socials];
+                      updated[index] = { ...updated[index], enabled: e.target.checked };
+                      updateCms('socials', updated);
+                    }}
+                  />
+                  {language === 'fa' ? 'فعال' : 'Enabled'}
+                </label>
+              </div>
+            ))}
+            <button
+              onClick={() => updateCms('socials', [...cms.socials, { id: Date.now().toString(), platform: '', url: '', label: { fa: '', en: '' }, enabled: true }])}
+              className="px-6 py-3 rounded-xl gradient-bg text-white"
+            >
+              {language === 'fa' ? 'افزودن شبکه جدید' : 'Add Social'}
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'dashboard':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'صفحه اصلی' : 'Dashboard'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'متن اول' : 'Hero Tag'}</label>
+                <input
+                  type="text"
+                  value={cms.dashboard.heroTag[language]}
+                  onChange={e => updateCms(`dashboard.heroTag.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'عنوان A' : 'Title A'}</label>
+                <input
+                  type="text"
+                  value={cms.dashboard.heroTitleA[language]}
+                  onChange={e => updateCms(`dashboard.heroTitleA.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'عنوان B' : 'Title B'}</label>
+                <input
+                  type="text"
+                  value={cms.dashboard.heroTitleB[language]}
+                  onChange={e => updateCms(`dashboard.heroTitleB.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'توضیح' : 'Description'}</label>
+                <input
+                  type="text"
+                  value={cms.dashboard.heroDescription[language]}
+                  onChange={e => updateCms(`dashboard.heroDescription.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'CTA اصلی' : 'Primary CTA'}</label>
+                <input
+                  type="text"
+                  value={cms.dashboard.ctaPrimary[language]}
+                  onChange={e => updateCms(`dashboard.ctaPrimary.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'CTA ثانویه' : 'Secondary CTA'}</label>
+                <input
+                  type="text"
+                  value={cms.dashboard.ctaSecondary[language]}
+                  onChange={e => updateCms(`dashboard.ctaSecondary.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'پروژه‌های برجسته' : 'Featured Projects'}</h2>
+              <div className="space-y-3">
+                {cms.dashboard.projects.map((project, idx) => (
+                  <div key={project.id} className="grid lg:grid-cols-3 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={project.title[language]}
+                      onChange={e => {
+                        const updated = [...cms.dashboard.projects];
+                        updated[idx].title = { ...updated[idx].title, [language]: e.target.value };
+                        updateCms('dashboard.projects', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'عنوان' : 'Title'}
+                      className="col-span-3 md:col-span-1 px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={project.description[language]}
+                      onChange={e => {
+                        const updated = [...cms.dashboard.projects];
+                        updated[idx].description = { ...updated[idx].description, [language]: e.target.value };
+                        updateCms('dashboard.projects', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'توضیح' : 'Description'}
+                      className="col-span-3 md:col-span-1 px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <div className="col-span-3 md:col-span-1 flex flex-col gap-2">
+                      <input
+                        type="text"
+                        value={project.tags.join(', ')}
+                        onChange={e => {
+                          const updated = [...cms.dashboard.projects];
+                          updated[idx].tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
+                          updateCms('dashboard.projects', updated);
+                        }}
+                        placeholder={language === 'fa' ? 'تگ‌ها، با ویرگول جدا شود' : 'Tags, comma separated'}
+                        className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                      />
+                      <label className="inline-flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={project.featured}
+                          onChange={e => {
+                            const updated = [...cms.dashboard.projects];
+                            updated[idx].featured = e.target.checked;
+                            updateCms('dashboard.projects', updated);
+                          }}
+                        />
+                        {language === 'fa' ? 'برجسته' : 'Featured'}
+                      </label>
+                      <button
+                        onClick={() => updateCms('dashboard.projects', cms.dashboard.projects.filter((_, i) => i !== idx))}
+                        className="text-[var(--accent-rose)] text-sm"
+                      >
+                        {language === 'fa' ? 'حذف' : 'Remove'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('dashboard.projects', [...cms.dashboard.projects, { id: Date.now().toString(), title: { fa: '', en: '' }, description: { fa: '', en: '' }, tags: [], featured: false }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن پروژه' : 'Add Project'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'آمار' : 'Stats'}</h2>
+              <div className="space-y-3">
+                {cms.dashboard.stats.map((stat, idx) => (
+                  <div key={stat.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={stat.label[language]}
+                      onChange={e => {
+                        const updated = [...cms.dashboard.stats];
+                        updated[idx].label = { ...updated[idx].label, [language]: e.target.value };
+                        updateCms('dashboard.stats', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'عنوان' : 'Label'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={stat.value}
+                      onChange={e => {
+                        const updated = [...cms.dashboard.stats];
+                        updated[idx].value = e.target.value;
+                        updateCms('dashboard.stats', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'مقدار' : 'Value'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={stat.icon}
+                      onChange={e => {
+                        const updated = [...cms.dashboard.stats];
+                        updated[idx].icon = e.target.value;
+                        updateCms('dashboard.stats', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'آیکون' : 'Icon'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('dashboard.stats', cms.dashboard.stats.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('dashboard.stats', [...cms.dashboard.stats, { id: Date.now().toString(), label: { fa: '', en: '' }, value: '', icon: '' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن آمار' : 'Add Stat'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'about':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'درباره من' : 'About'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'عنوان وضعیت' : 'Status Title'}</label>
+                <input
+                  type="text"
+                  value={cms.about.statusTitle[language]}
+                  onChange={e => updateCms(`about.statusTitle.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'نقل‌قول' : 'Quote'}</label>
+                <input
+                  type="text"
+                  value={cms.about.quote[language]}
+                  onChange={e => updateCms(`about.quote.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'عنوان خوش‌آمد' : 'Welcome Title'}</label>
+                <input
+                  type="text"
+                  value={cms.about.welcomeTitle[language]}
+                  onChange={e => updateCms(`about.welcomeTitle.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'متن خوش‌آمد' : 'Welcome Body'}</label>
+                <textarea
+                  value={cms.about.welcomeBody[language]}
+                  onChange={e => updateCms(`about.welcomeBody.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'معیارها' : 'Metrics'}</h2>
+              <div className="space-y-3">
+                {cms.about.metrics.map((metric, idx) => (
+                  <div key={metric.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={metric.label[language]}
+                      onChange={e => {
+                        const updated = [...cms.about.metrics];
+                        updated[idx].label = { ...updated[idx].label, [language]: e.target.value };
+                        updateCms('about.metrics', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'عنوان' : 'Label'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="number"
+                      value={metric.percent}
+                      onChange={e => {
+                        const updated = [...cms.about.metrics];
+                        updated[idx].percent = Number(e.target.value);
+                        updateCms('about.metrics', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'درصد' : 'Percent'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={metric.color}
+                      onChange={e => {
+                        const updated = [...cms.about.metrics];
+                        updated[idx].color = e.target.value;
+                        updateCms('about.metrics', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'رنگ' : 'Color'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('about.metrics', cms.about.metrics.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('about.metrics', [...cms.about.metrics, { id: Date.now().toString(), label: { fa: '', en: '' }, percent: 0, color: '#34d399' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن معیار' : 'Add Metric'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'لینک‌های سریع' : 'Quick Links'}</h2>
+              <div className="space-y-3">
+                {cms.about.quickLinks.map((link, idx) => (
+                  <div key={link.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={link.label[language]}
+                      onChange={e => {
+                        const updated = [...cms.about.quickLinks];
+                        updated[idx].label = { ...updated[idx].label, [language]: e.target.value };
+                        updateCms('about.quickLinks', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'برچسب' : 'Label'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={e => {
+                        const updated = [...cms.about.quickLinks];
+                        updated[idx].url = e.target.value;
+                        updateCms('about.quickLinks', updated);
+                      }}
+                      placeholder="URL"
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={link.icon}
+                      onChange={e => {
+                        const updated = [...cms.about.quickLinks];
+                        updated[idx].icon = e.target.value;
+                        updateCms('about.quickLinks', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'آیکون' : 'Icon'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('about.quickLinks', cms.about.quickLinks.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('about.quickLinks', [...cms.about.quickLinks, { id: Date.now().toString(), label: { fa: '', en: '' }, url: '', icon: '' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن لینک' : 'Add Link'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'فعالیت اخیر' : 'Recent Activity'}</h2>
+              <div className="space-y-3">
+                {cms.about.recentActivity.map((item, idx) => (
+                  <div key={item.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={item.text[language]}
+                      onChange={e => {
+                        const updated = [...cms.about.recentActivity];
+                        updated[idx].text = { ...updated[idx].text, [language]: e.target.value };
+                        updateCms('about.recentActivity', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'متن' : 'Text'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.date}
+                      onChange={e => {
+                        const updated = [...cms.about.recentActivity];
+                        updated[idx].date = e.target.value;
+                        updateCms('about.recentActivity', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'تاریخ' : 'Date'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.icon}
+                      onChange={e => {
+                        const updated = [...cms.about.recentActivity];
+                        updated[idx].icon = e.target.value;
+                        updateCms('about.recentActivity', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'آیکون' : 'Icon'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('about.recentActivity', cms.about.recentActivity.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('about.recentActivity', [...cms.about.recentActivity, { id: Date.now().toString(), text: { fa: '', en: '' }, date: '', icon: '' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن فعالیت' : 'Add Activity'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'projects':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'پروژه‌ها' : 'Projects'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            {(cms.projects.customProjects || []).map((project, idx) => (
+              <div key={project.id} className="space-y-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium">{language === 'fa' ? `پروژه ${idx + 1}` : `Project ${idx + 1}`}</div>
+                  <button
+                    onClick={() => updateCms('projects.customProjects', cms.projects.customProjects.filter((_, i) => i !== idx))}
+                    className="text-[var(--accent-rose)] text-sm"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={project.title[language]}
+                    onChange={e => {
+                      const updated = [...cms.projects.customProjects];
+                      updated[idx].title = { ...updated[idx].title, [language]: e.target.value };
+                      updateCms('projects.customProjects', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'عنوان' : 'Title'}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={project.description[language]}
+                    onChange={e => {
+                      const updated = [...cms.projects.customProjects];
+                      updated[idx].description = { ...updated[idx].description, [language]: e.target.value };
+                      updateCms('projects.customProjects', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'توضیح' : 'Description'}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <input
+                    type="text"
+                    value={project.github || ''}
+                    onChange={e => {
+                      const updated = [...cms.projects.customProjects];
+                      updated[idx].github = e.target.value;
+                      updateCms('projects.customProjects', updated);
+                    }}
+                    placeholder="GitHub"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={project.demo || ''}
+                    onChange={e => {
+                      const updated = [...cms.projects.customProjects];
+                      updated[idx].demo = e.target.value;
+                      updateCms('projects.customProjects', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'لینک دمو' : 'Demo URL'}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={project.featured}
+                      onChange={e => {
+                        const updated = [...cms.projects.customProjects];
+                        updated[idx].featured = e.target.checked;
+                        updateCms('projects.customProjects', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'برجسته' : 'Featured'}
+                  </label>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => updateCms('projects.customProjects', [...cms.projects.customProjects, { id: Date.now().toString(), title: { fa: '', en: '' }, description: { fa: '', en: '' }, tags: [], github: '', demo: '', featured: false }])}
+              className="px-6 py-3 rounded-xl gradient-bg text-white"
+            >
+              {language === 'fa' ? 'افزودن پروژه' : 'Add Project'}
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'resume':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'رزومه' : 'Resume'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'خلاصه' : 'Summary'}</label>
+                <textarea
+                  value={cms.resume.summary[language]}
+                  onChange={e => updateCms(`resume.summary.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  rows={4}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'تلفن' : 'Phone'}</label>
+                <input
+                  type="text"
+                  value={cms.resume.phone}
+                  onChange={e => updateCms('resume.phone', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">Website</label>
+                <input
+                  type="text"
+                  value={cms.resume.website}
+                  onChange={e => updateCms('resume.website', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'تجربیات' : 'Experience'}</h2>
+              <div className="space-y-4">
+                {cms.resume.experience.map((item, idx) => (
+                  <div key={item.id} className="p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">{language === 'fa' ? `تجربه ${idx + 1}` : `Item ${idx + 1}`}</div>
+                      <button
+                        onClick={() => updateCms('resume.experience', cms.resume.experience.filter((_, i) => i !== idx))}
+                        className="text-[var(--accent-rose)] text-sm"
+                      >
+                        {language === 'fa' ? 'حذف' : 'Remove'}
+                      </button>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={item.company[language]}
+                        onChange={e => {
+                          const updated = [...cms.resume.experience];
+                          updated[idx].company = { ...updated[idx].company, [language]: e.target.value };
+                          updateCms('resume.experience', updated);
+                        }}
+                        placeholder={language === 'fa' ? 'شرکت' : 'Company'}
+                        className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                      />
+                      <input
+                        type="text"
+                        value={item.position[language]}
+                        onChange={e => {
+                          const updated = [...cms.resume.experience];
+                          updated[idx].position = { ...updated[idx].position, [language]: e.target.value };
+                          updateCms('resume.experience', updated);
+                        }}
+                        placeholder={language === 'fa' ? 'موقعیت' : 'Position'}
+                        className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <input
+                        type="text"
+                        value={item.startDate}
+                        onChange={e => {
+                          const updated = [...cms.resume.experience];
+                          updated[idx].startDate = e.target.value;
+                          updateCms('resume.experience', updated);
+                        }}
+                        placeholder={language === 'fa' ? 'شروع' : 'Start'}
+                        className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                      />
+                      <input
+                        type="text"
+                        value={item.endDate}
+                        onChange={e => {
+                          const updated = [...cms.resume.experience];
+                          updated[idx].endDate = e.target.value;
+                          updateCms('resume.experience', updated);
+                        }}
+                        placeholder={language === 'fa' ? 'پایان' : 'End'}
+                        className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                      />
+                      <textarea
+                        value={item.bullets[0]?.[language] || ''}
+                        onChange={e => {
+                          const updated = [...cms.resume.experience];
+                          const currentBullet = updated[idx].bullets[0] || { fa: '', en: '' };
+                          updated[idx].bullets = [{ ...currentBullet, [language]: e.target.value }];
+                          updateCms('resume.experience', updated);
+                        }}
+                        placeholder={language === 'fa' ? 'وظایف' : 'Responsibilities'}
+                        className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('resume.experience', [...cms.resume.experience, { id: Date.now().toString(), company: { fa: '', en: '' }, position: { fa: '', en: '' }, startDate: '', endDate: '', bullets: [{ fa: '', en: '' }] }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن تجربه' : 'Add Experience'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'مهارت‌ها' : 'Skills'}</h2>
+              <div className="space-y-3">
+                {cms.resume.skills.map((skill, idx) => (
+                  <div key={skill.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={skill.name}
+                      onChange={e => {
+                        const updated = [...cms.resume.skills];
+                        updated[idx].name = e.target.value;
+                        updateCms('resume.skills', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'نام مهارت' : 'Skill'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="number"
+                      value={skill.percent}
+                      onChange={e => {
+                        const updated = [...cms.resume.skills];
+                        updated[idx].percent = Number(e.target.value);
+                        updateCms('resume.skills', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'درصد' : 'Percent'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={skill.category}
+                      onChange={e => {
+                        const updated = [...cms.resume.skills];
+                        updated[idx].category = e.target.value;
+                        updateCms('resume.skills', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'دسته‌بندی' : 'Category'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('resume.skills', cms.resume.skills.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('resume.skills', [...cms.resume.skills, { id: Date.now().toString(), name: '', percent: 0, category: '' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن مهارت' : 'Add Skill'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'تحصیلات' : 'Education'}</h2>
+              <div className="space-y-3">
+                {cms.resume.education.map((item, idx) => (
+                  <div key={item.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={item.institution[language]}
+                      onChange={e => {
+                        const updated = [...cms.resume.education];
+                        updated[idx].institution = { ...updated[idx].institution, [language]: e.target.value };
+                        updateCms('resume.education', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'موسسه' : 'Institution'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.degree[language]}
+                      onChange={e => {
+                        const updated = [...cms.resume.education];
+                        updated[idx].degree = { ...updated[idx].degree, [language]: e.target.value };
+                        updateCms('resume.education', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'مدرک' : 'Degree'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.year}
+                      onChange={e => {
+                        const updated = [...cms.resume.education];
+                        updated[idx].year = e.target.value;
+                        updateCms('resume.education', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'سال' : 'Year'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('resume.education', cms.resume.education.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('resume.education', [...cms.resume.education, { id: Date.now().toString(), institution: { fa: '', en: '' }, degree: { fa: '', en: '' }, year: '' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن تحصیل' : 'Add Education'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'زبان‌ها' : 'Languages'}</h2>
+              <div className="space-y-3">
+                {cms.resume.languages.map((item, idx) => (
+                  <div key={item.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={item.name[language]}
+                      onChange={e => {
+                        const updated = [...cms.resume.languages];
+                        updated[idx].name = { ...updated[idx].name, [language]: e.target.value };
+                        updateCms('resume.languages', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'نام' : 'Name'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.level[language]}
+                      onChange={e => {
+                        const updated = [...cms.resume.languages];
+                        updated[idx].level = { ...updated[idx].level, [language]: e.target.value };
+                        updateCms('resume.languages', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'سطح' : 'Level'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <div />
+                    <button
+                      onClick={() => updateCms('resume.languages', cms.resume.languages.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('resume.languages', [...cms.resume.languages, { id: Date.now().toString(), name: { fa: '', en: '' }, level: { fa: '', en: '' } }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن زبان' : 'Add Language'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'gifts':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'هدیه‌ها' : 'Gifts'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'عنوان' : 'Title'}</label>
+                <input
+                  type="text"
+                  value={cms.gifts.title[language]}
+                  onChange={e => updateCms(`gifts.title.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'زیرعنوان' : 'Subtitle'}</label>
+                <input
+                  type="text"
+                  value={cms.gifts.subtitle[language]}
+                  onChange={e => updateCms(`gifts.subtitle.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'لینک‌های دونیت' : 'Donation Links'}</h2>
+              <div className="space-y-3">
+                {cms.gifts.donationLinks.map((link, idx) => (
+                  <div key={link.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={link.label[language]}
+                      onChange={e => {
+                        const updated = [...cms.gifts.donationLinks];
+                        updated[idx].label = { ...updated[idx].label, [language]: e.target.value };
+                        updateCms('gifts.donationLinks', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'برچسب' : 'Label'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={e => {
+                        const updated = [...cms.gifts.donationLinks];
+                        updated[idx].url = e.target.value;
+                        updateCms('gifts.donationLinks', updated);
+                      }}
+                      placeholder="URL"
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={link.platform}
+                      onChange={e => {
+                        const updated = [...cms.gifts.donationLinks];
+                        updated[idx].platform = e.target.value;
+                        updateCms('gifts.donationLinks', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'پلتفرم' : 'Platform'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('gifts.donationLinks', cms.gifts.donationLinks.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('gifts.donationLinks', [...cms.gifts.donationLinks, { id: Date.now().toString(), platform: '', url: '', label: { fa: '', en: '' }, icon: '', color: '#34d399' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن لینک' : 'Add Link'}
+              </button>
+            </div>
+
+            <div>
+              <h2 className="font-bold mb-3">{language === 'fa' ? 'دانلودها' : 'Downloads'}</h2>
+              <div className="space-y-3">
+                {cms.gifts.downloads.map((item, idx) => (
+                  <div key={item.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <input
+                      type="text"
+                      value={item.title[language]}
+                      onChange={e => {
+                        const updated = [...cms.gifts.downloads];
+                        updated[idx].title = { ...updated[idx].title, [language]: e.target.value };
+                        updateCms('gifts.downloads', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'عنوان' : 'Title'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.url}
+                      onChange={e => {
+                        const updated = [...cms.gifts.downloads];
+                        updated[idx].url = e.target.value;
+                        updateCms('gifts.downloads', updated);
+                      }}
+                      placeholder="URL"
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <input
+                      type="text"
+                      value={item.size || ''}
+                      onChange={e => {
+                        const updated = [...cms.gifts.downloads];
+                        updated[idx].size = e.target.value;
+                        updateCms('gifts.downloads', updated);
+                      }}
+                      placeholder={language === 'fa' ? 'حجم' : 'Size'}
+                      className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                    />
+                    <button
+                      onClick={() => updateCms('gifts.downloads', cms.gifts.downloads.filter((_, i) => i !== idx))}
+                      className="text-[var(--accent-rose)] text-sm"
+                    >
+                      {language === 'fa' ? 'حذف' : 'Remove'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => updateCms('gifts.downloads', [...cms.gifts.downloads, { id: Date.now().toString(), title: { fa: '', en: '' }, description: { fa: '', en: '' }, url: '', icon: '', size: '' }])}
+                className="px-6 py-3 rounded-xl gradient-bg text-white mt-3"
+              >
+                {language === 'fa' ? 'افزودن دانلود' : 'Add Download'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'announcements':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'اعلان‌ها' : 'Announcements'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            {cms.announcements.map((announcement, idx) => (
+              <div key={announcement.id} className="space-y-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium">{language === 'fa' ? `اعلان ${idx + 1}` : `Announcement ${idx + 1}`}</div>
+                  <button
+                    onClick={() => updateCms('announcements', cms.announcements.filter((_, i) => i !== idx))}
+                    className="text-[var(--accent-rose)] text-sm"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <select
+                    value={announcement.type}
+                    onChange={e => {
+                      const updated = [...cms.announcements];
+                      updated[idx].type = e.target.value as any;
+                      updateCms('announcements', updated);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  >
+                    <option value="news">News</option>
+                    <option value="poll">Poll</option>
+                    <option value="map">Map</option>
+                    <option value="image">Image</option>
+                    <option value="text">Text</option>
+                  </select>
+                  <input
+                    type="text"
+                    value={announcement.title[language]}
+                    onChange={e => {
+                      const updated = [...cms.announcements];
+                      updated[idx].title = { ...updated[idx].title, [language]: e.target.value };
+                      updateCms('announcements', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'عنوان' : 'Title'}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                </div>
+                <textarea
+                  value={announcement.content[language]}
+                  onChange={e => {
+                    const updated = [...cms.announcements];
+                    updated[idx].content = { ...updated[idx].content, [language]: e.target.value };
+                    updateCms('announcements', updated);
+                  }}
+                  placeholder={language === 'fa' ? 'متن' : 'Content'}
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  rows={3}
+                />
+                <div className="grid md:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    value={announcement.image || ''}
+                    onChange={e => {
+                      const updated = [...cms.announcements];
+                      updated[idx].image = e.target.value;
+                      updateCms('announcements', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'آدرس تصویر' : 'Image URL'}
+                    className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={announcement.mapLat ?? ''}
+                    onChange={e => {
+                      const updated = [...cms.announcements];
+                      updated[idx].mapLat = Number(e.target.value) || undefined;
+                      updateCms('announcements', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'عرض جغرافیایی' : 'Map Lat'}
+                    className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={announcement.mapLng ?? ''}
+                    onChange={e => {
+                      const updated = [...cms.announcements];
+                      updated[idx].mapLng = Number(e.target.value) || undefined;
+                      updateCms('announcements', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'طول جغرافیایی' : 'Map Lng'}
+                    className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={announcement.pinned}
+                      onChange={e => {
+                        const updated = [...cms.announcements];
+                        updated[idx].pinned = e.target.checked;
+                        updateCms('announcements', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'پین شده' : 'Pinned'}
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={announcement.hidden}
+                      onChange={e => {
+                        const updated = [...cms.announcements];
+                        updated[idx].hidden = e.target.checked;
+                        updateCms('announcements', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'پنهان' : 'Hidden'}
+                  </label>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => updateCms('announcements', [...cms.announcements, { id: Date.now().toString(), type: 'news', title: { fa: '', en: '' }, content: { fa: '', en: '' }, pinned: false, archived: false, hidden: false, createdAt: new Date().toISOString() }])}
+              className="px-6 py-3 rounded-xl gradient-bg text-white"
+            >
+              {language === 'fa' ? 'افزودن اعلان' : 'Add Announcement'}
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'comments':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'نظرات' : 'Comments'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-4">
+            {cms.comments.map((comment, idx) => (
+              <div key={comment.id} className="p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div>
+                    <div className="font-medium">{comment.name} — {comment.position}</div>
+                    <div className="text-xs text-[var(--text-muted)]">{new Date(comment.createdAt).toLocaleDateString()}</div>
+                  </div>
+                  <button
+                    onClick={() => updateCms('comments', cms.comments.filter((_, i) => i !== idx))}
+                    className="text-[var(--accent-rose)] text-sm"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+                <p className="mb-3">{comment.text}</p>
+                <div className="flex items-center gap-4 flex-wrap text-sm">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={comment.approved}
+                      onChange={e => {
+                        const updated = [...cms.comments];
+                        updated[idx].approved = e.target.checked;
+                        updateCms('comments', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'تایید شده' : 'Approved'}
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={comment.pinned}
+                      onChange={e => {
+                        const updated = [...cms.comments];
+                        updated[idx].pinned = e.target.checked;
+                        updateCms('comments', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'پین شده' : 'Pinned'}
+                  </label>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => updateCms('comments', [...cms.comments, { id: Date.now().toString(), name: '', email: '', position: '', rating: 5, text: '', approved: false, pinned: false, createdAt: new Date().toISOString() }])}
+              className="px-6 py-3 rounded-xl gradient-bg text-white"
+            >
+              {language === 'fa' ? 'افزودن نظر' : 'Add Comment'}
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'shop':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'فروشگاه' : 'Shop'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-6">
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={cms.shop.enabled}
+                onChange={e => updateCms('shop.enabled', e.target.checked)}
+              />
+              {language === 'fa' ? 'فروشگاه فعال' : 'Shop enabled'}
+            </label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'عنوان' : 'Title'}</label>
+                <input
+                  type="text"
+                  value={cms.shop.title[language]}
+                  onChange={e => updateCms(`shop.title.${language}`, e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-1">{language === 'fa' ? 'دسته‌بندی‌ها' : 'Categories'}</label>
+                <input
+                  type="text"
+                  value={cms.shop.categories.join(', ')}
+                  onChange={e => updateCms('shop.categories', e.target.value.split(',').map(c => c.trim()).filter(Boolean))}
+                  placeholder={language === 'fa' ? 'کامپیوتر, دوره' : 'Templates, Courses'}
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              {cms.shop.products.map((product, idx) => (
+                <div key={product.id} className="grid lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                  <input
+                    type="text"
+                    value={product.title[language]}
+                    onChange={e => {
+                      const updated = [...cms.shop.products];
+                      updated[idx].title = { ...updated[idx].title, [language]: e.target.value };
+                      updateCms('shop.products', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'عنوان' : 'Title'}
+                    className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={product.description[language]}
+                    onChange={e => {
+                      const updated = [...cms.shop.products];
+                      updated[idx].description = { ...updated[idx].description, [language]: e.target.value };
+                      updateCms('shop.products', updated);
+                    }}
+                    placeholder={language === 'fa' ? 'توضیح' : 'Description'}
+                    className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <input
+                    type="text"
+                    value={product.priceUSD?.toString() || ''}
+                    onChange={e => {
+                      const updated = [...cms.shop.products];
+                      updated[idx].priceUSD = Number(e.target.value) || undefined;
+                      updateCms('shop.products', updated);
+                    }}
+                    placeholder="USD"
+                    className="px-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                  />
+                  <button
+                    onClick={() => updateCms('shop.products', cms.shop.products.filter((_, i) => i !== idx))}
+                    className="text-[var(--accent-rose)] text-sm"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => updateCms('shop.products', [...cms.shop.products, { id: Date.now().toString(), title: { fa: '', en: '' }, description: { fa: '', en: '' }, image: '', priceUSD: 0, priceEUR: 0, priceIRR: 0, priceTMN: 0, priceUSDT: 0, discount: 0, category: '', tags: [], featured: false, soldOut: false }])}
+              className="px-6 py-3 rounded-xl gradient-bg text-white"
+            >
+              {language === 'fa' ? 'افزودن محصول' : 'Add Product'}
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'messages':
+      return (
+        <div>
+          <h1 className="text-2xl font-black mb-6">
+            {language === 'fa' ? 'پیام‌ها' : 'Messages'}
+          </h1>
+
+          <div className="glass-card-strong p-6 space-y-4">
+            {cms.messages.map((message, idx) => (
+              <div key={message.id} className="p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div>
+                    <div className="font-medium">{message.name} — {message.subject}</div>
+                    <div className="text-xs text-[var(--text-muted)]">{message.email}</div>
+                  </div>
+                  <button
+                    onClick={() => updateCms('messages', cms.messages.filter((_, i) => i !== idx))}
+                    className="text-[var(--accent-rose)] text-sm"
+                  >
+                    {language === 'fa' ? 'حذف' : 'Remove'}
+                  </button>
+                </div>
+                <p className="mb-3">{message.message}</p>
+                <div className="flex items-center gap-4 flex-wrap text-sm">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={message.read}
+                      onChange={e => {
+                        const updated = [...cms.messages];
+                        updated[idx].read = e.target.checked;
+                        updateCms('messages', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'خوانده شده' : 'Read'}
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={message.replied}
+                      onChange={e => {
+                        const updated = [...cms.messages];
+                        updated[idx].replied = e.target.checked;
+                        updateCms('messages', updated);
+                      }}
+                    />
+                    {language === 'fa' ? 'پاسخ داده شده' : 'Replied'}
+                  </label>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => updateCms('messages', [...cms.messages, { id: Date.now().toString(), name: '', email: '', subject: '', message: '', read: false, replied: false, createdAt: new Date().toISOString() }])}
+              className="px-6 py-3 rounded-xl gradient-bg text-white"
+            >
+              {language === 'fa' ? 'افزودن پیام' : 'Add Message'}
+            </button>
+          </div>
+        </div>
+      );
+
     case 'settings':
       return (
         <div>
