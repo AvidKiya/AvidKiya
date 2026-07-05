@@ -120,13 +120,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         if (data.data) {
           setCms({ ...defaultCmsState, ...data.data });
+          setIsLoading(false);
+          return;
         }
       }
+      console.warn('CMS API returned no data, falling back to local storage');
     } catch (error) {
-      console.log('Using default CMS data');
-    } finally {
-      setIsLoading(false);
+      console.warn('CMS API unavailable, falling back to local storage');
     }
+
+    const savedCms = localStorage.getItem('avidkiya-cms');
+    if (savedCms) {
+      try {
+        setCms({ ...defaultCmsState, ...JSON.parse(savedCms) });
+      } catch {
+        setCms(defaultCmsState);
+      }
+    } else {
+      setCms(defaultCmsState);
+    }
+    setIsLoading(false);
   };
 
   const setLanguage = useCallback((lang: Language) => {

@@ -46,6 +46,7 @@ export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loginToken, setLoginToken] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [connectionWarning, setConnectionWarning] = useState('');
   const [activeSection, setActiveSection] = useState<Section>('overview');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -85,24 +86,45 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token })
       });
-      
-      const data = await res.json();
-      
-      if (data.success) {
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setIsAuthorized(true);
+          setIsAdmin(true);
+          setAdminToken(token);
+          localStorage.setItem('avidkiya-admin-token', token);
+          localStorage.setItem('avidkiya-admin-token-local', token);
+          setConnectionWarning('');
+
+          // Check if first login with default password
+          if (token === 'admin' && !localStorage.getItem('avidkiya-password-changed')) {
+            setShowPasswordChange(true);
+          }
+        } else {
+          setLoginError(language === 'fa' ? 'رمز عبور نادرست' : 'Invalid password');
+        }
+        return;
+      }
+
+      if (res.status === 401) {
+        setLoginError(language === 'fa' ? 'رمز عبور نادرست' : 'Invalid password');
+        return;
+      }
+
+      throw new Error('verify-failed');
+    } catch {
+      const localToken = localStorage.getItem('avidkiya-admin-token-local');
+      const isDefaultLocalToken = token === 'admin';
+      if (localToken === token || isDefaultLocalToken) {
         setIsAuthorized(true);
         setIsAdmin(true);
         setAdminToken(token);
-        localStorage.setItem('avidkiya-admin-token', token);
-        
-        // Check if first login with default password
-        if (token === 'admin' && !localStorage.getItem('avidkiya-password-changed')) {
-          setShowPasswordChange(true);
-        }
+        localStorage.setItem('avidkiya-admin-token-local', token);
+        setConnectionWarning(language === 'fa' ? 'در حالت آفلاین: ویرایش محلی ذخیره می‌شود.' : 'Offline mode: local edits will be stored in browser.');
       } else {
-        setLoginError(language === 'fa' ? 'رمز عبور نادرست' : 'Invalid password');
+        setLoginError(language === 'fa' ? 'خطا در اتصال' : 'Connection error');
       }
-    } catch {
-      setLoginError(language === 'fa' ? 'خطا در اتصال' : 'Connection error');
     }
   };
   
@@ -118,7 +140,7 @@ export default function AdminPage() {
     setAdminToken('');
     localStorage.removeItem('avidkiya-admin-token');
     window.location.hash = '';
-    window.location.href = '/';
+    window.location.href = '/kiya/panel';
   };
   
   const handlePasswordChange = async () => {
@@ -138,6 +160,8 @@ export default function AdminPage() {
   
   const saveCms = useCallback(async () => {
     setSyncStatus('syncing');
+    let savedLocally = false;
+
     try {
       const res = await fetch('/api/cms', {
         method: 'POST',
@@ -151,13 +175,24 @@ export default function AdminPage() {
       if (res.ok) {
         setSyncStatus('synced');
         setTimeout(() => setSyncStatus('idle'), 2000);
+        savedLocally = true;
       } else {
-        setSyncStatus('error');
+        throw new Error('api-error');
       }
     } catch {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('avidkiya-cms', JSON.stringify(cms));
+        savedLocally = true;
+        setConnectionWarning(language === 'fa' ? 'API در دسترس نیست. تغییرات به‌صورت محلی ذخیره شد.' : 'API unavailable. Changes saved locally.');
+      }
       setSyncStatus('error');
     }
-  }, [adminToken, cms, setSyncStatus]);
+
+    if (savedLocally) {
+      setSyncStatus('synced');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+    }
+  }, [adminToken, cms, language, setSyncStatus]);
   
   const exportData = () => {
     const blob = new Blob([JSON.stringify(cms, null, 2)], { type: 'application/json' });
@@ -220,13 +255,16 @@ export default function AdminPage() {
             {/* Diagnostics */}
             <div className="mb-6 p-4 rounded-xl bg-[var(--bg-tertiary)] text-sm space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[var(--accent-emerald)]">✓</span>
-                <span>{language === 'fa' ? 'API در دسترس' : 'API reachable'}</span>
+                <span className={connectionWarning ? 'text-[var(--accent-amber)]' : 'text-[var(--accent-emerald)]'}>✓</span>
+                <span>{connectionWarning || (language === 'fa' ? 'API در دسترس' : 'API reachable')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[var(--accent-amber)]">⚡</span>
                 <span>{language === 'fa' ? 'رمز پیش‌فرض: admin' : 'Default password: admin'}</span>
               </div>
+              {connectionWarning && (
+                <div className="text-sm text-[var(--accent-amber)]">{connectionWarning}</div>
+              )}
             </div>
             
             <form onSubmit={handleLogin} className="space-y-4">
@@ -242,7 +280,14 @@ export default function AdminPage() {
               {loginError && (
                 <p className="text-[var(--accent-rose)] text-sm">{loginError}</p>
               )}
-              
+              {connectionWarning && (
+                <p className="text-[var(--accent-amber)] text-sm">{connectionWarning}</p>
+              )}
+              <p className="text-[var(--text-muted)] text-xs">
+                {language === 'fa'
+                  ? 'اگر اتصال به API برقرار نیست، با رمز admin وارد شوید تا حالت آفلاین فعال شود.'
+                  : 'If the API is unavailable, use admin to enter offline mode.'}
+              </p>
               <button
                 type="submit"
                 className="w-full py-3 rounded-xl gradient-bg text-white font-bold hover:brightness-110 transition-all"
