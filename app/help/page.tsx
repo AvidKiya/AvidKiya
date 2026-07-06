@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 
-export const metadata = { title: 'راهنما — AvidKiya' };
 
 interface FAQ {
   question: string;

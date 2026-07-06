@@ -174,10 +174,41 @@ function SectionRouter({section}:{section:SectionKey}){
           </GlassCard>
         ))}
         <GlassCard className="sm:col-span-2 lg:col-span-4 !p-4">
-          <div className="text-[13px] font-[700] mb-2">Onboarding ادمین</div>
-          <div className="grid sm:grid-cols-3 gap-2 text-[12.5px] text-text-2">
-            {['لوگو ✓','نام ✓','شبکه اجتماعی ✓','پروژه اول ✗','رزومه ✗','محصول اول ✗'].map(x=> <div key={x} className="bg-white/[0.03] rounded-[10px] px-3 py-[8px] border border-glass-border">{x}</div>)}
-          </div>
+          {(() => {
+            const checklist = [
+              { label: 'لوگو آپلود شد', done: !!cms.brand.logoImage },
+              { label: 'نام و عنوان تنظیم شد', done: !!(cms.identity.fullName.fa && cms.identity.title.fa) },
+              { label: 'شبکه اجتماعی اضافه شد', done: cms.socials.some(s=>s.enabled) },
+              { label: 'اولین پروژه اضافه شد', done: cms.projects.customProjects.length > 0 },
+              { label: 'رزومه تکمیل شد', done: cms.resume.experience.length > 0 },
+              { label: 'اولین محصول اضافه شد', done: cms.shop.products.length > 0 },
+              { label: 'اولین خدمت اضافه شد', done: cms.freelancing.services.length > 0 },
+              { label: 'اولین مقاله نوشته شد', done: cms.blog.posts.length > 0 },
+              { label: 'سخنان بزرگان اضافه شد', done: cms.quotes.kourosh.length > 0 },
+              { label: 'رمز مدیر عوض شد', done: typeof window!=='undefined' && !!localStorage.getItem('ak_admin_pass') },
+              { label: 'ایمیل تنظیم شد', done: !!cms.identity.email },
+              { label: 'SEO تنظیم شد', done: !!cms.seo.siteName && !!cms.seo.description },
+            ];
+            const doneCount = checklist.filter(c=>c.done).length;
+            return (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[13px] font-[700]">Onboarding ادمین</div>
+                  <div className="text-[11.5px] text-text-3">{doneCount} / {checklist.length}</div>
+                </div>
+                <div className="h-[6px] bg-white/[0.06] rounded-full overflow-hidden mb-3">
+                  <div className="h-full bg-emerald rounded-full transition-all" style={{width: `${(doneCount/checklist.length)*100}%`}} />
+                </div>
+                <div className="grid sm:grid-cols-3 gap-2 text-[12.5px] text-text-2">
+                  {checklist.map(c=> (
+                    <div key={c.label} className={`rounded-[10px] px-3 py-[8px] border ${c.done ? 'bg-emerald/[0.06] border-emerald/20 text-emerald' : 'bg-white/[0.03] border-glass-border'}`}>
+                      {c.done ? '✓' : '✗'} {c.label}
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </GlassCard>
       </div>
     );
@@ -313,26 +344,54 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // BLOG
   if(section==='blog'){
+    const posts = cms.blog.posts;
     return (
-      <GlassCard className="!p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-[700]">مدیریت بلاگ</h2>
-          <button className="glass-btn-primary !py-[8px] !px-3 text-[12px]">+ مقاله جدید</button>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-[700]">مدیریت بلاگ — {posts.length} مقاله</h2>
+          <button onClick={()=>{
+            const np = {
+              id:'bp'+Date.now(), title:{fa:'مقاله جدید',en:'New Post'}, slug:'new-post-'+Date.now(),
+              excerpt:{fa:'',en:''}, content:{fa:'',en:''}, category:'عمومی', tags:[],
+              status:'draft' as const, seo:{}
+            };
+            updateCms({blog:{...cms.blog, posts:[np, ...posts]}});
+          }} className="glass-btn-primary !py-[8px] !px-3 text-[12px]">+ مقاله جدید</button>
         </div>
-        <div className="text-[13px] text-text-2 leading-relaxed">
-          ویرایشگر متن غنی (TipTap) — دسته‌بندی، تگ، عکس کاور، SEO per article — انتشار/پیش‌نویس/زمان‌بندی<br/>
-          <span className="text-[11.5px] text-text-3">در این نسخه دمو: لیست مقالات از <code>/blog</code> خوانده می‌شود. پنل کامل Rich Editor در آپدیت بعدی فعال است.</span>
+        <div className="grid md:grid-cols-2 gap-3">
+          {posts.map((p,idx)=>(
+            <GlassCard key={p.id} className="!p-4 text-[12.5px] space-y-2">
+              <div className="flex gap-2">
+                <input value={p.title.fa} placeholder="عنوان"
+                  onChange={e=>{ const a=[...posts]; a[idx]={...p, title:{...p.title, fa:e.target.value}}; updateCms({blog:{...cms.blog, posts:a}})}}
+                  className="glass-input !py-[8px] font-[600] flex-1" />
+                <select value={p.status}
+                  onChange={e=>{ const a=[...posts]; a[idx]={...p, status:e.target.value as typeof p.status}; updateCms({blog:{...cms.blog, posts:a}})}}
+                  className="glass-input !py-[8px] w-[110px] text-[11.5px]">
+                  <option value="draft">پیش‌نویس</option>
+                  <option value="published">منتشر شده</option>
+                  <option value="scheduled">زمان‌بندی</option>
+                </select>
+              </div>
+              <textarea value={p.excerpt.fa} rows={2} placeholder="خلاصه"
+                onChange={e=>{ const a=[...posts]; a[idx]={...p, excerpt:{...p.excerpt, fa:e.target.value}}; updateCms({blog:{...cms.blog, posts:a}})}}
+                className="glass-input text-[12px]" />
+              <div className="flex items-center gap-3 text-[11.5px]">
+                <input value={p.category} placeholder="دسته‌بندی"
+                  onChange={e=>{ const a=[...posts]; a[idx]={...p, category:e.target.value}; updateCms({blog:{...cms.blog, posts:a}})}}
+                  className="glass-input !py-[6px] w-[110px] text-[11px]" />
+                <span className="text-text-3">/blog/{p.slug}</span>
+                <button onClick={()=> updateCms({blog:{...cms.blog, posts: posts.filter(x=>x.id!==p.id)}})}
+                  className="ms-auto text-rose hover:underline flex items-center gap-1"><Trash2 size={13}/> حذف</button>
+              </div>
+            </GlassCard>
+          ))}
         </div>
-        <div className="mt-4 grid md:grid-cols-2 gap-3 text-[12.5px]">
-          {[
-            'مغز دوم چیست — منتشر شده',
-            'Next.js روی Cloudflare — پیش‌نویس',
-            'Liquid Glass UI — زمان‌بندی',
-          ].map(ti=> <div key={ti} className="glass-card !p-3 !py-[10px]">{ti}</div>)}
-        </div>
-      </GlassCard>
+        <div className="text-[11.5px] text-text-3">لیست عمومی مقالات منتشرشده در <code>/blog</code> نمایش داده می‌شود.</div>
+      </div>
     );
   }
+
 
   // KIYA
   if(section==='kiya'){

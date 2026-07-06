@@ -36,7 +36,7 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', priority: 'medium' as const });
+  const [newTask, setNewTask] = useState<{ title: string; priority: Task['priority'] }>({ title: '', priority: 'medium' });
 
   useEffect(() => {
     fetchTasks();

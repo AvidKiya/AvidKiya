@@ -1,11 +1,11 @@
 {
-  "name": "AvidKiya Platform",
+  "name": "اَوید کیا — Avid Kiya",
   "short_name": "AvidKiya",
-  "description": "پلتفرم شخصی با KIYA Planner",
+  "description": "پلتفرم شخصی اَوید کیا — پرتفولیو، KIYA Planner، فروشگاه، خدمات فریلنسری",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#6366f1",
+  "background_color": "#171717",
+  "theme_color": "#5d7ae6",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -17,6 +17,12 @@
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["productivity", "business"],

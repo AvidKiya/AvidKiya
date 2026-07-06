@@ -2,7 +2,10 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Brain, LayoutDashboard, CheckSquare, FolderKanban, Target, Repeat, Calendar, BookOpen, Wallet, HeartPulse, MessageSquare, Lightbulb, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Brain, LayoutDashboard, CheckSquare, FolderKanban, Target, Repeat, Calendar, BookOpen, Wallet, HeartPulse, MessageSquare, Lightbulb, BarChart3, Settings, LogOut, MessageCircleHeart } from 'lucide-react';
+import { OnboardingTour } from '@/components/onboarding-tour';
+import { NotificationBell } from '@/components/notification-bell';
+import { FeedbackWidget } from '@/components/feedback-widget';
 
 const nav = [
   {href:'/planner/app', icon:LayoutDashboard, labelFa:'داشبورد', labelEn:'Dashboard'},
@@ -17,6 +20,7 @@ const nav = [
   {href:'/planner/app/chat', icon:MessageSquare, labelFa:'AI Chat', labelEn:'AI Chat'},
   {href:'/planner/app/insights', icon:Lightbulb, labelFa:'بینش‌ها', labelEn:'Insights'},
   {href:'/planner/app/reports', icon:BarChart3, labelFa:'گزارش‌ها', labelEn:'Reports'},
+  {href:'/planner/app/feedback', icon:MessageCircleHeart, labelFa:'بازخورد', labelEn:'Feedback'},
   {href:'/planner/app/settings', icon:Settings, labelFa:'تنظیمات', labelEn:'Settings'},
 ];
 
@@ -39,6 +43,7 @@ export default function PlannerAppLayout({children}:{children:React.ReactNode}){
         </div>
         <div className="flex items-center gap-2 text-[12px]">
           <span className="hidden sm:inline text-text-3">license: {typeof window!=='undefined' ? localStorage.getItem('kiya_license')?.slice(0,12)+'…' : ''}</span>
+          <NotificationBell />
           <button onClick={()=>{localStorage.removeItem('kiya_license_ok'); router.push('/planner/login')}} className="glass-btn !px-3 !py-[7px] text-[12px] flex items-center gap-1"><LogOut size={13}/> خروج</button>
         </div>
       </div>
@@ -65,6 +70,8 @@ export default function PlannerAppLayout({children}:{children:React.ReactNode}){
           {children}
         </section>
       </div>
+      <OnboardingTour />
+      <FeedbackWidget />
     </div>
   );
 }

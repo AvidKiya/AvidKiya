@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 
-export const metadata = { title: 'وضعیت سرویس‌ها — AvidKiya' };
 
 interface ServiceStatus {
   name: string;

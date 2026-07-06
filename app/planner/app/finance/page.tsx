@@ -40,8 +40,13 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newTransaction, setNewTransaction] = useState({
-    type: 'expense' as const,
+  const [newTransaction, setNewTransaction] = useState<{
+    type: 'income' | 'expense';
+    amount: string;
+    category: string;
+    date: string;
+  }>({
+    type: 'expense',
     amount: '',
     category: 'other',
     date: new Date().toISOString().split('T')[0],
@@ -220,11 +225,11 @@ export default function FinancePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">
-                  {categoryIcons[transaction.category] || '📦'}
+                  {categoryIcons[transaction.category || 'other'] || '📦'}
                 </span>
                 <div>
                   <div className="font-bold">
-                    {categoryLabels[transaction.category] || transaction.category}
+                    {categoryLabels[transaction.category || 'other'] || transaction.category}
                   </div>
                   <div className="text-xs text-text-3">{transaction.date}</div>
                 </div>

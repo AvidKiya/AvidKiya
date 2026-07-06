@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { validate, fieldRules } from '@/lib/validation';
-
-export const metadata = { title: 'پشتیبانی — AvidKiya' };
+import { useCms } from '@/lib/cms/cms-context';
 
 export default function SupportPage() {
+  const { cms, updateCms } = useCms();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -60,7 +60,16 @@ export default function SupportPage() {
       return;
     }
 
-    // Submit (in real app, this would call an API)
+    const newMessage = {
+      id: 'ticket' + Date.now(),
+      name: formData.name,
+      email: formData.email,
+      message: `[تیکت پشتیبانی — ${formData.subject}] ${formData.message}`,
+      date: new Date().toISOString().slice(0, 10),
+      read: false,
+    };
+    updateCms({ messages: [newMessage, ...cms.messages] });
+
     setSubmitted(true);
   };
 

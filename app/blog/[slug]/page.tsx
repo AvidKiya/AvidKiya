@@ -1,8 +1,12 @@
+'use client';
 import { notFound } from 'next/navigation';
 import { GlassCard } from '@/components/ui/glass';
 import Link from 'next/link';
+import { useCms } from '@/lib/cms/cms-context';
+import { use } from 'react';
 
-const posts: Record<string, any> = {
+// Fallback sample content — shown until an admin publishes real posts from the CMS panel.
+const FALLBACK_POSTS: Record<string, any> = {
   'second-brain-kiya': {
     title: 'مغز دوم چیست و چرا KIYA بهترین انتخاب است؟',
     date: '۱۴۰۴/۱۰/۰۵',
@@ -35,14 +39,23 @@ const posts: Record<string, any> = {
   }
 };
 
-export async function generateStaticParams(){
-  return Object.keys(posts).map(slug => ({ slug }));
-}
+export default function BlogPost({ params }: { params: Promise<{ slug: string }> }){
+  const { slug } = use(params);
+  const { cms, tf } = useCms();
 
-export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }){
-  const { slug } = await params;
-  const p = posts[slug];
+  const cmsPost = cms.blog.posts.find(p => p.slug === slug && p.status === 'published');
+  const p = cmsPost
+    ? {
+        title: tf(cmsPost.title),
+        date: cmsPost.publishedAt || '',
+        read: '5 دقیقه',
+        cat: cmsPost.category,
+        body: tf(cmsPost.content) || tf(cmsPost.excerpt),
+      }
+    : FALLBACK_POSTS[slug];
+
   if(!p) return notFound();
+
   return (
     <article className="max-w-[760px] mx-auto px-4 md:px-6 py-8 md:py-12">
       <div className="text-[11.5px] text-primary font-[600] mb-2">{p.cat} • {p.date} • {p.read}</div>

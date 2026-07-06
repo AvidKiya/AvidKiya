@@ -92,7 +92,7 @@ export default function HabitsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newHabit, setNewHabit] = useState({ name: '', frequency: 'daily' as const });
+  const [newHabit, setNewHabit] = useState<{ name: string; frequency: Habit['frequency'] }>({ name: '', frequency: 'daily' });
 
   useEffect(() => {
     fetchHabits();

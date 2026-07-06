@@ -6,12 +6,26 @@ import { useState } from 'react';
 import { Check, Send } from 'lucide-react';
 
 export default function ServicesClient(){
-  const { cms, tf, t } = useCms();
+  const { cms, updateCms, tf, t } = useCms();
   const services = cms.freelancing.services.filter(s=>s.enabled);
   const [form, setForm] = useState({name:'', email:'', budget:'', message:''});
   const [sent, setSent] = useState(false);
 
-  const submit = (e:React.FormEvent)=>{ e.preventDefault(); setSent(true); setTimeout(()=>setSent(false), 3000); };
+  const submit = (e:React.FormEvent)=>{
+    e.preventDefault();
+    const newMessage = {
+      id: 'req' + Date.now(),
+      name: form.name,
+      email: form.email,
+      message: `[درخواست پروژه — بودجه: ${form.budget || 'نامشخص'}] ${form.message}`,
+      date: new Date().toISOString().slice(0, 10),
+      read: false,
+    };
+    updateCms({ messages: [newMessage, ...cms.messages] });
+    setForm({name:'', email:'', budget:'', message:''});
+    setSent(true);
+    setTimeout(()=>setSent(false), 3000);
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-7 md:py-10">

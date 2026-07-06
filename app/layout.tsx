@@ -4,6 +4,10 @@ import { CmsProvider } from "@/lib/cms/cms-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AdminGate } from "@/components/layout/admin-gate-client";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { PwaRegister } from "@/components/pwa-register";
+import { ExitPopup } from "@/components/exit-popup";
+import { Analytics } from "@/components/analytics";
 
 export const metadata: Metadata = {
   title: "اَوید کیا — Avid Kiya — DevHub OS",
@@ -56,12 +60,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <CmsProvider>
-          <Header />
-          <main className="min-h-[70vh]">
-            {children}
-          </main>
-          <Footer />
-          <AdminGate />
+          <ErrorBoundary>
+            <Header />
+            <main className="min-h-[70vh]">
+              {children}
+            </main>
+            <Footer />
+            <AdminGate />
+            <ExitPopup />
+            <Analytics />
+          </ErrorBoundary>
+          <PwaRegister />
         </CmsProvider>
       </body>
     </html>

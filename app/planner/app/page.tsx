@@ -3,6 +3,7 @@ import { GlassCard } from '@/components/ui/glass';
 import { Brain, Zap, Target, Repeat, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { ReferralBanner } from '@/components/referral-banner';
 
 export default function PlannerDashboard(){
   const [capture, setCapture] = useState('');
@@ -100,6 +101,8 @@ export default function PlannerDashboard(){
           </Link>
         ))}
       </div>
+
+      <ReferralBanner />
 
       <div className="text-[11px] text-text-3 text-center">
         KIYA Planner v2.1 • Pro Plan • تا ۱۴۰۵/۰۸/۰۱ معتبر • <Link href="/planner/settings" className="text-primary hover:underline">مدیریت لایسنس</Link>

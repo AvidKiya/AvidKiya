@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { GlassCard } from '@/components/ui/glass';
 import { useCms } from '@/lib/cms/cms-context';
 import { Check, Sparkles, Zap, Shield, Clock, Brain } from 'lucide-react';
+import { SocialProof } from '@/components/social-proof';
 
 function IconBox({children}:{children:React.ReactNode}) {
   return <div className="w-11 h-11 rounded-[14px] bg-primary/10 text-primary flex items-center justify-center mb-3">{children}</div>;
@@ -37,6 +38,7 @@ export default function PlannerLandingClient(){
           </Link>
         </div>
         <div className="text-[11.5px] text-text-3 mt-3">بدون کارت اعتباری • لغو آنی • ۳۰ روز گارانتی</div>
+        <div className="mt-3"><SocialProof /></div>
 
         {/* trust bar */}
         <div className="flex flex-wrap items-center justify-center gap-5 md:gap-8 mt-8 text-[12px] text-text-3">

@@ -70,7 +70,7 @@ export default function GoalsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newGoal, setNewGoal] = useState({ title: '', level: 'weekly' as const });
+  const [newGoal, setNewGoal] = useState<{ title: string; level: Goal['level'] }>({ title: '', level: 'weekly' });
 
   useEffect(() => {
     fetchGoals();

@@ -2,7 +2,6 @@
 
 import { GlassCard } from '@/components/ui/glass';
 
-export const metadata = { title: 'هدایا — AvidKiya' };
 
 const downloads = [
   { title: 'قالب برنامه‌ریزی هفتگی', description: 'PDF قابل چاپ برای برنامه‌ریزی هفتگی', url: '#' },

@@ -113,13 +113,48 @@ export const defaultCmsState: CmsState = {
     ],
   },
   announcements: [
-    { id:'1', title:'راه‌اندازی KIYA v2', body:'نسخه جدید با AI agent داخلی منتشر شد.', date:'2025-12-01', pinned:true }
+    { id:'1', title:'راه‌اندازی KIYA v2', body:'نسخه جدید با AI agent داخلی منتشر شد.', type:'news', date:'2025-12-01', pinned:true }
   ],
   comments: [
     { id:'1', author:'سارا محمدی', role:'Product Manager', text:'KIYA واقعا زندگی‌ام را منظم کرد. عاشق تقویم هخامنشی‌اش شدم!', approved:true, createdAt:'2025-11-20', rating:5 },
     { id:'2', author:'علی رضایی', role:'Developer', text:'معماری تمیز و UI شیشه‌ای فوق‌العاده است.', approved:true, createdAt:'2025-11-18', rating:5 },
     { id:'3', author:'Maryam K.', role:'Designer', text:'تجربه کاربری Liquid Glass بی‌نظیر است.', approved:true, createdAt:'2025-11-10', rating:5 },
   ],
+  blog: {
+    enabled: true,
+    posts: [
+      {
+        id: '1',
+        title: { fa: 'چطور با روش PARA زندگی‌ات را منظم کنی', en: 'How to organize your life with the PARA method' },
+        slug: 'para-method-life-organization',
+        excerpt: { fa: 'روش PARA یکی از ساده‌ترین سیستم‌های سازمان‌دهی اطلاعات است. در این مقاله یاد می‌گیری چطور آن را در KIYA پیاده کنی.', en: 'PARA is one of the simplest information organization systems. Learn how to apply it in KIYA.' },
+        content: { fa: 'روش PARA (Projects, Areas, Resources, Archives) توسط تیاگو فورته معرفی شد...\n\nدر KIYA Planner، بخش «دانش» دقیقاً بر پایه همین ساختار طراحی شده تا بتوانی یادداشت‌ها، پروژه‌ها و منابعت را دسته‌بندی کنی.', en: 'The PARA method (Projects, Areas, Resources, Archives) was introduced by Tiago Forte...\n\nIn KIYA Planner, the Knowledge section is built exactly on this structure.' },
+        coverImage: '',
+        category: 'productivity',
+        tags: ['PARA', 'سازمان‌دهی', 'KIYA'],
+        status: 'published',
+        publishedAt: '2026-06-01',
+        seo: { title: 'روش PARA برای سازمان‌دهی زندگی', description: 'راهنمای کامل روش PARA', keywords: 'PARA, مغز دوم, KIYA' },
+      },
+      {
+        id: '2',
+        title: { fa: 'KIYA در برابر Notion — کدام برای مغز دوم بهتر است؟', en: 'KIYA vs Notion — which is better for a second brain?' },
+        slug: 'kiya-vs-notion',
+        excerpt: { fa: 'مقایسه‌ای صادقانه بین KIYA Planner و Notion از نظر قابلیت‌ها، سرعت و هوش مصنوعی.', en: 'An honest comparison between KIYA Planner and Notion.' },
+        content: { fa: 'Notion یک ابزار فوق‌العاده انعطاف‌پذیر است، اما همین انعطاف‌پذیری باعث می‌شود راه‌اندازی اولیه‌اش زمان‌بر باشد. KIYA برعکس، از روز اول برایت ساختار آماده دارد و AI Agent داخلی وظایف را خودش دسته‌بندی می‌کند.', en: 'Notion is extremely flexible, but that same flexibility makes onboarding slow. KIYA ships with structure from day one.' },
+        coverImage: '',
+        category: 'comparison',
+        tags: ['KIYA', 'Notion', 'مقایسه'],
+        status: 'published',
+        publishedAt: '2026-06-15',
+        seo: { title: 'KIYA vs Notion', description: 'مقایسه کامل KIYA و Notion', keywords: 'KIYA, Notion, مقایسه' },
+      },
+    ],
+  },
+  coupons: [
+    { id: '1', code: 'WELCOME10', type: 'percentage', value: 10, maxUses: 100, uses: 0, firstPurchaseOnly: true, enabled: true },
+  ],
+  orders: [],
   shop: {
     title:{fa:'فروشگاه',en:'Shop'},
     enabled:true,

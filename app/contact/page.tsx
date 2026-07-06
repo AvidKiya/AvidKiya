@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { validate, fieldRules, checkHoneypot } from '@/lib/validation';
-
-export const metadata = { title: 'تماس — AvidKiya' };
+import { useCms } from '@/lib/cms/cms-context';
 
 export default function ContactPage() {
+  const { cms, updateCms } = useCms();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -61,7 +61,17 @@ export default function ContactPage() {
       return;
     }
 
-    // Submit
+    // Persist to CMS so the admin panel "پیام‌ها" section can see it
+    const newMessage = {
+      id: 'msg' + Date.now(),
+      name: formData.name,
+      email: formData.email,
+      message: `[${formData.subject}] ${formData.message}`,
+      date: new Date().toISOString().slice(0, 10),
+      read: false,
+    };
+    updateCms({ messages: [newMessage, ...cms.messages] });
+
     setSubmitted(true);
   };
 

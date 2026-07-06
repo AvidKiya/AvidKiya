@@ -2,9 +2,10 @@
 import { useCms } from '@/lib/cms/cms-context';
 import { GlassCard } from '@/components/ui/glass';
 import { useState, useMemo } from 'react';
-import { ShoppingCart, X, Tag, CreditCard, Check } from 'lucide-react';
+import { ShoppingCart, X, Tag, CreditCard, Check, Heart } from 'lucide-react';
 import { AppIcon } from '@/components/ui/icons';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 type CartItem = { id:string; qty:number };
 
@@ -18,6 +19,22 @@ export default function ShopClient(){
   const [couponOk, setCouponOk] = useState(false);
   const [openCart, setOpenCart] = useState(false);
   const [checkoutDone, setCheckoutDone] = useState(false);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ak_wishlist');
+      if (saved) setWishlist(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const toggleWishlist = (id: string) => {
+    setWishlist(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      try { localStorage.setItem('ak_wishlist', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   const filtered = useMemo(()=> cat==='همه' ? products : products.filter(p=>p.category===cat), [cat, products]);
   const cartItems = cart.map(ci=>{
@@ -95,7 +112,14 @@ export default function ShopClient(){
           {/* products grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {filtered.map(p=>(
-              <GlassCard key={p.id} className="!p-4 flex flex-col">
+              <GlassCard key={p.id} className="!p-4 flex flex-col relative">
+                <button
+                  onClick={()=>toggleWishlist(p.id)}
+                  aria-label="افزودن به علاقه‌مندی‌ها"
+                  className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full glass-card !p-0 flex items-center justify-center hover:scale-105 transition"
+                >
+                  <Heart size={14} className={wishlist.includes(p.id) ? 'text-rose fill-rose' : 'text-text-3'} />
+                </button>
                 <div className="h-[120px] rounded-[14px] bg-gradient-to-br from-primary/18 via-cyan/10 to-violet/14 mb-3 flex items-center justify-center">
                   <AppIcon name="layers" size={30} className="text-primary opacity-90" />
                 </div>

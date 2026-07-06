@@ -24,8 +24,12 @@ export default function HealthPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newLog, setNewLog] = useState({
-    type: 'sleep' as const,
+  const [newLog, setNewLog] = useState<{
+    type: HealthLog['type'];
+    value: string;
+    date: string;
+  }>({
+    type: 'sleep',
     value: '',
     date: new Date().toISOString().split('T')[0],
   });

@@ -2,43 +2,12 @@
 
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
-import { validate, fieldRules, checkHoneypot } from '@/lib/validation';
-
-export const metadata = { title: 'نظرات — AvidKiya' };
-
-interface Comment {
-  id: string;
-  author: string;
-  role?: string;
-  text: string;
-  rating: number;
-  approved: boolean;
-  createdAt: string;
-}
-
-const mockComments: Comment[] = [
-  {
-    id: '1',
-    author: 'علی',
-    role: 'توسعه‌دهنده',
-    text: 'پلتفرم عالیه! KIYA Planner واقعاً کمکم کرد.',
-    rating: 5,
-    approved: true,
-    createdAt: '۱۴۰۳/۱۰/۱۰',
-  },
-  {
-    id: '2',
-    author: 'سارا',
-    role: 'طراح',
-    text: 'طراحی خیلی تمیز و حرفه‌ای هست.',
-    rating: 4,
-    approved: true,
-    createdAt: '۱۴۰۳/۱۰/۰۸',
-  },
-];
+import { validate, fieldRules } from '@/lib/validation';
+import { useCms } from '@/lib/cms/cms-context';
 
 export default function CommentsPage() {
-  const [comments, setComments] = useState<Comment[]>(mockComments);
+  const { cms, updateCms } = useCms();
+  const comments = cms.comments;
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -49,6 +18,7 @@ export default function CommentsPage() {
     website: '', // honeypot
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [justSubmitted, setJustSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +31,7 @@ export default function CommentsPage() {
 
     // Validate
     const newErrors: Record<string, string> = {};
-    
+
     const nameError = validate(formData.name, fieldRules.name);
     if (nameError) newErrors.name = nameError;
 
@@ -73,20 +43,23 @@ export default function CommentsPage() {
       return;
     }
 
-    // Add comment (pending approval)
-    const newComment: Comment = {
+    // Add comment (pending approval) — persisted to CMS so the admin panel can moderate it
+    const newComment = {
       id: `comment-${Date.now()}`,
       author: formData.name,
+      email: formData.email || undefined,
       role: formData.role || undefined,
       text: formData.text,
       rating: formData.rating,
       approved: false,
-      createdAt: 'همین الان',
+      createdAt: new Date().toISOString().slice(0, 10),
     };
 
-    setComments((prev) => [newComment, ...prev]);
+    updateCms({ comments: [newComment, ...comments] });
     setFormData({ name: '', email: '', role: '', text: '', rating: 5, website: '' });
     setShowForm(false);
+    setJustSubmitted(true);
+    setTimeout(() => setJustSubmitted(false), 4000);
   };
 
   const renderStars = (rating: number) => {
@@ -103,6 +76,12 @@ export default function CommentsPage() {
         <h1 className="text-3xl font-black mb-2">نظرات</h1>
         <p className="text-text-2">نظرات کاربران ما</p>
       </div>
+
+      {justSubmitted && (
+        <GlassCard className="mb-8 text-center border-emerald/20">
+          <p className="text-emerald text-sm">✓ نظر شما ثبت شد — بعد از تایید ادمین نمایش داده می‌شود.</p>
+        </GlassCard>
+      )}
 
       {/* Add Comment Button */}
       <div className="text-center mb-8">
@@ -204,6 +183,11 @@ export default function CommentsPage() {
 
       {/* Comments List */}
       <div className="space-y-4">
+        {comments.filter((c) => c.approved).length === 0 && (
+          <GlassCard className="text-center text-text-3 py-10 text-sm">
+            هنوز نظری ثبت نشده. اولین نفری باش که نظر می‌دهد!
+          </GlassCard>
+        )}
         {comments
           .filter((c) => c.approved)
           .map((comment) => (
@@ -215,7 +199,7 @@ export default function CommentsPage() {
                     <div className="text-xs text-text-3">{comment.role}</div>
                   )}
                 </div>
-                <div className="flex gap-1">{renderStars(comment.rating)}</div>
+                <div className="flex gap-1">{renderStars(comment.rating || 0)}</div>
               </div>
               <p className="text-text-2">{comment.text}</p>
               <div className="text-xs text-text-3 mt-2">{comment.createdAt}</div>

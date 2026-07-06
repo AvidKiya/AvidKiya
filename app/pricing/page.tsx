@@ -67,7 +67,6 @@ const plans = [
   },
 ];
 
-export const metadata = { title: 'قیمت‌گذاری — KIYA Planner' };
 
 export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false);
