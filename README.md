@@ -1,152 +1,127 @@
-# AvidKiya OS — Portfolio Website
+# اَوید کیا — AvidKiya Platform
 
-یک وب‌سایت پرتفولیو شخصی حرفه‌ای و کاملاً هدلس (headless CMS) با استایل DevHub OS.
+پلتفرم شخصی اَوید کیا — DevHub OS + Liquid Glass
 
-## 🚀 شروع سریع
+یک وبسایت واحد Next.js 15 شامل:
 
-### روش ۱: استفاده از Deployer Worker (توصیه شده)
-
-1. فایل `deployer.js` را در Cloudflare Workers deploy کنید
-2. URL ورکر را باز کنید
-3. توکن Cloudflare API بگیرید و وارد کنید
-4. دکمه "شروع نصب" را بزنید
-
-### روش ۲: Deploy دستی به Cloudflare Pages
-
-1. این repository را fork کنید
-2. در داشبورد Cloudflare → Pages → Create Project
-3. Connect to Git → Repository خود را انتخاب کنید
-4. Build settings:
-   - Framework: Next.js
-   - Build command: `npm run build`
-   - Output directory: `.next`
-5. Environment variables:
-   - `ADMIN_TOKEN`: رمز عبور پنل ادمین (پیش‌فرض: `admin`)
-6. KV namespace بسازید و bind کنید به `AVIDKIYA_KV`
-
-## 📁 ساختار پروژه
-
-```
-├── src/
-│   ├── app/                    # صفحات Next.js
-│   │   ├── page.tsx           # صفحه اصلی
-│   │   ├── projects/          # پروژه‌ها (VS Code style)
-│   │   ├── about/             # درباره من (Command Center)
-│   │   ├── resume/            # رزومه (قابل چاپ A4)
-│   │   ├── gifts/             # هدیه‌ها (دونیت + دانلود)
-│   │   ├── announcements/     # اعلانات
-│   │   ├── comments/          # نظرات
-│   │   ├── shop/              # فروشگاه
-│   │   ├── admin/             # پنل مدیریت
-│   │   └── api/               # API Routes
-│   ├── components/            # کامپوننت‌ها
-│   ├── contexts/              # React Context (AppContext)
-│   └── lib/                   # کتابخانه‌ها (CMS, Calendar, etc.)
-├── public/
-│   ├── fonts/                 # فونت Vazirmatn
-│   ├── favicon.svg
-│   └── _routes.json
-├── deployer.js                # Cloudflare Worker برای نصب خودکار
-├── wrangler.toml              # تنظیمات Cloudflare
-└── package.json
-```
-
-## 🎯 ویژگی‌ها
-
-### صفحات
-- **صفحه اصلی**: Hero + تقویم فارسی/هخامنشی + پروژه‌ها + آمار
-- **پروژه‌ها**: UI مانند VS Code با اتصال به GitHub API
-- **درباره**: Command Center سه ستونه با فرم تماس
-- **رزومه**: قابل چاپ A4 با استایل print-optimized
-- **هدیه‌ها**: دو ستون دونیت و دانلود
-- **اعلانات**: News, Poll, Map, Image, Text
-- **نظرات**: فرم ثبت نظر با moderation
-- **فروشگاه**: محصولات دیجیتال
-
-### پنل ادمین
-دسترسی: `yoursite.com/kiya/panel`
-
-رمز پیش‌فرض: `admin` (بعد از ورود تغییر دهید)
-
-۱۴ بخش مدیریت:
-1. نمای کلی
-2. هویت (+ آپلود لوگو)
-3. شبکه‌های اجتماعی
-4. صفحه اصلی
-5. درباره من
-6. پروژه‌ها
-7. رزومه
-8. هدیه‌ها
-9. اعلانات
-10. نظرات
-11. فروشگاه
-12. پیام‌ها
-13. رسانه
-14. تنظیمات
-
-### قابلیت‌های فنی
-- ✅ دو زبان کامل (فارسی/انگلیسی) با RTL
-- ✅ دو تم (شب/روز)
-- ✅ تقویم فارسی با سال هخامنشی
-- ✅ اتصال زنده به GitHub API
-- ✅ چاپ رزومه A4
-- ✅ CMS هدلس با KV storage
-- ✅ Anti-flash script برای تم و زبان
-- ✅ Mobile responsive
-- ✅ فونت Vazirmatn self-hosted
-
-## 🎨 پالت رنگی
-
-### تم شب (پیش‌فرض)
-- پس‌زمینه: `#171717`
-- Primary: `#5d7ae6`
-- Accents: cyan, emerald, amber, rose, violet
-
-### تم روز
-- پس‌زمینه: `#ffffff`
-- Primary: `#004741` (Cyprus green)
-
-## 🔧 توسعه محلی
-
-```bash
-# نصب وابستگی‌ها
-npm install
-
-# اجرای development server
-npm run dev
-
-# Build
-npm run build
-```
-
-## 📝 Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `ADMIN_TOKEN` | رمز عبور پنل ادمین | بله |
-| `AVIDKIYA_KV` | Cloudflare KV binding | برای Cloudflare |
-
-## 🚀 Deployer Worker
-
-فایل `deployer.js` یک Cloudflare Worker مستقل است که:
-
-1. توکن Cloudflare API از کاربر می‌گیرد
-2. KV namespace می‌سازد
-3. Pages Project می‌سازد
-4. ADMIN_TOKEN تصادفی ست می‌کند
-5. Environment variables و KV binding را پیکربندی می‌کند
-
-### نصب Deployer
-
-1. به Cloudflare Dashboard → Workers & Pages بروید
-2. Create Worker کلیک کنید
-3. کد `deployer.js` را paste کنید
-4. Save & Deploy
-
-## 📄 License
-
-MIT License
+- 🏠 صفحه اصلی ساده (۶ کارت + تقویم هخامنشی + ساعت زنده)
+- 📄 پرتفولیو (VS Code Style + GitHub API)
+- 🧠 KIYA Planner (مغز دوم AI + لایسنس)
+- 🛒 فروشگاه محصولات دیجیتال
+- 💼 فریلنسرینگ
+- 🔧 ابزارها
+- 📝 بلاگ
+- 📄 رزومه Print-optimized
+- 🤖 ربات تلگرام منشی (Mini App)
+- 🔐 پنل مدیر مخفی #kiya/panel
 
 ---
 
-ساخته شده با ❤️ توسط [Avid Kia](https://github.com/avidkia)
+## فاز ۱ — تکمیل شد ✅
+
+- [x] Next.js 15 + App Router + TypeScript
+- [x] Tailwind CSS + Design System DevHub OS
+- [x] Liquid Glass UI
+- [x] تم تاریک (پیش‌فرض) + تم روشن
+- [x] RTL فارسی + LTR انگلیسی — سوییچر یکپارچه
+- [x] فونت Vazirmatn self-host
+- [x] Layout اصلی + Header TabBar iOS-style + Footer ASCII
+- [x] تقویم هخامنشی کامل:
+  - شمسی / شاهنشاهی / یزدگردی
+  - نام ۳۰ روز باستانی
+  - جشن‌ها + سخن روز
+  - ساعت زنده فارسی
+  - تقویم ماه ۳۰ روزه
+- [x] CMS System:
+  - CmsState تایپ‌شده کامل
+  - CmsProvider (React Context)
+  - localStorage + Auto-save 800ms
+  - Edit-in-place آماده
+  - Export / Import JSON
+  - API Route /api/cms (Edge + KV ready)
+- [x] صفحه اصلی فلسفه ساده:
+  - ASCII Art
+  - Calendar Widget شیشه‌ای
+  - ۶ کارت منو با stagger animation
+  - سخن روز
+  - ۳ لینک پایین
+- [x] پنل مدیر اولیه (/kiya/panel — رمز: admin)
+- [x] Error / Loading / Empty States
+- [x] SEO base + not-found 404
+- [x] PWA manifest
+- [x] API health check
+
+---
+
+## اجرا
+
+```bash
+pnpm install   # یا npm install / yarn
+pnpm dev
+# http://localhost:3000
+```
+
+پنل مدیر:
+```
+http://localhost:3000/#kiya/panel
+رمز: admin
+# یا مستقیم:
+http://localhost:3000/kiya/panel
+```
+
+---
+
+## ساختار
+
+```
+app/
+  layout.tsx          # Root + CmsProvider + Header/Footer
+  page.tsx            # صفحه اصلی ساده — ۶ کارت
+  not-found.tsx
+  kiya/panel/         # پنل مدیر
+  projects/ planner/ shop/ services/ tools/ ...
+  api/cms/            # CMS API (Edge)
+  api/health/
+components/
+  ui/glass.tsx        # GlassCard / Button / States
+  layout/header.tsx   # TabBar iOS pill
+  layout/footer.tsx
+  calendar/           # تقویم هخامنشی
+  home/menu-card.tsx
+lib/
+  calendar.ts         # الگوریتم کامل تقویم
+  cms/
+    types.ts
+    default-state.ts
+    cms-context.tsx
+  utils.ts
+public/
+  fonts/Vazirmatn-*.woff2
+  manifest.json
+```
+
+---
+
+## فناوری
+
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- lucide-react
+- Zustand (آماده)
+- Cloudflare Pages + Functions + D1 + KV + R2
+
+---
+
+## فازهای بعدی
+
+- **فاز ۲**: صفحه اصلی تکمیلی + پروژه‌ها VS Code + درباره + رزومه
+- **فاز ۳**: KIYA Planner (لایسنس + داشبورد ۱۳ صفحه + AI + تلگرام)
+- **فاز ۴**: فروشگاه + فریلنسرینگ + ابزارها + بلاگ + SEO کامل
+- **فاز ۵**: پنل مدیر کامل ۱۸+ بخش + ربات تلگرام منشی
+- **فاز ۶**: PWA + بهینه‌سازی + Deploy Cloudflare
+
+---
+
+© 2585 اَوید کیا — Avid Kiya

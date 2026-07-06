@@ -1,9 +1,23 @@
-name = "avidkiya-portfolio"
-compatibility_date = "2024-09-01"
+name = "avidkiya-platform"
+compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".vercel/output/static"
 
-# KV namespace - this will be set via Cloudflare dashboard
-# [[kv_namespaces]]
-# binding = "AVIDKIYA_KV"
-# id = "YOUR_KV_NAMESPACE_ID"
+[env.production]
+# Cloudflare Pages will build via `npx @cloudflare/next-on-pages`
+
+[[d1_databases]]
+binding = "KIYA_DB"
+database_name = "kiya-planner"
+database_id = "REPLACE_ME"
+
+[[kv_namespaces]]
+binding = "CMS_KV"
+id = "REPLACE_ME"
+
+[[r2_buckets]]
+binding = "FILES_R2"
+bucket_name = "avidkiya-files"
+
+[vars]
+NEXT_PUBLIC_SITE_URL = "https://avidkiya.com"
+NEXT_PUBLIC_GITHUB_USERNAME = "avidkiya"
