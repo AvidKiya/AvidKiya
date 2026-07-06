@@ -200,5 +200,3 @@ export default function ShopClient(){
   );
 }
 
-// import shim to satisfy linter
-import { X } from 'lucide-react';
