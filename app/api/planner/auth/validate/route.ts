@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { verifyJwt, signJwt } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

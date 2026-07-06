@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 
+export const runtime = 'edge';
+
 const coupons = new Map<string, {
   id: string;
   code: string;

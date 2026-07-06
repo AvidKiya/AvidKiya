@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { verifyJwt, extractToken } from '@/lib/jwt';
 import { generateInvoiceHtml } from '@/lib/invoice';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const token = extractToken(request);

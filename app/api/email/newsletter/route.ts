@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 import { checkHoneypot } from '@/lib/validation';
 
+export const runtime = 'edge';
+
 const subscribers = new Set<string>();
 
 export async function POST(request: NextRequest) {

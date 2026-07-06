@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 
+export const runtime = 'edge';
+
 // In production, this would query the database
 const coupons = new Map<string, {
   code: string;

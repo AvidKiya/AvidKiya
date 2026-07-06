@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 
+export const runtime = 'edge';
+
 interface TelegramMessage {
   message_id: number;
   from: {

@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 import { defaultCmsState } from '@/lib/cms/default-state';
 
+export const runtime = 'edge';
+
 // In-memory store for demo (in production, use KV)
 let cmsState = { ...defaultCmsState };
 

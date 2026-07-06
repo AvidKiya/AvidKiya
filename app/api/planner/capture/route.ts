@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
 
+export const runtime = 'edge';
+
 // In-memory store for demo
 const captures = new Map<string, Array<{
   id: string;

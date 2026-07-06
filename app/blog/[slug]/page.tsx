@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useCms } from '@/lib/cms/cms-context';
 import { use } from 'react';
 
+export const runtime = 'edge';
+
 // Fallback sample content — shown until an admin publishes real posts from the CMS panel.
 const FALLBACK_POSTS: Record<string, any> = {
   'second-brain-kiya': {
