@@ -21,17 +21,19 @@ const nav = [
 
 export function Header() {
   const pathname = usePathname();
-  const { lang, t, toggleTheme, theme, toggleLang, isRTL } = useCms();
+  const { lang, toggleTheme, theme, toggleLang, isRTL, cms, tf } = useCms();
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-glass-border" style={{background:'color-mix(in oklab, rgb(var(--bg)) 82%, transparent)'}}>
-      <div className="max-w-6xl mx-auto px-4 md:px-6 h-[64px] flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3 font-bold">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center glass-card !p-0">
-            <span className="text-primary font-black">A</span>
+    <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-glass-border" style={{background:'color-mix(in oklab, rgb(var(--bg)) 84%, transparent)'}}>
+      <div className="max-w-6xl mx-auto px-4 md:px-6 h-[62px] flex items-center justify-between gap-3">
+        <Link href="/" className="flex items-center gap-[10px] font-[700] shrink-0">
+          <div className="w-9 h-9 rounded-[13px] flex items-center justify-center glass-card !p-0">
+            <span className="text-primary font-black text-[15px]">{cms.brand.logoLetter || 'A'}</span>
           </div>
-          <span className="hidden sm:block text-[15px]">اَوید کیا</span>
+          <span className="hidden sm:block text-[14.5px] tracking-[-0.01em] whitespace-nowrap">
+            {tf(cms.identity.fullName)}
+          </span>
         </Link>
 
         {/* Desktop TabBar - iOS pill */}

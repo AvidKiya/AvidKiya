@@ -1,5 +1,7 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
-export const metadata = { title: 'فروشگاه — اَوید کیا' };
-export default function Page() {
-  return <PagePlaceholder icon="shop" title="فروشگاه" desc="محصولات دیجیتال + پرداخت — فاز ۴" next="۴" />;
-}
+import { Metadata } from 'next';
+import ShopClient from './shop-client';
+export const metadata: Metadata = {
+  title: 'فروشگاه — اَوید کیا',
+  description: 'محصولات دیجیتال — قالب، ابزار، آموزش',
+};
+export default function Page(){ return <ShopClient /> }

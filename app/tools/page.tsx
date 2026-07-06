@@ -1,5 +1,4 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
-export const metadata = { title: 'ابزارها — اَوید کیا' };
-export default function Page() {
-  return <PagePlaceholder icon="tools" title="ابزارها" desc="ابزارهای آنلاین رایگان / پولی — فاز ۴" next="۴" />;
-}
+import { Metadata } from 'next';
+import ToolsClient from './tools-client';
+export const metadata = { title: 'ابزارها — اَوید کیا', description: 'ابزارهای آنلاین رایگان و حرفه‌ای' };
+export default function Page(){ return <ToolsClient /> }

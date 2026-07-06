@@ -1,5 +1,4 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
-export const metadata = { title: 'بلاگ — اَوید کیا' };
-export default function Page() {
-  return <PagePlaceholder icon="book" title="بلاگ" desc="مقالات + SEO کامل — فاز ۴" next="۴" />;
-}
+import { Metadata } from 'next';
+import BlogClient from './blog-client';
+export const metadata = { title: 'بلاگ — اَوید کیا', description: 'مقالات فنی، معماری سیستم، AI، رشد' };
+export default function Page(){ return <BlogClient /> }
