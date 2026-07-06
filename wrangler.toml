@@ -1,16 +1,17 @@
-# Cloudflare Pages config
-# برای Cloudflare Pages – اگر از Wrangler استفاده نمی‌کنید می‌توانید این فایل را حذف کنید
-# اما اگر هست، باید pages_build_output_dir داشته باشد
-
+# Cloudflare Pages + Workers config
 name = "avidkiya-platform"
 compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://avidkiya.com"
 NEXT_PUBLIC_GITHUB_USERNAME = "avidkiya"
 
-# D1 / KV / R2 bindings — بعد از ساخت در Cloudflare فعال کنید:
+# اگر از OpenNext استفاده می‌کنید:
+# main = ".open-next/worker.js"
+
+# D1 / KV / R2 bindings — بعداً فعال کنید
 # [[d1_databases]]
 # binding = "KIYA_DB"
 # database_name = "kiya-planner"
