@@ -21,7 +21,7 @@ const posts: Record<string, any> = {
 - **Projects**: پروژه‌های فعال
 - **Areas**: حوزه‌های مسئولیت
 - **Resources**: منابع و مرجع
-- **Archive**: آرشیو
+- **Archive**: آرشیف
 
 ## شروع در ۳ دقیقه
 1. ثبت‌نام رایگان در /planner/login
@@ -39,14 +39,15 @@ export async function generateStaticParams(){
   return Object.keys(posts).map(slug => ({ slug }));
 }
 
-export default function BlogPost({params}:{params:{slug:string}}){
-  const p = posts[params.slug];
+export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }){
+  const { slug } = await params;
+  const p = posts[slug];
   if(!p) return notFound();
   return (
     <article className="max-w-[760px] mx-auto px-4 md:px-6 py-8 md:py-12">
       <div className="text-[11.5px] text-primary font-[600] mb-2">{p.cat} • {p.date} • {p.read}</div>
       <h1 className="text-[26px] md:text-[34px] font-[800] tracking-[-0.015em] leading-[1.25] mb-5">{p.title}</h1>
-      <GlassCard className="!p-6 md:!p-8 prose prose-invert max-w-none" style={{color:'rgb(var(--text))'}}>
+      <GlassCard className="!p-6 md:!p-8 max-w-none" style={{color:'rgb(var(--text))'}}>
         <div className="whitespace-pre-wrap leading-[2] text-[14.5px] text-text-2" style={{fontFamily:'Vazirmatn, system-ui'}}>
           {p.body}
         </div>
