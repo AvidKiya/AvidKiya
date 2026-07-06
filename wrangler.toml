@@ -11,15 +11,15 @@ NEXT_PUBLIC_GITHUB_USERNAME = "avidkiya"
 # اگر از OpenNext استفاده می‌کنید:
 # main = ".open-next/worker.js"
 
-# D1 / KV / R2 bindings — بعداً فعال کنید
-# [[d1_databases]]
-# binding = "KIYA_DB"
-# database_name = "kiya-planner"
-# database_id = "xxxxxxxx"
+# D1 / KV / R2 bindings
+[[d1_databases]]
+binding = "DB"
+database_name = "kiya-planner-db"
+database_id = "YOUR_D1_DATABASE_ID"
 
-# [[kv_namespaces]]
-# binding = "CMS_KV"
-# id = "xxxxxxxx"
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
 
 # [[r2_buckets]]
 # binding = "FILES_R2"

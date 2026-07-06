@@ -1,30 +1,60 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const runtime = 'edge';
+import { NextRequest } from 'next/server';
+import { verifyJwt, signJwt } from '@/lib/jwt';
+import { successResponse, errorResponse } from '@/lib/api-types';
 
-function isValidLicense(code: string){
-  if(!code) return false;
-  const c = code.toUpperCase();
-  if(c === 'ADMIN' || c === 'DEMO') return true;
-  return /^KIYA-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(c);
-}
-
-export async function POST(req: NextRequest){
+export async function POST(request: NextRequest) {
   try {
-    const { license } = await req.json();
-    const valid = isValidLicense(license);
-    if(!valid) return NextResponse.json({ ok:false, error:{code:'INVALID_LICENSE', message:'کد لایسنس معتبر نیست'} }, {status:401});
-    // mock JWT
-    const payload = {
-      sub: 'user_'+license.slice(-4),
-      plan: license.includes('PRO') ? 'pro' : 'free',
-      exp: Math.floor(Date.now()/1000) + 60*60*24*14,
-      iat: Math.floor(Date.now()/1000),
-      is_admin: license.toLowerCase()==='admin',
+    const body = await request.json();
+    const { code } = body;
+
+    if (!code) {
+      return errorResponse('لایسنس الزامی است');
+    }
+
+    // Validate license format
+    const licensePattern = /^KIYA-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    if (!licensePattern.test(code)) {
+      return errorResponse('فرمت لایسنس معتبر نیست');
+    }
+
+    // In production, this would query D1
+    // For now, mock the validation
+    const mockLicense = {
+      id: 'license-001',
+      code,
+      plan: 'pro' as const,
+      status: 'active' as const,
+      isAdmin: code === 'KIYA-ADMIN-0000-0001',
+      name: 'User',
     };
-    // NOT real JWT — demo only
-    const token = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    return NextResponse.json({ ok:true, data:{ token, license, plan: payload.plan, expires_at: new Date(payload.exp*1000).toISOString() }});
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error:{code:'VALIDATE_FAIL', message:e.message} }, {status:500});
+
+    if (mockLicense.status !== 'active') {
+      return errorResponse('لایسنس غیرفعال است');
+    }
+
+    // Generate JWT
+    const secret = process.env.JWT_SECRET || 'default-secret';
+    const token = await signJwt(
+      {
+        sub: mockLicense.id,
+        name: mockLicense.name,
+        plan: mockLicense.plan,
+        isAdmin: mockLicense.isAdmin,
+      },
+      secret,
+      86400 * 7 // 7 days
+    );
+
+    return successResponse({
+      token,
+      user: {
+        id: mockLicense.id,
+        name: mockLicense.name,
+        plan: mockLicense.plan,
+        isAdmin: mockLicense.isAdmin,
+      },
+    }, 'ورود موفق');
+  } catch (error) {
+    return errorResponse('خطا در پردازش درخواست', 500);
   }
 }

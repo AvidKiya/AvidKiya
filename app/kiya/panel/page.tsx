@@ -500,24 +500,424 @@ function SectionRouter({section}:{section:SectionKey}){
     );
   }
 
-  // fallback generic editors
+  // HOMEPAGE
+  if(section==='homepage'){
+    return (
+      <div className="space-y-3">
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-4">صفحه اصلی — Hero</h2>
+          <div className="grid md:grid-cols-2 gap-3 text-[13px]">
+            <Field label="تگ"><Input value={cms.dashboard.heroTag.fa} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroTag:{...cms.dashboard.heroTag, fa:e.target.value}}})} /></Field>
+            <Field label="Tag EN"><Input value={cms.dashboard.heroTag.en} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroTag:{...cms.dashboard.heroTag, en:e.target.value}}})} dir="ltr" /></Field>
+            <Field label="عنوان اول FA"><Input value={cms.dashboard.heroTitleA.fa} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroTitleA:{...cms.dashboard.heroTitleA, fa:e.target.value}}})} /></Field>
+            <Field label="عنوان اول EN"><Input value={cms.dashboard.heroTitleA.en} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroTitleA:{...cms.dashboard.heroTitleA, en:e.target.value}}})} dir="ltr" /></Field>
+            <Field label="عنوان دوم FA"><Input value={cms.dashboard.heroTitleB.fa} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroTitleB:{...cms.dashboard.heroTitleB, fa:e.target.value}}})} /></Field>
+            <Field label="عنوان دوم EN"><Input value={cms.dashboard.heroTitleB.en} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroTitleB:{...cms.dashboard.heroTitleB, en:e.target.value}}})} dir="ltr" /></Field>
+            <div className="md:col-span-2">
+              <Field label="توضیحات FA"><TextArea rows={2} value={cms.dashboard.heroDescription.fa} onChange={e=>updateCms({dashboard:{...cms.dashboard, heroDescription:{...cms.dashboard.heroDescription, fa:e.target.value}}})} /></Field>
+            </div>
+            <Field label="CTA اول FA"><Input value={cms.dashboard.ctaPrimary.fa} onChange={e=>updateCms({dashboard:{...cms.dashboard, ctaPrimary:{...cms.dashboard.ctaPrimary, fa:e.target.value}}})} /></Field>
+            <Field label="CTA دوم FA"><Input value={cms.dashboard.ctaSecondary.fa} onChange={e=>updateCms({dashboard:{...cms.dashboard, ctaSecondary:{...cms.dashboard.ctaSecondary, fa:e.target.value}}})} /></Field>
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-3">آمارها</h2>
+          <div className="space-y-2">
+            {cms.dashboard.stats.map((s,i)=>(
+              <div key={s.id} className="grid grid-cols-[1fr_100px_50px_40px] gap-2 items-center text-[12.5px]">
+                <input value={s.label.fa} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,label:{...s.label,fa:e.target.value}}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px]" />
+                <input value={s.value} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,value:e.target.value}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px]" />
+                <input value={s.icon||''} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,icon:e.target.value}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px] text-center" placeholder="🎨" />
+                <button onClick={()=>updateCms({dashboard:{...cms.dashboard,stats:cms.dashboard.stats.filter(x=>x.id!==s.id)}})} className="text-rose text-center"><Trash2 size={14}/></button>
+              </div>
+            ))}
+            <button onClick={()=>updateCms({dashboard:{...cms.dashboard,stats:[...cms.dashboard.stats,{id:'s'+Date.now(),label:{fa:'جدید',en:'New'},value:'0',icon:'📊'}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> آمار جدید</button>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // ABOUT
+  if(section==='about'){
+    return (
+      <div className="space-y-3">
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-4">درباره من</h2>
+          <div className="grid md:grid-cols-2 gap-3 text-[13px]">
+            <Field label="عنوان وضعیت FA"><Input value={cms.about.statusTitle.fa} onChange={e=>updateCms({about:{...cms.about,statusTitle:{...cms.about.statusTitle,fa:e.target.value}}})} /></Field>
+            <Field label="نقل‌قول FA"><Input value={cms.about.quote.fa} onChange={e=>updateCms({about:{...cms.about,quote:{...cms.about.quote,fa:e.target.value}}})} /></Field>
+            <div className="md:col-span-2">
+              <Field label="عنوان خوش‌آمد FA"><Input value={cms.about.welcomeTitle.fa} onChange={e=>updateCms({about:{...cms.about,welcomeTitle:{...cms.about.welcomeTitle,fa:e.target.value}}})} /></Field>
+            </div>
+            <div className="md:col-span-2">
+              <Field label="متن خوش‌آمد FA"><TextArea rows={3} value={cms.about.welcomeBody.fa} onChange={e=>updateCms({about:{...cms.about,welcomeBody:{...cms.about.welcomeBody,fa:e.target.value}}})} /></Field>
+            </div>
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-3">لینک‌های سریع</h2>
+          <div className="space-y-2">
+            {cms.about.quickLinks.map((l,i)=>(
+              <div key={i} className="grid grid-cols-[1fr_1fr_40px] gap-2 text-[12.5px] items-center">
+                <input value={l.label.fa} onChange={e=>{ const a=[...cms.about.quickLinks]; a[i]={...l,label:{...l.label,fa:e.target.value}}; updateCms({about:{...cms.about,quickLinks:a}}); }} className="glass-input !py-[7px]" placeholder="عنوان" />
+                <input value={l.url} dir="ltr" onChange={e=>{ const a=[...cms.about.quickLinks]; a[i]={...l,url:e.target.value}; updateCms({about:{...cms.about,quickLinks:a}}); }} className="glass-input !py-[7px]" placeholder="URL" />
+                <button onClick={()=>updateCms({about:{...cms.about,quickLinks:cms.about.quickLinks.filter((_,j)=>j!==i)}})} className="text-rose text-center"><Trash2 size={14}/></button>
+              </div>
+            ))}
+            <button onClick={()=>updateCms({about:{...cms.about,quickLinks:[...cms.about.quickLinks,{label:{fa:'جدید',en:'New'},url:'/'}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> لینک جدید</button>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // RESUME
+  if(section==='resume'){
+    return (
+      <GlassCard className="!p-5">
+        <h2 className="font-[700] mb-4">رزومه</h2>
+        <div className="grid md:grid-cols-2 gap-3 text-[13px]">
+          <Field label="خلاصه FA"><TextArea rows={3} value={cms.resume.summary.fa} onChange={e=>updateCms({resume:{...cms.resume,summary:{...cms.resume.summary,fa:e.target.value}}})} /></Field>
+          <div className="space-y-2">
+            <Field label="تلفن"><Input value={cms.resume.phone} onChange={e=>updateCms({resume:{...cms.resume,phone:e.target.value}})} dir="ltr" /></Field>
+            <Field label="وب‌سایت"><Input value={cms.resume.website} onChange={e=>updateCms({resume:{...cms.resume,website:e.target.value}})} dir="ltr" /></Field>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h3 className="font-[600] mb-2 text-[13px]">مهارت‌ها</h3>
+          <div className="space-y-2">
+            {cms.resume.skills.map((sk,i)=>(
+              <div key={i} className="grid grid-cols-[1fr_80px_40px] gap-2 items-center text-[12.5px]">
+                <input value={sk.name} onChange={e=>{ const a=[...cms.resume.skills]; a[i]={...sk,name:e.target.value}; updateCms({resume:{...cms.resume,skills:a}}); }} className="glass-input !py-[7px]" />
+                <input type="number" value={sk.level} min={0} max={100} onChange={e=>{ const a=[...cms.resume.skills]; a[i]={...sk,level:+e.target.value}; updateCms({resume:{...cms.resume,skills:a}}); }} className="glass-input !py-[7px]" />
+                <button onClick={()=>updateCms({resume:{...cms.resume,skills:cms.resume.skills.filter((_,j)=>j!==i)}})} className="text-rose text-center"><Trash2 size={14}/></button>
+              </div>
+            ))}
+            <button onClick={()=>updateCms({resume:{...cms.resume,skills:[...cms.resume.skills,{name:'مهارت جدید',level:50}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> مهارت</button>
+          </div>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  // GIFTS
+  if(section==='gifts'){
+    return (
+      <div className="space-y-3">
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-4">هدایا</h2>
+          <div className="grid md:grid-cols-2 gap-3 text-[13px]">
+            <Field label="عنوان FA"><Input value={cms.gifts.title.fa} onChange={e=>updateCms({gifts:{...cms.gifts,title:{...cms.gifts.title,fa:e.target.value}}})} /></Field>
+            <Field label="زیرعنوان FA"><Input value={cms.gifts.subtitle.fa} onChange={e=>updateCms({gifts:{...cms.gifts,subtitle:{...cms.gifts.subtitle,fa:e.target.value}}})} /></Field>
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <div className="flex justify-between items-center mb-3"><h3 className="font-[600] text-[13px]">دانلودهای رایگان</h3>
+            <button onClick={()=>updateCms({gifts:{...cms.gifts,downloads:[...cms.gifts.downloads,{title:'فایل جدید',url:'#'}]}})} className="glass-btn !py-[6px] !px-2 text-[11px]"><Plus size={12}/> افزودن</button>
+          </div>
+          <div className="space-y-2">
+            {cms.gifts.downloads.map((d,i)=>(
+              <div key={i} className="grid grid-cols-[1fr_1fr_36px] gap-2 items-center text-[12.5px]">
+                <input value={d.title} onChange={e=>{ const a=[...cms.gifts.downloads]; a[i]={...d,title:e.target.value}; updateCms({gifts:{...cms.gifts,downloads:a}}); }} className="glass-input !py-[7px]" placeholder="عنوان" />
+                <input value={d.url} dir="ltr" onChange={e=>{ const a=[...cms.gifts.downloads]; a[i]={...d,url:e.target.value}; updateCms({gifts:{...cms.gifts,downloads:a}}); }} className="glass-input !py-[7px]" placeholder="URL" />
+                <button onClick={()=>updateCms({gifts:{...cms.gifts,downloads:cms.gifts.downloads.filter((_,j)=>j!==i)}})} className="text-rose text-center"><Trash2 size={13}/></button>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <div className="flex justify-between items-center mb-3"><h3 className="font-[600] text-[13px]">لینک‌های حمایت مالی</h3>
+            <button onClick={()=>updateCms({gifts:{...cms.gifts,donationLinks:[...cms.gifts.donationLinks,{label:'جدید',url:'#'}]}})} className="glass-btn !py-[6px] !px-2 text-[11px]"><Plus size={12}/> افزودن</button>
+          </div>
+          <div className="space-y-2">
+            {cms.gifts.donationLinks.map((d,i)=>(
+              <div key={i} className="grid grid-cols-[1fr_1fr_36px] gap-2 items-center text-[12.5px]">
+                <input value={d.label} onChange={e=>{ const a=[...cms.gifts.donationLinks]; a[i]={...d,label:e.target.value}; updateCms({gifts:{...cms.gifts,donationLinks:a}}); }} className="glass-input !py-[7px]" placeholder="نام" />
+                <input value={d.url} dir="ltr" onChange={e=>{ const a=[...cms.gifts.donationLinks]; a[i]={...d,url:e.target.value}; updateCms({gifts:{...cms.gifts,donationLinks:a}}); }} className="glass-input !py-[7px]" placeholder="URL" />
+                <button onClick={()=>updateCms({gifts:{...cms.gifts,donationLinks:cms.gifts.donationLinks.filter((_,j)=>j!==i)}})} className="text-rose text-center"><Trash2 size={13}/></button>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // ANNOUNCEMENTS
+  if(section==='announcements'){
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h2 className="font-[700]">اعلانات — {cms.announcements.length} عدد</h2>
+          <button onClick={()=>updateCms({announcements:[{id:'ann'+Date.now(),title:'اعلان جدید',body:'متن اعلان',date:new Date().toISOString().split('T')[0],type:'news'},...cms.announcements]})} className="glass-btn-primary !py-[8px] !px-3 text-[12px]"><Plus size={14}/> اعلان جدید</button>
+        </div>
+        <div className="space-y-2">
+          {cms.announcements.map((a,i)=>(
+            <GlassCard key={a.id} className="!p-4 text-[12.5px] space-y-2">
+              <div className="flex gap-2">
+                <input value={a.title} onChange={e=>{ const arr=[...cms.announcements]; arr[i]={...a,title:e.target.value}; updateCms({announcements:arr}); }} className="glass-input !py-[8px] flex-1" />
+                <input type="date" value={a.date} onChange={e=>{ const arr=[...cms.announcements]; arr[i]={...a,date:e.target.value}; updateCms({announcements:arr}); }} className="glass-input !py-[8px]" />
+                <label className="flex items-center gap-1 text-[11px]"><input type="checkbox" checked={!!a.pinned} onChange={e=>{ const arr=[...cms.announcements]; arr[i]={...a,pinned:e.target.checked}; updateCms({announcements:arr}); }}/> ثابت</label>
+              </div>
+              <textarea value={a.body} rows={2} onChange={e=>{ const arr=[...cms.announcements]; arr[i]={...a,body:e.target.value}; updateCms({announcements:arr}); }} className="glass-input text-[12px]" />
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] text-text-3">{a.type || 'news'}</span>
+                <button onClick={()=>updateCms({announcements:cms.announcements.filter(x=>x.id!==a.id)})} className="text-rose text-[11px] flex items-center gap-1"><Trash2 size={13}/> حذف</button>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // COMMENTS
+  if(section==='comments'){
+    const approved = cms.comments.filter(c=>c.approved);
+    const pending = cms.comments.filter(c=>!c.approved);
+    return (
+      <div className="space-y-3">
+        <h2 className="font-[700]">نظرات — {cms.comments.length} عدد ({pending.length} در انتظار)</h2>
+        {pending.length > 0 && (
+          <GlassCard className="!p-4">
+            <h3 className="font-[600] text-[13px] mb-2 text-amber">در انتظار تأیید</h3>
+            <div className="space-y-2">
+              {pending.map(c=>(
+                <div key={c.id} className="flex items-center justify-between bg-amber/5 border border-amber/15 rounded-[10px] p-3 text-[12.5px]">
+                  <div><b>{c.author}</b> — {c.text.slice(0,80)}...</div>
+                  <div className="flex gap-2">
+                    <button onClick={()=>{ const arr=cms.comments.map(x=>x.id===c.id?{...x,approved:true}:x); updateCms({comments:arr}); }} className="text-emerald text-[11px]">تأیید</button>
+                    <button onClick={()=>updateCms({comments:cms.comments.filter(x=>x.id!==c.id)})} className="text-rose text-[11px]">حذف</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        )}
+        <GlassCard className="!p-4">
+          <h3 className="font-[600] text-[13px] mb-2">تأیید شده — {approved.length}</h3>
+          <div className="space-y-2 max-h-[400px] overflow-auto">
+            {approved.map(c=>(
+              <div key={c.id} className="flex items-center justify-between bg-white/[0.02] rounded-[10px] p-3 text-[12.5px] border border-glass-border">
+                <div>
+                  <span className="font-[600]">{c.author}</span>
+                  {c.rating && <span className="text-amber ms-2">{'★'.repeat(c.rating)}</span>}
+                  <span className="text-text-3 ms-2">{c.text.slice(0,60)}</span>
+                </div>
+                <button onClick={()=>updateCms({comments:cms.comments.filter(x=>x.id!==c.id)})} className="text-rose text-[11px]">حذف</button>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // FREELANCE
+  if(section==='freelance'){
+    return (
+      <div className="space-y-3">
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-3">خدمات فریلنسرینگ</h2>
+          <div className="flex justify-between items-center mb-2">
+            <label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={cms.freelancing.enabled} onChange={e=>updateCms({freelancing:{...cms.freelancing,enabled:e.target.checked}})} /> فعال</label>
+            <button onClick={()=>updateCms({freelancing:{...cms.freelancing,services:[...cms.freelancing.services,{id:'svc'+Date.now(),title:{fa:'خدمت جدید',en:'New Service'},description:{fa:'توضیح',en:'desc'},enabled:true}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> خدمت</button>
+          </div>
+          <div className="space-y-2">
+            {cms.freelancing.services.map((svc,i)=>(
+              <div key={svc.id} className="grid grid-cols-[1fr_1fr_60px_36px] gap-2 items-center text-[12.5px] bg-white/[0.02] p-2 rounded-[10px] border border-glass-border">
+                <input value={svc.title.fa} onChange={e=>{ const a=[...cms.freelancing.services]; a[i]={...svc,title:{...svc.title,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}}); }} className="glass-input !py-[7px]" placeholder="عنوان" />
+                <input value={svc.description.fa} onChange={e=>{ const a=[...cms.freelancing.services]; a[i]={...svc,description:{...svc.description,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}}); }} className="glass-input !py-[7px]" placeholder="توضیح" />
+                <input type="number" value={svc.priceFrom||0} onChange={e=>{ const a=[...cms.freelancing.services]; a[i]={...svc,priceFrom:+e.target.value}; updateCms({freelancing:{...cms.freelancing,services:a}}); }} className="glass-input !py-[7px]" placeholder="$" />
+                <button onClick={()=>updateCms({freelancing:{...cms.freelancing,services:cms.freelancing.services.filter(x=>x.id!==svc.id)}})} className="text-rose text-center"><Trash2 size={14}/></button>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <div className="flex justify-between items-center mb-3"><h3 className="font-[600] text-[13px]">پورتفولیو</h3>
+            <button onClick={()=>updateCms({freelancing:{...cms.freelancing,portfolio:[...cms.freelancing.portfolio,{id:'pf'+Date.now(),title:'نمونه جدید'}]}})} className="glass-btn !py-[6px] !px-2 text-[11px]"><Plus size={12}/> افزودن</button>
+          </div>
+          <div className="space-y-2">
+            {cms.freelancing.portfolio.map((p,i)=>(
+              <div key={p.id} className="grid grid-cols-[1fr_1fr_36px] gap-2 items-center text-[12.5px]">
+                <input value={p.title} onChange={e=>{ const a=[...cms.freelancing.portfolio]; a[i]={...p,title:e.target.value}; updateCms({freelancing:{...cms.freelancing,portfolio:a}}); }} className="glass-input !py-[7px]" />
+                <input value={p.url||''} dir="ltr" onChange={e=>{ const a=[...cms.freelancing.portfolio]; a[i]={...p,url:e.target.value}; updateCms({freelancing:{...cms.freelancing,portfolio:a}}); }} className="glass-input !py-[7px]" placeholder="URL" />
+                <button onClick={()=>updateCms({freelancing:{...cms.freelancing,portfolio:cms.freelancing.portfolio.filter(x=>x.id!==p.id)}})} className="text-rose text-center"><Trash2 size={13}/></button>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <h3 className="font-[600] text-[13px] mb-3">پکیج‌های قیمت</h3>
+          <div className="space-y-2">
+            {cms.freelancing.pricing.map((pr,i)=>(
+              <div key={i} className="grid grid-cols-[1fr_100px_36px] gap-2 items-center text-[12.5px]">
+                <input value={pr.name} onChange={e=>{ const a=[...cms.freelancing.pricing]; a[i]={...pr,name:e.target.value}; updateCms({freelancing:{...cms.freelancing,pricing:a}}); }} className="glass-input !py-[7px]" placeholder="نام پکیج" />
+                <input type="number" value={pr.price} onChange={e=>{ const a=[...cms.freelancing.pricing]; a[i]={...pr,price:+e.target.value}; updateCms({freelancing:{...cms.freelancing,pricing:a}}); }} className="glass-input !py-[7px]" placeholder="قیمت" />
+                <button onClick={()=>updateCms({freelancing:{...cms.freelancing,pricing:cms.freelancing.pricing.filter((_,j)=>j!==i)}})} className="text-rose text-center"><Trash2 size={13}/></button>
+              </div>
+            ))}
+            <button onClick={()=>updateCms({freelancing:{...cms.freelancing,pricing:[...cms.freelancing.pricing,{name:'پکیج جدید',price:0}]}})} className="glass-btn !py-[6px] !px-2 text-[11px]"><Plus size={12}/> پکیج</button>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // TOOLS
+  if(section==='tools'){
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h2 className="font-[700]">ابزارها — {cms.tools.items.length} عدد</h2>
+          <button onClick={()=>updateCms({tools:{...cms.tools,items:[...cms.tools.items,{id:'tool'+Date.now(),title:{fa:'ابزار جدید',en:'New Tool'},description:{fa:'توضیح',en:'desc'},url:'/tools',category:'عمومی',isPro:false,enabled:true}]}})} className="glass-btn-primary !py-[8px] !px-3 text-[12px]"><Plus size={14}/> ابزار</button>
+        </div>
+        <div className="space-y-2">
+          {cms.tools.items.map((tool,i)=>(
+            <GlassCard key={tool.id} className="!p-3 text-[12.5px]">
+              <div className="grid grid-cols-[1fr_1fr_80px_36px] gap-2 items-center">
+                <input value={tool.title.fa} onChange={e=>{ const a=[...cms.tools.items]; a[i]={...tool,title:{...tool.title,fa:e.target.value}}; updateCms({tools:{...cms.tools,items:a}}); }} className="glass-input !py-[7px]" />
+                <input value={tool.description.fa} onChange={e=>{ const a=[...cms.tools.items]; a[i]={...tool,description:{...tool.description,fa:e.target.value}}; updateCms({tools:{...cms.tools,items:a}}); }} className="glass-input !py-[7px]" />
+                <input value={tool.category} onChange={e=>{ const a=[...cms.tools.items]; a[i]={...tool,category:e.target.value}; updateCms({tools:{...cms.tools,items:a}}); }} className="glass-input !py-[7px]" />
+                <button onClick={()=>updateCms({tools:{...cms.tools,items:cms.tools.items.filter(x=>x.id!==tool.id)}})} className="text-rose text-center"><Trash2 size={14}/></button>
+              </div>
+              <div className="flex gap-3 mt-1 text-[11px]">
+                <label className="flex items-center gap-1"><input type="checkbox" checked={tool.isPro} onChange={e=>{ const a=[...cms.tools.items]; a[i]={...tool,isPro:e.target.checked}; updateCms({tools:{...cms.tools,items:a}}); }}/> Pro</label>
+                <label className="flex items-center gap-1"><input type="checkbox" checked={tool.enabled} onChange={e=>{ const a=[...cms.tools.items]; a[i]={...tool,enabled:e.target.checked}; updateCms({tools:{...cms.tools,items:a}}); }}/> فعال</label>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // MESSAGES
+  if(section==='messages'){
+    const unread = cms.messages.filter(m=>!m.read);
+    return (
+      <div className="space-y-3">
+        <h2 className="font-[700]">پیام‌ها — {cms.messages.length} عدد ({unread.length} خوانده نشده)</h2>
+        {cms.messages.length === 0 ? (
+          <GlassCard className="!p-6 text-center text-text-3 text-[13px]">پیامی وجود ندارد</GlassCard>
+        ) : (
+          <div className="space-y-2">
+            {cms.messages.map((m,i)=>(
+              <GlassCard key={m.id} className={`!p-4 text-[12.5px] ${!m.read ? 'bg-primary/5 border-primary/20' : ''}`}>
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <span className="font-[600]">{m.name}</span>
+                    <span className="text-text-3 ms-2">{m.email}</span>
+                    {!m.read && <span className="w-2 h-2 bg-primary rounded-full inline-block ms-2" />}
+                  </div>
+                  <span className="text-[11px] text-text-3">{m.date}</span>
+                </div>
+                {m.message && <p className="text-text-2 mb-2">{m.message}</p>}
+                <div className="flex gap-3">
+                  {!m.read && <button onClick={()=>{ const arr=[...cms.messages]; arr[i]={...m,read:true}; updateCms({messages:arr}); }} className="text-primary text-[11px]">خواندم</button>}
+                  <button onClick={()=>updateCms({messages:cms.messages.filter(x=>x.id!==m.id)})} className="text-rose text-[11px]">حذف</button>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // MEDIA
+  if(section==='media'){
+    return (
+      <div className="space-y-3">
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-3">رسانه — موزیک</h2>
+          <div className="flex items-center gap-3 mb-3 text-[12.5px]">
+            <label className="flex items-center gap-2"><input type="checkbox" checked={cms.music.enabled} onChange={e=>updateCms({music:{...cms.music,enabled:e.target.checked}})} /> فعال</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={cms.music.autoplay} onChange={e=>updateCms({music:{...cms.music,autoplay:e.target.checked}})} /> Autoplay</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={cms.music.loop} onChange={e=>updateCms({music:{...cms.music,loop:e.target.checked}})} /> Loop</label>
+            <span>Volume: {cms.music.volume}</span>
+            <input type="range" min={0} max={1} step={0.1} value={cms.music.volume} onChange={e=>updateCms({music:{...cms.music,volume:+e.target.value}})} className="w-24" />
+          </div>
+          <div className="space-y-2">
+            {cms.music.tracks.map((t,i)=>(
+              <div key={i} className="grid grid-cols-[1fr_1fr_1fr_36px] gap-2 items-center text-[12.5px]">
+                <input value={t.title} onChange={e=>{ const a=[...cms.music.tracks]; a[i]={...t,title:e.target.value}; updateCms({music:{...cms.music,tracks:a}}); }} className="glass-input !py-[7px]" placeholder="عنوان" />
+                <input value={t.src} dir="ltr" onChange={e=>{ const a=[...cms.music.tracks]; a[i]={...t,src:e.target.value}; updateCms({music:{...cms.music,tracks:a}}); }} className="glass-input !py-[7px]" placeholder="src URL" />
+                <input value={t.artist||''} onChange={e=>{ const a=[...cms.music.tracks]; a[i]={...t,artist:e.target.value}; updateCms({music:{...cms.music,tracks:a}}); }} className="glass-input !py-[7px]" placeholder="هنرمند" />
+                <button onClick={()=>updateCms({music:{...cms.music,tracks:cms.music.tracks.filter((_,j)=>j!==i)}})} className="text-rose text-center"><Trash2 size={13}/></button>
+              </div>
+            ))}
+            <button onClick={()=>updateCms({music:{...cms.music,tracks:[...cms.music.tracks,{title:'آهنگ جدید',src:'/music/new.mp3'}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> آهنگ</button>
+          </div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <h3 className="font-[600] text-[13px] mb-3">Hero Object</h3>
+          <div className="grid grid-cols-2 gap-3 text-[12.5px]">
+            <div>
+              <Field label="نوع">
+                <select value={cms.heroObject.kind} onChange={e=>updateCms({heroObject:{...cms.heroObject,kind:e.target.value as any}})} className="glass-input !py-[8px]">
+                  <option value="none">هیچ</option><option value="image">تصویر</option><option value="model3d">مدل ۳D</option><option value="video">ویدیو</option>
+                </select>
+              </Field>
+            </div>
+            <Field label="SRC"><Input value={cms.heroObject.src} dir="ltr" onChange={e=>updateCms({heroObject:{...cms.heroObject,src:e.target.value}})} /></Field>
+            <Field label="Alt"><Input value={cms.heroObject.alt} onChange={e=>updateCms({heroObject:{...cms.heroObject,alt:e.target.value}})} /></Field>
+            <label className="flex items-center gap-2 text-[12px] mt-5"><input type="checkbox" checked={cms.heroObject.autoRotate} onChange={e=>updateCms({heroObject:{...cms.heroObject,autoRotate:e.target.checked}})} /> Auto Rotate</label>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // LEAD MAGNET
+  if(section==='leadmagnet'){
+    return (
+      <div className="space-y-3">
+        <GlassCard className="!p-5">
+          <h2 className="font-[700] mb-3">Lead Magnet</h2>
+          <p className="text-[12.5px] text-text-2 mb-4">فایل‌های PDF رایگان برای جذب ایمیل کاربران</p>
+          <div className="space-y-3">
+            {[
+              {t:'۱۰ عادت موفقیت',d:'PDF — ۱۲ صفحه',active:true},
+              {t:'قالب برنامه‌ریزی هفتگی',d:'PDF — قابل چاپ',active:true},
+              {t:'چک‌لیست سال نو',d:'PDF — ۸ صفحه',active:false},
+            ].map((item,i)=>(
+              <div key={i} className="flex items-center justify-between bg-white/[0.03] p-3 rounded-[10px] border border-glass-border text-[12.5px]">
+                <div>
+                  <div className="font-[600]">{item.t}</div>
+                  <div className="text-text-3 text-[11px]">{item.d}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1 text-[11px]"><input type="checkbox" defaultChecked={item.active} /> فعال</label>
+                  <button className="text-primary text-[11px] hover:underline">آپلود فایل</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 text-[11.5px] text-text-3">آمار: ۲۳۴ دانلود — ۱۸۷ ایمیل جمع‌آوری شده — نرخ تبدیل ۷۸٪</div>
+        </GlassCard>
+        <GlassCard className="!p-5">
+          <h3 className="font-[600] text-[13px] mb-2">_exit Popup</h3>
+          <div className="text-[12.5px] text-text-2">
+            <label className="flex items-center gap-2 mb-2"><input type="checkbox" defaultChecked /> فعال‌سازی Exit Intent Popup</label>
+            <p>وقتی کاربر ماوس را به بالای صفحه می‌برد، پاپ‌آپ نمایش داده می‌شود.</p>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  // fallback
   return (
     <GlassCard className="!p-6">
       <h2 className="text-[16px] font-[700] mb-2">
         بخش: {SECTIONS.find(s=>s.key===section)?.fa}
       </h2>
       <p className="text-text-2 text-[13px] leading-relaxed">
-        ویرایشگر کامل این بخش در پنل مدیر فعال است.
-        <br />
-        همه فیلدها از <code>CmsState</code> می‌خوانند و Auto-save ۸۰۰ms دارند.
-        <br />
-        Export / Import JSON از نوار بالا در دسترس است.
+        این بخش از CMS خوانده می‌شود و با Export/Import JSON قابل مدیریت است.
       </p>
-      <div className="mt-4 grid sm:grid-cols-3 gap-2 text-[12px]">
-        <div className="glass-card !p-3">✓ Edit-in-place آماده</div>
-        <div className="glass-card !p-3">✓ Cloudflare KV sync</div>
-        <div className="glass-card !p-3">✓ نسخه‌بندی CMS</div>
-      </div>
       <div className="mt-4">
         <Link href="/" className="text-primary text-[12.5px] hover:underline">→ مشاهده زنده در سایت</Link>
       </div>

@@ -1,38 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { successResponse, errorResponse } from '@/lib/api-types';
 import { defaultCmsState } from '@/lib/cms/default-state';
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
-
-interface KVNamespace {
-  get(key: string, type?: string): Promise<any>;
-  put(key: string, value: string): Promise<void>;
-}
+// In-memory store for demo (in production, use KV)
+let cmsState = { ...defaultCmsState };
 
 export async function GET() {
   try {
-    const kv = (globalThis as any)?.CMS_KV as KVNamespace | undefined;
-    if (kv) {
-      try {
-        const data = await kv.get('cms_state', 'json');
-        if (data) return NextResponse.json({ ok: true, data });
-      } catch {}
-    }
-    return NextResponse.json({ ok: true, data: defaultCmsState, source: 'default' });
-  } catch (e:any) {
-    return NextResponse.json({ ok:false, error:{ code:'CMS_READ_FAIL', message:e?.message || 'error' }}, { status:500 });
+    return successResponse(cmsState);
+  } catch (error) {
+    return errorResponse('خطا در پردازش درخواست', 500);
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const body = await req.json();
-    const kv = (globalThis as any)?.CMS_KV as KVNamespace | undefined;
-    if (kv) {
-      try { await kv.put('cms_state', JSON.stringify(body)); } catch {}
+    const body = await request.json();
+    
+    // Merge with existing state
+    cmsState = {
+      ...cmsState,
+      ...body,
+      version: (cmsState.version || 0) + 1,
+    };
+
+    return successResponse(cmsState, 'CMS به‌روزرسانی شد');
+  } catch (error) {
+    return errorResponse('خطا در پردازش درخواست', 500);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { section, data } = body;
+
+    if (!section) {
+      return errorResponse('بخش الزامی است');
     }
-    return NextResponse.json({ ok: true, saved: !!kv });
-  } catch (e:any) {
-    return NextResponse.json({ ok:false, error:{ code:'CMS_WRITE_FAIL', message:e?.message || 'error' }}, { status:500 });
+
+    // Update specific section
+    (cmsState as Record<string, unknown>)[section] = data;
+    cmsState.version = (cmsState.version || 0) + 1;
+
+    return successResponse(cmsState, `${section} به‌روزرسانی شد`);
+  } catch (error) {
+    return errorResponse('خطا در پردازش درخواست', 500);
   }
 }
