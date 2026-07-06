@@ -1,5 +1,11 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
-export const metadata = { title: 'پروژه‌ها — اَوید کیا' };
-export default function Page() {
-  return <PagePlaceholder icon="📄" title="پروژه‌ها" desc="صفحه پروژه‌ها با استایل VS Code + GitHub API — فاز ۲" next="۲" />;
+import { Metadata } from 'next';
+import ProjectsClient from './projects-client';
+
+export const metadata: Metadata = {
+  title: 'پروژه‌ها — اَوید کیا',
+  description: 'پروژه‌های متن‌باز اَوید کیا — VS Code Style',
+};
+
+export default function ProjectsPage() {
+  return <ProjectsClient />;
 }

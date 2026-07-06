@@ -2,6 +2,8 @@
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AlertTriangle, Inbox } from 'lucide-react';
+import { AppIcon, type IconName } from './icons';
 
 export function GlassCard({ className, children, hover=true, ...props }: React.HTMLAttributes<HTMLDivElement> & { hover?: boolean }) {
   return (
@@ -23,17 +25,21 @@ export function Skeleton({ className }: { className?: string }) {
 export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
   return (
     <GlassCard className="text-center py-10">
-      <div className="text-4xl mb-3">😵</div>
+      <div className="flex justify-center mb-3 text-rose">
+        <AlertTriangle size={32} strokeWidth={1.8} />
+      </div>
       <p className="text-text-2 mb-4">{message || 'مشکلی پیش آمد'}</p>
       {onRetry && <GlassButton variant="primary" onClick={onRetry}>تلاش مجدد</GlassButton>}
     </GlassCard>
   );
 }
 
-export function EmptyState({ icon='📋', title, description, action }: { icon?: string; title: string; description?: string; action?: React.ReactNode }) {
+export function EmptyState({ icon='inbox', title, description, action }: { icon?: IconName; title: string; description?: string; action?: React.ReactNode }) {
   return (
     <GlassCard className="text-center py-12">
-      <div className="text-4xl mb-3">{icon}</div>
+      <div className="flex justify-center mb-3 text-text-3">
+        <AppIcon name={icon} size={32} strokeWidth={1.6} />
+      </div>
       <h3 className="text-lg font-bold mb-2">{title}</h3>
       {description && <p className="text-text-2 text-sm mb-4">{description}</p>}
       {action}

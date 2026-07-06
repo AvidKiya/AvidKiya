@@ -1,5 +1,9 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
-export const metadata = { title: 'رزومه — اَوید کیا' };
-export default function Page() {
-  return <PagePlaceholder icon="📄" title="رزومه" desc="نسخه Print-optimized — فاز ۲" next="۲" />;
-}
+import { Metadata } from 'next';
+import ResumeClient from './resume-client';
+
+export const metadata: Metadata = {
+  title: 'رزومه — اَوید کیا',
+  description: 'رزومه حرفه‌ای اَوید کیا — Print optimized',
+};
+
+export default function Page(){ return <ResumeClient /> }
