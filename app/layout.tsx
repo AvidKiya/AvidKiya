@@ -3,9 +3,7 @@ import "./globals.css";
 import { CmsProvider } from "@/lib/cms/cms-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import dynamic from "next/dynamic";
-
-const AdminGate = dynamic(() => import("@/components/layout/admin-gate"), { ssr: false });
+import { AdminGate } from "@/components/layout/admin-gate-client";
 
 export const metadata: Metadata = {
   title: "اَوید کیا — Avid Kiya — DevHub OS",
