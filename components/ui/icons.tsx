@@ -6,7 +6,7 @@ import {
   Sun, Moon, Globe, Menu, X, ChevronRight, ChevronLeft,
   Code2, Layers, Zap, Target, TrendingUp, Users, CheckCircle2,
   Sparkles, Cpu, Database, Cloud, Terminal, BookOpen,
-  Settings, BarChart3, Heart, Share2, ArrowUpRight
+  Settings, BarChart3, Heart, Share2, ArrowUpRight, Inbox
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -50,6 +50,7 @@ export const Icons = {
   heart: Heart,
   share: Share2,
   arrow: ArrowUpRight,
+  inbox: Inbox,
 };
 
 export type IconName = keyof typeof Icons;
