@@ -1,23 +1,25 @@
+# Cloudflare Pages config
+# برای Cloudflare Pages – اگر از Wrangler استفاده نمی‌کنید می‌توانید این فایل را حذف کنید
+# اما اگر هست، باید pages_build_output_dir داشته باشد
+
 name = "avidkiya-platform"
-compatibility_date = "2025-01-01"
-compatibility_flags = ["nodejs_compat"]
-
-[env.production]
-# Cloudflare Pages will build via `npx @cloudflare/next-on-pages`
-
-[[d1_databases]]
-binding = "KIYA_DB"
-database_name = "kiya-planner"
-database_id = "REPLACE_ME"
-
-[[kv_namespaces]]
-binding = "CMS_KV"
-id = "REPLACE_ME"
-
-[[r2_buckets]]
-binding = "FILES_R2"
-bucket_name = "avidkiya-files"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = ".vercel/output/static"
 
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://avidkiya.com"
 NEXT_PUBLIC_GITHUB_USERNAME = "avidkiya"
+
+# D1 / KV / R2 bindings — بعد از ساخت در Cloudflare فعال کنید:
+# [[d1_databases]]
+# binding = "KIYA_DB"
+# database_name = "kiya-planner"
+# database_id = "xxxxxxxx"
+
+# [[kv_namespaces]]
+# binding = "CMS_KV"
+# id = "xxxxxxxx"
+
+# [[r2_buckets]]
+# binding = "FILES_R2"
+# bucket_name = "avidkiya-files"
