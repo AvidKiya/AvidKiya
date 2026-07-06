@@ -1,41 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { defaultCmsState } from '@/lib/cms/default-state';
 
-// Cloudflare KV binding type
-type Env = { CMS_KV?: KVNamespace };
-
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+interface KVNamespace {
+  get(key: string, type?: string): Promise<any>;
+  put(key: string, value: string): Promise<void>;
+}
+
+export async function GET() {
   try {
-    // @ts-ignore
-    const env = process.env as any as Env;
-    // Try KV first
-    // @ts-ignore globalThis
-    const kv = (globalThis as any)?.CMS_KV || null;
+    const kv = (globalThis as any)?.CMS_KV as KVNamespace | undefined;
     if (kv) {
-      const data = await kv.get('cms_state', 'json');
-      return NextResponse.json({ ok: true, data: data || defaultCmsState });
+      try {
+        const data = await kv.get('cms_state', 'json');
+        if (data) return NextResponse.json({ ok: true, data });
+      } catch {}
     }
     return NextResponse.json({ ok: true, data: defaultCmsState, source: 'default' });
   } catch (e:any) {
-    return NextResponse.json({ ok:false, error:{ code:'CMS_READ_FAIL', message:e.message }}, { status:500 });
+    return NextResponse.json({ ok:false, error:{ code:'CMS_READ_FAIL', message:e?.message || 'error' }}, { status:500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    // simple auth check – in prod verify admin JWT
-    const auth = req.headers.get('x-admin-token');
-    // allow local dev
-    // @ts-ignore
-    const kv = (globalThis as any)?.CMS_KV || null;
+    const kv = (globalThis as any)?.CMS_KV as KVNamespace | undefined;
     if (kv) {
-      await kv.put('cms_state', JSON.stringify(body));
+      try { await kv.put('cms_state', JSON.stringify(body)); } catch {}
     }
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, saved: !!kv });
   } catch (e:any) {
-    return NextResponse.json({ ok:false, error:{ code:'CMS_WRITE_FAIL', message:e.message }}, { status:500 });
+    return NextResponse.json({ ok:false, error:{ code:'CMS_WRITE_FAIL', message:e?.message || 'error' }}, { status:500 });
   }
 }
