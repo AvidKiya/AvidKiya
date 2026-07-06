@@ -5,6 +5,44 @@
 
 ---
 
+## ۰. رفع خطاهای Deploy روی Cloudflare Pages (آخرین دور)
+
+بعد از رفع خطاهای اولیه build، در تلاش دیپلوی واقعی روی Cloudflare Pages دو خطای دیگر پیدا و رفع شد:
+
+### الف) خطای Edge Runtime
+```
+The following routes were not configured to run with the Edge Runtime
+```
+تمام ۲۴ تا API route (`app/api/**/route.ts`) و صفحه `app/blog/[slug]/page.tsx` به `export const runtime = 'edge';` نیاز داشتند تا Cloudflare Pages بتواند آن‌ها را به‌عنوان Edge Function بسازد. این خط به همه اضافه شد.
+
+### ب) خطای KV Namespace نامعتبر
+```
+Error 8000022: Invalid KV namespace ID (YOUR_KV_NAMESPACE_ID)
+```
+فایل `wrangler.toml` مقادیر Placeholder (`YOUR_D1_DATABASE_ID`, `YOUR_KV_NAMESPACE_ID`) داشت که هیچ‌وقت با شناسه واقعی جایگزین نشده بودند. چون در حال حاضر **هیچ کدی از این بایندینگ‌ها استفاده نمی‌کند** (همه چیز فعلاً با `localStorage` و حافظه موقت کار می‌کند)، این بخش کامنت شد تا دیپلوی بدون مانع انجام شود. راهنمای کامل برای فعال‌سازی بعدی (وقتی به دیتابیس واقعی نیاز شد) داخل خود فایل `wrangler.toml` نوشته شده.
+
+### ج) ساخت ابزار AvidKiya Deployer 🚀
+بر اساس نمونه‌ای که فرستادید (`installer.js` — KIYA Proxy)، یک نسخه‌ی کامل و سفارشی‌شده برای همین پروژه ساخته شد:
+
+**مسیر:** `workers/deployer/worker.js` (+ `wrangler.toml` + `README.md`)
+
+این یک Cloudflare Worker **مستقل** است (جدا از سایت اصلی) که با یک رابط شیشه‌ای فارسی، با گرفتن فقط یک API Token:
+- KV Namespace واقعی می‌سازد
+- D1 Database واقعی می‌سازد و Schema پایه را اجرا می‌کند
+- یک Cloudflare Pages Project می‌سازد (و در صورت دادن یوزرنیم/ریپوی گیت‌هاب، مستقیم به آن وصل می‌کند تا هر `git push` خودکار دیپلوی شود)
+- Environment Variables (`ADMIN_TOKEN`, `JWT_SECRET`, `TELEGRAM_BOT_TOKEN`) را تنظیم می‌کند
+- Binding های KV/D1 را به پروژه Pages وصل می‌کند
+- بخش «مدیریت نصب‌های قبلی» — لیست، تعویض رمز مدیر، حذف نصب
+
+**نصب:**
+```bash
+cd workers/deployer
+npx wrangler deploy
+```
+سپس آدرس worker.dev را باز کنید و توکن Cloudflare را وارد کنید.
+
+---
+
 ## ۱. رفع خطاهای بحرانی Build (پروژه اصلاً اجرا نمی‌شد)
 
 پروژه در حالت اولیه **اصلاً کامپایل نمی‌شد**. مشکلات زیر پیدا و رفع شدند:
@@ -15,11 +53,12 @@
 - باگ در `lib/jwt.ts` (نوع `Uint8Array` با `crypto.subtle.verify`)
 - داده‌ی ناقص در `lib/cms/default-state.ts` (فیلدهای `blog`, `coupons`, `orders` وجود نداشتند و باعث خطای تایپ می‌شدند)
 
-**نتیجه:** `npm run build` الان با موفقیت کامل روی همه ۷۰+ صفحه اجرا می‌شود.
+**نتیجه:** `npm run build` الان با موفقیت کامل روی همه ۷۰+ صفحه اجرا می‌شود، و همچنین `npx @cloudflare/next-on-pages` (همان دستوری که Cloudflare Pages اجرا می‌کند) با موفقیت کامل تمام می‌شود.
 
 ---
 
 ## ۲. کشف مهم: صفحات پیشرفته وصل نبودند! 🔴
+
 
 در بررسی عمیق‌تر مشخص شد **۵ صفحه اصلی سایت** یک نسخه‌ی ساده و ابتدایی (mock data) را نمایش می‌دادند، در حالی که یک نسخه‌ی **کامل و بسیار حرفه‌ای‌تر** از قبل نوشته شده بود ولی هیچ‌گاه به مسیر route وصل نشده بود:
 

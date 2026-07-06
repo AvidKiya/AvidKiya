@@ -12,14 +12,23 @@ NEXT_PUBLIC_GITHUB_USERNAME = "avidkiya"
 # main = ".open-next/worker.js"
 
 # D1 / KV / R2 bindings
-[[d1_databases]]
-binding = "DB"
-database_name = "kiya-planner-db"
-database_id = "YOUR_D1_DATABASE_ID"
-
-[[kv_namespaces]]
-binding = "KV"
-id = "YOUR_KV_NAMESPACE_ID"
+# ⚠️ این بخش فعلاً کامنت است چون هیچ API route ای در کد از این بایندینگ‌ها استفاده نمی‌کند
+# (همه به صورت in-memory / localStorage کار می‌کنند). وقتی به دیتابیس واقعی نیاز پیدا کردید:
+#   ۱. یک KV Namespace واقعی بسازید:
+#      Cloudflare Dashboard → Workers & Pages → KV → Create a namespace
+#   ۲. یک D1 Database واقعی بسازید:
+#      Cloudflare Dashboard → Workers & Pages → D1 → Create database
+#   ۳. کامنت‌های زیر را بردارید و database_id / id را با مقادیر واقعی جایگزین کنید
+#      (یا از طریق Pages → Settings → Bindings مستقیماً از داشبورد وصل کنید)
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "kiya-planner-db"
+# database_id = "YOUR_D1_DATABASE_ID"
+#
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "YOUR_KV_NAMESPACE_ID"
 
 # [[r2_buckets]]
 # binding = "FILES_R2"
