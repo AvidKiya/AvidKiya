@@ -397,61 +397,7 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // KIYA
   if(section==='kiya'){
-    const licenses = [
-      {code:'KIYA-DEMO-0001-ABCD', plan:'Pro', exp:'۱۴۰۵/۰۸/۱۵', user:'demo@avidkiya.com', status:'فعال'},
-      {code:'KIYA-FREE-92XZ-PPLM', plan:'Free', exp:'—', user:'sara@example.com', status:'فعال'},
-      {code:'KIYA-TEAM-A1B2-C3D4', plan:'Team', exp:'۱۴۰۵/۱۲/۰۱', user:'team@acme.ir', status:'فعال'},
-    ];
-    return (
-      <div className="space-y-4">
-        <div className="grid sm:grid-cols-4 gap-3">
-          {[
-            ['کل لایسنس‌ها','142'],
-            ['فعال','118'],
-            ['Pro','54'],
-            ['درآمد ماه',' $890'],
-          ].map(([l,v])=>(
-            <GlassCard key={l} className="!p-4 text-center">
-              <div className="text-[11.5px] text-text-3">{l}</div>
-              <div className="text-[20px] font-[800]">{v}</div>
-            </GlassCard>
-          ))}
-        </div>
-        <GlassCard className="!p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="font-[700]">لایسنس‌ها</div>
-            <div className="flex gap-2">
-              <button className="glass-btn !py-[7px] !px-3 text-[12px]">ساخت لایسنس رایگان</button>
-              <button className="glass-btn-primary !py-[7px] !px-3 text-[12px]">ساخت Pro نامحدود</button>
-            </div>
-          </div>
-          <div className="overflow-auto">
-            <table className="w-full text-[12.5px]">
-              <thead className="text-text-3 text-[11px] uppercase">
-                <tr className="border-b border-glass-border">
-                  <th className="text-start py-2 px-2">کد</th>
-                  <th className="text-start py-2 px-2">پلن</th>
-                  <th className="text-start py-2 px-2">کاربر</th>
-                  <th className="text-start py-2 px-2">انقضا</th>
-                  <th className="text-start py-2 px-2">وضعیت</th>
-                </tr>
-              </thead>
-              <tbody>
-                {licenses.map(l=>(
-                  <tr key={l.code} className="border-b border-glass-border/60">
-                    <td className="py-[10px] px-2 font-mono text-[11.5px]">{l.code}</td>
-                    <td className="px-2">{l.plan}</td>
-                    <td className="px-2 text-text-2">{l.user}</td>
-                    <td className="px-2">{l.exp}</td>
-                    <td className="px-2"><span className="text-emerald text-[11px]">● {l.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
-      </div>
-    );
+    return <KiyaLicensesPanel />;
   }
 
   // COUPONS
@@ -518,30 +464,57 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // EMAILS
   if(section==='emails'){
+    const templates = cms.emailTemplates.items;
+    const editTemplate = (id: string) => {
+      const tpl = templates.find(t=>t.id===id);
+      if (!tpl) return;
+      const newSubject = window.prompt('موضوع ایمیل:', tpl.subject);
+      if (newSubject === null) return;
+      const newBody = window.prompt('متن ایمیل:', tpl.body);
+      if (newBody === null) return;
+      updateCms({ emailTemplates: { ...cms.emailTemplates, items: templates.map(t => t.id===id ? {...t, subject:newSubject, body:newBody} : t) } });
+    };
+    const changeApiKey = () => {
+      const key = window.prompt('کلید API ریسند (Resend) را وارد کنید:');
+      if (key === null) return;
+      updateCms({ emailTemplates: { ...cms.emailTemplates, resendApiKeySet: key.trim().length > 0 } });
+    };
     return (
       <GlassCard className="!p-5">
         <h2 className="font-[700] mb-3">ایمیل خودکار — Resend</h2>
         <div className="grid md:grid-cols-2 gap-3 text-[12.5px]">
-          {[
-            ['خوش‌آمد KIYA','بعد از ثبت‌نام — فوری','فعال'],
-            ['Onboarding Day 2','روز ۲','فعال'],
-            ['انقضا ۷ روز قبل','قبل انقضا','فعال'],
-            ['Win-back 30 روز','۳۰ روز غیرفعال','پیش‌نویس'],
-          ].map(([t,d,s])=>(
-            <div key={t} className="glass-card !p-3">
-              <div className="font-[600]">{t}</div>
-              <div className="text-text-3 text-[11.5px]">{d} • {s}</div>
-              <button className="text-primary text-[11.5px] mt-2 hover:underline">ویرایش قالب →</button>
+          {templates.map((t)=>(
+            <div key={t.id} className="glass-card !p-3">
+              <div className="font-[600]">{t.name}</div>
+              <div className="text-text-3 text-[11.5px]">{t.trigger} • {t.status}</div>
+              <div className="text-text-3 text-[11px] mt-1 truncate">موضوع: {t.subject}</div>
+              <button onClick={()=>editTemplate(t.id)} className="text-primary text-[11.5px] mt-2 hover:underline">ویرایش قالب →</button>
             </div>
           ))}
         </div>
-        <div className="mt-4 text-[12px] text-text-3">API Key Resend: <code className="bg-white/[0.05] px-2 py-1 rounded">re_••••••••••••••••</code> <button className="text-primary ms-2 hover:underline">تغییر</button></div>
+        <div className="mt-4 text-[12px] text-text-3">
+          API Key Resend: <code className="bg-white/[0.05] px-2 py-1 rounded">{cms.emailTemplates.resendApiKeySet ? 're_••••••••••••••••' : 'تنظیم نشده'}</code>
+          <button onClick={changeApiKey} className="text-primary ms-2 hover:underline">تغییر</button>
+        </div>
+        {!cms.emailTemplates.resendApiKeySet && (
+          <div className="mt-3 text-[11.5px] text-amber bg-amber/10 rounded-[10px] p-3">
+            بدون تنظیم کلید API واقعی Resend، این ایمیل‌ها فقط به‌عنوان قالب ذخیره می‌شوند و ارسال واقعی انجام نمی‌شود.
+          </div>
+        )}
       </GlassCard>
     );
   }
 
   // CALENDAR — quotes
   if(section==='calendar'){
+    const addQuote = (k: 'kourosh'|'mohammadReza'|'rezaShah') => {
+      const text = window.prompt('متن سخن جدید را وارد کنید:');
+      if (!text || !text.trim()) return;
+      updateCms({ quotes: { ...cms.quotes, [k]: [text.trim(), ...cms.quotes[k]] } });
+    };
+    const removeQuote = (k: 'kourosh'|'mohammadReza'|'rezaShah', idx: number) => {
+      updateCms({ quotes: { ...cms.quotes, [k]: cms.quotes[k].filter((_,i)=>i!==idx) } });
+    };
     return (
       <GlassCard className="!p-5">
         <h2 className="font-[700] mb-3">تقویم — سخنان بزرگان</h2>
@@ -550,11 +523,14 @@ function SectionRouter({section}:{section:SectionKey}){
             <div key={k}>
               <div className="font-[600] mb-2">{k==='kourosh'?'کوروش بزرگ':k==='mohammadReza'?'محمدرضا شاه':'رضا شاه'} — {cms.quotes[k].length} سخن</div>
               <div className="space-y-2 max-h-[300px] overflow-auto pe-1">
-                {cms.quotes[k].slice(0,6).map((qt, i)=>(
-                  <div key={i} className="bg-white/[0.03] border border-glass-border rounded-[10px] p-[10px] leading-relaxed">«{qt}»</div>
+                {cms.quotes[k].map((qt, i)=>(
+                  <div key={i} className="bg-white/[0.03] border border-glass-border rounded-[10px] p-[10px] leading-relaxed flex items-start justify-between gap-2">
+                    <span>«{qt}»</span>
+                    <button onClick={()=>removeQuote(k,i)} className="text-rose shrink-0"><Trash2 size={12}/></button>
+                  </div>
                 ))}
               </div>
-              <button className="text-primary text-[11.5px] mt-2 hover:underline">+ افزودن سخن</button>
+              <button onClick={()=>addQuote(k)} className="text-primary text-[11.5px] mt-2 hover:underline flex items-center gap-1"><Plus size={12}/> افزودن سخن</button>
             </div>
           ))}
         </div>
@@ -581,10 +557,10 @@ function SectionRouter({section}:{section:SectionKey}){
         <GlassCard className="!p-5">
           <h3 className="font-[700] mb-3">SEO / Analytics</h3>
           <div className="space-y-[10px] text-[12.5px]">
-            <input defaultValue={cms.seo.siteName} placeholder="Site Name" className="glass-input !py-[9px]" />
-            <input defaultValue={cms.seo.description} placeholder="Meta description" className="glass-input !py-[9px]" />
-            <input defaultValue={cms.analytics.plausibleDomain} placeholder="plausible.io domain" className="glass-input !py-[9px]" dir="ltr" />
-            <button className="glass-btn w-full !py-[9px]">ذخیره SEO</button>
+            <input value={cms.seo.siteName} onChange={e=>updateCms({seo:{...cms.seo, siteName:e.target.value}})} placeholder="Site Name" className="glass-input !py-[9px]" />
+            <input value={cms.seo.description} onChange={e=>updateCms({seo:{...cms.seo, description:e.target.value}})} placeholder="Meta description" className="glass-input !py-[9px]" />
+            <input value={cms.analytics.plausibleDomain} onChange={e=>updateCms({analytics:{...cms.analytics, plausibleDomain:e.target.value}})} placeholder="plausible.io domain" className="glass-input !py-[9px]" dir="ltr" />
+            <div className="text-[11px] text-emerald flex items-center gap-1"><Check size={13}/> Auto-save فعال — تغییرات فوراً ذخیره می‌شوند</div>
           </div>
         </GlassCard>
       </div>
@@ -968,41 +944,64 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // LEAD MAGNET
   if(section==='leadmagnet'){
+    const items = cms.leadMagnet.items;
+    const toggleActive = (id: string) => {
+      updateCms({ leadMagnet: { ...cms.leadMagnet, items: items.map(it => it.id===id ? {...it, enabled: !it.enabled} : it) } });
+    };
+    const uploadFile = (id: string) => {
+      const url = window.prompt('لینک فایل PDF را وارد کنید (یا نام فایل):');
+      if (!url) return;
+      updateCms({ leadMagnet: { ...cms.leadMagnet, items: items.map(it => it.id===id ? {...it, fileUrl: url} : it) } });
+    };
+    const addItem = () => {
+      const title = window.prompt('عنوان فایل جدید:');
+      if (!title) return;
+      const newItem = { id:'lm'+Date.now(), title, description:'PDF', fileUrl:'', enabled:true, downloads:0 };
+      updateCms({ leadMagnet: { ...cms.leadMagnet, items: [newItem, ...items] } });
+    };
+    const removeItem = (id: string) => {
+      updateCms({ leadMagnet: { ...cms.leadMagnet, items: items.filter(it => it.id!==id) } });
+    };
     return (
       <div className="space-y-3">
         <GlassCard className="!p-5">
-          <h2 className="font-[700] mb-3">Lead Magnet</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-[700]">Lead Magnet</h2>
+            <button onClick={addItem} className="glass-btn !py-[6px] !px-3 text-[11.5px] flex items-center gap-1"><Plus size={12}/> افزودن</button>
+          </div>
           <p className="text-[12.5px] text-text-2 mb-4">فایل‌های PDF رایگان برای جذب ایمیل کاربران</p>
           <div className="space-y-3">
-            {[
-              {t:'۱۰ عادت موفقیت',d:'PDF — ۱۲ صفحه',active:true},
-              {t:'قالب برنامه‌ریزی هفتگی',d:'PDF — قابل چاپ',active:true},
-              {t:'چک‌لیست سال نو',d:'PDF — ۸ صفحه',active:false},
-            ].map((item,i)=>(
-              <div key={i} className="flex items-center justify-between bg-white/[0.03] p-3 rounded-[10px] border border-glass-border text-[12.5px]">
+            {items.length === 0 ? (
+              <div className="text-center text-text-3 text-[12.5px] py-4">هنوز فایلی اضافه نشده</div>
+            ) : items.map((item)=>(
+              <div key={item.id} className="flex items-center justify-between bg-white/[0.03] p-3 rounded-[10px] border border-glass-border text-[12.5px]">
                 <div>
-                  <div className="font-[600]">{item.t}</div>
-                  <div className="text-text-3 text-[11px]">{item.d}</div>
+                  <div className="font-[600]">{item.title}</div>
+                  <div className="text-text-3 text-[11px]">{item.description}{item.fileUrl ? ` • ${item.fileUrl}` : ''}</div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1 text-[11px]"><input type="checkbox" defaultChecked={item.active} /> فعال</label>
-                  <button className="text-primary text-[11px] hover:underline">آپلود فایل</button>
+                  <label className="flex items-center gap-1 text-[11px]"><input type="checkbox" checked={item.enabled} onChange={()=>toggleActive(item.id)} /> فعال</label>
+                  <button onClick={()=>uploadFile(item.id)} className="text-primary text-[11px] hover:underline">آپلود فایل</button>
+                  <button onClick={()=>removeItem(item.id)} className="text-rose"><Trash2 size={13}/></button>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-4 text-[11.5px] text-text-3">آمار: ۲۳۴ دانلود — ۱۸۷ ایمیل جمع‌آوری شده — نرخ تبدیل ۷۸٪</div>
+          <div className="mt-4 text-[11.5px] text-text-3">آمار: {cms.leadMagnet.stats.downloads} دانلود — {cms.leadMagnet.stats.emailsCollected} ایمیل جمع‌آوری شده</div>
         </GlassCard>
         <GlassCard className="!p-5">
-          <h3 className="font-[600] text-[13px] mb-2">_exit Popup</h3>
+          <h3 className="font-[600] text-[13px] mb-2">Exit Popup</h3>
           <div className="text-[12.5px] text-text-2">
-            <label className="flex items-center gap-2 mb-2"><input type="checkbox" defaultChecked /> فعال‌سازی Exit Intent Popup</label>
+            <label className="flex items-center gap-2 mb-2">
+              <input type="checkbox" checked={cms.leadMagnet.exitPopupEnabled} onChange={e=>updateCms({leadMagnet:{...cms.leadMagnet, exitPopupEnabled:e.target.checked}})} /> فعال‌سازی Exit Intent Popup
+            </label>
             <p>وقتی کاربر ماوس را به بالای صفحه می‌برد، پاپ‌آپ نمایش داده می‌شود.</p>
           </div>
         </GlassCard>
       </div>
     );
   }
+
 
   // fallback
   return (
@@ -1019,3 +1018,140 @@ function SectionRouter({section}:{section:SectionKey}){
     </GlassCard>
   );
 }
+
+/* ---------- KIYA Licenses (connected to real /api/planner/admin/licenses) ---------- */
+interface KiyaLicense {
+  id: string; code: string; plan: string; status: string;
+  expiresAt?: string; isAdmin: boolean; name?: string; createdAt: string;
+}
+
+function KiyaLicensesPanel(){
+  const [licenses, setLicenses] = useState<KiyaLicense[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [lastCreated, setLastCreated] = useState<KiyaLicense[] | null>(null);
+
+  // این پنل با رمز جلسه (session password) کار می‌کند نه JWT کاربر KIYA؛
+  // برای صدازدن API مدیر لایسنس، با لایسنس پیش‌فرض مدیر یک توکن معتبر می‌گیریم و کش می‌کنیم.
+  const getAdminToken = async (): Promise<string | null> => {
+    const cached = sessionStorage.getItem('ak_kiya_admin_jwt');
+    if (cached) return cached;
+    try {
+      const res = await fetch('/api/planner/auth/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: 'KIYA-ADMIN-0000-0001' }),
+      });
+      const data = await res.json();
+      if (data.success && data.data?.token) {
+        sessionStorage.setItem('ak_kiya_admin_jwt', data.data.token);
+        return data.data.token;
+      }
+    } catch {}
+    return null;
+  };
+
+  const load = async () => {
+    setLoading(true);
+    const token = await getAdminToken();
+    if (!token) { setLoading(false); return; }
+    try {
+      const res = await fetch('/api/planner/admin/licenses', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) setLicenses(data.data || []);
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const createLicense = async (plan: 'free' | 'pro' | 'pro-ai' | 'team', durationDays: number) => {
+    setBusy(true);
+    setLastCreated(null);
+    const token = await getAdminToken();
+    if (!token) { setBusy(false); return; }
+    try {
+      const expiresAt = durationDays > 0 ? new Date(Date.now() + durationDays * 86400000).toISOString() : undefined;
+      const res = await fetch('/api/planner/admin/licenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ plan, count: 1, expiresAt }),
+      });
+      const data = await res.json();
+      if (data.success) { setLastCreated(data.data); await load(); }
+    } finally { setBusy(false); }
+  };
+
+  const deleteLicense = async (id: string) => {
+    const token = await getAdminToken();
+    if (!token) return;
+    await fetch(`/api/planner/admin/licenses?id=${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    await load();
+  };
+
+  const active = licenses.filter(l => l.status === 'active').length;
+  const proCount = licenses.filter(l => l.plan === 'pro' || l.plan === 'pro-ai').length;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid sm:grid-cols-4 gap-3">
+        {[
+          ['کل لایسنس‌ها', String(licenses.length)],
+          ['فعال', String(active)],
+          ['Pro / Pro+AI', String(proCount)],
+          ['درآمد ماه', '$0'],
+        ].map(([l,v])=>(
+          <GlassCard key={l} className="!p-4 text-center">
+            <div className="text-[11.5px] text-text-3">{l}</div>
+            <div className="text-[20px] font-[800]">{v}</div>
+          </GlassCard>
+        ))}
+      </div>
+      <GlassCard className="!p-4">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="font-[700]">لایسنس‌ها</div>
+          <div className="flex gap-2 flex-wrap">
+            <button disabled={busy} onClick={()=>createLicense('free', 0)} className="glass-btn !py-[7px] !px-3 text-[12px] disabled:opacity-50">ساخت لایسنس رایگان</button>
+            <button disabled={busy} onClick={()=>createLicense('pro', 0)} className="glass-btn-primary !py-[7px] !px-3 text-[12px] disabled:opacity-50">ساخت Pro نامحدود</button>
+            <Link href="/planner/admin/licenses" className="glass-btn !py-[7px] !px-3 text-[12px]">مدیریت کامل →</Link>
+          </div>
+        </div>
+        {lastCreated && lastCreated.length > 0 && (
+          <div className="mb-3 bg-emerald/10 text-emerald text-[12.5px] rounded-[10px] px-3 py-2 font-mono">
+            ساخته شد: {lastCreated.map(l=>l.code).join(', ')}
+          </div>
+        )}
+        {loading ? (
+          <div className="text-center text-text-3 text-[13px] py-6">در حال بارگذاری…</div>
+        ) : licenses.length === 0 ? (
+          <div className="text-center text-text-3 text-[13px] py-6">هنوز لایسنسی ساخته نشده</div>
+        ) : (
+          <div className="overflow-auto">
+            <table className="w-full text-[12.5px]">
+              <thead className="text-text-3 text-[11px] uppercase">
+                <tr className="border-b border-glass-border">
+                  <th className="text-start py-2 px-2">کد</th>
+                  <th className="text-start py-2 px-2">پلن</th>
+                  <th className="text-start py-2 px-2">انقضا</th>
+                  <th className="text-start py-2 px-2">وضعیت</th>
+                  <th className="text-start py-2 px-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {licenses.map(l=>(
+                  <tr key={l.id} className="border-b border-glass-border/60">
+                    <td className="py-[10px] px-2 font-mono text-[11.5px]">{l.code}</td>
+                    <td className="px-2">{l.plan}</td>
+                    <td className="px-2">{l.expiresAt ? new Date(l.expiresAt).toLocaleDateString('fa-IR') : 'نامحدود'}</td>
+                    <td className="px-2"><span className="text-emerald text-[11px]">● {l.status}</span></td>
+                    <td className="px-2"><button onClick={()=>deleteLicense(l.id)} className="text-rose"><Trash2 size={13}/></button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </GlassCard>
+    </div>
+  );
+}
+

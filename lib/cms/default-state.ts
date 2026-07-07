@@ -36,10 +36,10 @@ export const defaultCmsState: CmsState = {
   dashboard: {
     heroTag: { fa:'DEVHUB OS', en:'DEVHUB OS' },
     heroTitleA: { fa:'اَوید کیا', en:'Avid Kiya' },
-    heroTitleB: { fa:'معمار سیستم', en:'Systems Architect' },
-    heroDescription: { fa:'سیستم‌های مقیاس‌پذیر می‌سازم — از ایده تا دیپلوی.', en:'Building scalable systems — from idea to deploy.' },
-    ctaPrimary: { fa:'پروژه‌ها', en:'Projects' },
-    ctaSecondary: { fa:'تماس', en:'Contact' },
+    heroTitleB: { fa:'معمار سیستم — توسعه‌دهنده فول‌استک', en:'Systems Architect — Full-Stack Developer' },
+    heroDescription: { fa:'معمار سیستم‌های مقیاس‌پذیر. عاشق AI و طراحی شیشه‌ای.', en:'Architecting scalable systems. AI & Liquid Glass enthusiast.' },
+    ctaPrimary: { fa:'مشاهده پروژه‌ها', en:'View projects' },
+    ctaSecondary: { fa:'شروع همکاری', en:'Hire me' },
     projects: [],
     stats: [
       { id:'1', label:{fa:'پروژه تکمیل‌شده', en:'Projects Done'}, value:'120+', icon:'rocket' },
@@ -100,16 +100,18 @@ export const defaultCmsState: CmsState = {
     ],
   },
   gifts: {
-    title:{fa:'هدیه‌ها',en:'Gifts'},
-    subtitle:{fa:'حمایت شما دلگرمی ماست',en:'Your support means a lot'},
+    title:{fa:'هدایای رایگان',en:'Free Gifts'},
+    subtitle:{fa:'منابع رایگان برای بهبود زندگی و کار شما',en:'Free resources to improve your life and work'},
     donationLinks: [
-      { label:'حمایت ریالی', url:'#' },
+      { label:'ZarinPal', url:'#' },
       { label:'Buy Me a Coffee', url:'#' },
+      { label:'Bitcoin', url:'#' },
     ],
     downloadTitle:{fa:'دانلودهای رایگان',en:'Free Downloads'},
     downloads: [
-      { title:'۱۰ عادت روزانه', url:'#' },
-      { title:'قالب برنامه‌ریزی', url:'#' },
+      { title:'قالب برنامه‌ریزی هفتگی', url:'#' },
+      { title:'چک‌لیست عادت‌سازی', url:'#' },
+      { title:'راهنمای KIYA Planner', url:'#' },
     ],
   },
   announcements: [
@@ -234,4 +236,22 @@ export const defaultCmsState: CmsState = {
   },
   analytics:{ enabled:true, plausibleDomain:'avidkiya.com', googleId:'' },
   newsletter:{ enabled:true, title:{fa:'خبرنامه',en:'Newsletter'}, subscribers:[] },
+  leadMagnet: {
+    items: [
+      { id:'lm1', title:'۱۰ عادت موفقیت', description:'PDF — ۱۲ صفحه', fileUrl:'', enabled:true, downloads:0 },
+      { id:'lm2', title:'قالب برنامه‌ریزی هفتگی', description:'PDF — قابل چاپ', fileUrl:'', enabled:true, downloads:0 },
+      { id:'lm3', title:'چک‌لیست سال نو', description:'PDF — ۸ صفحه', fileUrl:'', enabled:false, downloads:0 },
+    ],
+    exitPopupEnabled: true,
+    stats: { downloads: 0, emailsCollected: 0 },
+  },
+  emailTemplates: {
+    resendApiKeySet: false,
+    items: [
+      { id:'et1', name:'خوش‌آمد KIYA', trigger:'بعد از ثبت‌نام — فوری', status:'فعال', subject:'به KIYA خوش اومدی!', body:'سلام {{name}}،\nخوشحالیم که به KIYA پیوستی.' },
+      { id:'et2', name:'Onboarding Day 2', trigger:'روز ۲', status:'فعال', subject:'چطور از KIYA بیشترین استفاده رو ببری', body:'چند نکته برای شروع بهتر...' },
+      { id:'et3', name:'انقضا ۷ روز قبل', trigger:'قبل انقضا', status:'فعال', subject:'اشتراکت داره تموم میشه', body:'یادآوری تمدید اشتراک...' },
+      { id:'et4', name:'Win-back 30 روز', trigger:'۳۰ روز غیرفعال', status:'پیش‌نویس', subject:'دلمون برات تنگ شده', body:'مدتیه ندیدیمت...' },
+    ],
+  },
 };

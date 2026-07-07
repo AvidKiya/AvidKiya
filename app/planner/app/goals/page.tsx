@@ -72,6 +72,8 @@ export default function GoalsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newGoal, setNewGoal] = useState<{ title: string; level: Goal['level'] }>({ title: '', level: 'weekly' });
 
+  const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
   useEffect(() => {
     fetchGoals();
   }, []);
@@ -79,12 +81,18 @@ export default function GoalsPage() {
   const fetchGoals = async () => {
     try {
       setLoading(true);
-      // Mock data
-      setGoals([
+      const res = await fetch('/api/planner/goals', { headers: authHeader() });
+      const demo: Goal[] = [
         { id: '1', title: 'یادگیری React', level: 'annual', progress: 60, createdAt: new Date().toISOString() },
         { id: '2', title: 'ورزش روزانه', level: 'weekly', progress: 80, createdAt: new Date().toISOString() },
         { id: '3', title: 'تکمیل پروژه X', level: 'quarterly', progress: 45, createdAt: new Date().toISOString() },
-      ]);
+      ];
+      if (res.ok) {
+        const data = await res.json();
+        setGoals(data.data && data.data.length > 0 ? data.data : demo);
+      } else {
+        setGoals(demo);
+      }
       setLoading(false);
     } catch (err) {
       setError('خطا در بارگذاری اهداف');
@@ -92,35 +100,53 @@ export default function GoalsPage() {
     }
   };
 
-  const addGoal = () => {
+  const addGoal = async () => {
     if (!newGoal.title.trim()) return;
 
-    const goal: Goal = {
-      id: `goal-${Date.now()}`,
-      title: newGoal.title,
-      level: newGoal.level,
-      progress: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    setGoals((prev) => [...prev, goal]);
+    try {
+      const res = await fetch('/api/planner/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ title: newGoal.title, level: newGoal.level }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGoals((prev) => [...prev, data.data]);
+      } else {
+        const goal: Goal = { id: `goal-${Date.now()}`, title: newGoal.title, level: newGoal.level, progress: 0, createdAt: new Date().toISOString() };
+        setGoals((prev) => [...prev, goal]);
+      }
+    } catch {
+      const goal: Goal = { id: `goal-${Date.now()}`, title: newGoal.title, level: newGoal.level, progress: 0, createdAt: new Date().toISOString() };
+      setGoals((prev) => [...prev, goal]);
+    }
     setNewGoal({ title: '', level: 'weekly' });
     setShowAddForm(false);
   };
 
-  const updateProgress = (goalId: string, delta: number) => {
+  const updateProgress = async (goalId: string, delta: number) => {
+    const goal = goals.find((g) => g.id === goalId);
+    if (!goal) return;
+    const newProgress = Math.max(0, Math.min(100, goal.progress + delta));
+    try {
+      await fetch('/api/planner/goals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ id: goalId, progress: newProgress }),
+      });
+    } catch {}
     setGoals((prev) =>
-      prev.map((g) =>
-        g.id === goalId
-          ? { ...g, progress: Math.max(0, Math.min(100, g.progress + delta)) }
-          : g
-      )
+      prev.map((g) => (g.id === goalId ? { ...g, progress: newProgress } : g))
     );
   };
 
-  const deleteGoal = (goalId: string) => {
+  const deleteGoal = async (goalId: string) => {
+    try {
+      await fetch(`/api/planner/goals?id=${goalId}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setGoals((prev) => prev.filter((g) => g.id !== goalId));
   };
+
 
   if (loading) return <LoadingSkeleton count={3} />;
   if (error) return <ErrorState message={error} onRetry={fetchGoals} />;

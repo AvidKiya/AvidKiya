@@ -288,6 +288,15 @@ export interface CmsState {
   seo: { siteName: string; description: string; keywords: string; ogImage: string; };
   analytics: { enabled: boolean; plausibleDomain: string; googleId: string; };
   newsletter: { enabled: boolean; title: I18nText; subscribers: string[]; };
+  leadMagnet: {
+    items: Array<{ id: string; title: string; description: string; fileUrl: string; enabled: boolean; downloads: number }>;
+    exitPopupEnabled: boolean;
+    stats: { downloads: number; emailsCollected: number };
+  };
+  emailTemplates: {
+    resendApiKeySet: boolean;
+    items: Array<{ id: string; name: string; trigger: string; status: 'فعال'|'پیش‌نویس'; subject: string; body: string }>;
+  };
 }
 
 export type CmsSection = keyof CmsState;

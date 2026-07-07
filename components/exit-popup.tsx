@@ -1,27 +1,44 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { GlassCard } from './ui/glass';
 import { Gift, X } from 'lucide-react';
+import { useCms } from '@/lib/cms/cms-context';
 
 export function ExitPopup() {
+  const { cms, updateCms } = useCms();
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  // در اپ داخلی KIYA Planner (پشت لاگین) و پنل مدیر نمایش داده نشود
+  const isAppArea = pathname?.startsWith('/planner/app') || pathname?.startsWith('/planner/admin') || pathname?.startsWith('/kiya/panel');
+
   const handleMouseLeave = useCallback((e: MouseEvent) => {
+    if (!cms.leadMagnet.exitPopupEnabled || isAppArea) return;
     if (e.clientY <= 0 && !sessionStorage.getItem('exit_popup_shown')) {
       setShow(true);
       sessionStorage.setItem('exit_popup_shown', '1');
     }
-  }, []);
+  }, [cms.leadMagnet.exitPopupEnabled, isAppArea]);
 
   useEffect(() => {
     document.addEventListener('mouseleave', handleMouseLeave);
     return () => document.removeEventListener('mouseleave', handleMouseLeave);
   }, [handleMouseLeave]);
 
-  if (!show || submitted) return null;
+  if (!cms.leadMagnet.exitPopupEnabled || isAppArea || !show || submitted) return null;
+
+  const submit = () => {
+    if (!email.includes('@')) return;
+    updateCms({
+      newsletter: { ...cms.newsletter, subscribers: [...cms.newsletter.subscribers, email] },
+      leadMagnet: { ...cms.leadMagnet, stats: { ...cms.leadMagnet.stats, emailsCollected: cms.leadMagnet.stats.emailsCollected + 1, downloads: cms.leadMagnet.stats.downloads + 1 } },
+    });
+    setSubmitted(true);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -49,11 +66,7 @@ export function ExitPopup() {
         />
 
         <button
-          onClick={() => {
-            if (email.includes('@')) {
-              setSubmitted(true);
-            }
-          }}
+          onClick={submit}
           className="glass-btn-primary w-full py-3 flex items-center justify-center gap-2"
         >
           <Gift size={16} /> هدیه رو بگیر

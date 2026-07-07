@@ -36,6 +36,8 @@ const categoryLabels: Record<string, string> = {
   other: 'سایر',
 };
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,16 +59,24 @@ export default function FinancePage() {
     fetchTransactions();
   }, []);
 
+  const demoTransactions: Transaction[] = [
+    { id: '1', type: 'income', amount: 500, category: 'salary', date: '2024-01-15', createdAt: new Date().toISOString() },
+    { id: '2', type: 'expense', amount: 50, category: 'food', date: '2024-01-14', createdAt: new Date().toISOString() },
+    { id: '3', type: 'expense', amount: 120, category: 'shopping', date: '2024-01-13', createdAt: new Date().toISOString() },
+    { id: '4', type: 'income', amount: 200, category: 'freelance', date: '2024-01-12', createdAt: new Date().toISOString() },
+  ];
+
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      // Mock data
-      setTransactions([
-        { id: '1', type: 'income', amount: 500, category: 'salary', date: '2024-01-15', createdAt: new Date().toISOString() },
-        { id: '2', type: 'expense', amount: 50, category: 'food', date: '2024-01-14', createdAt: new Date().toISOString() },
-        { id: '3', type: 'expense', amount: 120, category: 'shopping', date: '2024-01-13', createdAt: new Date().toISOString() },
-        { id: '4', type: 'income', amount: 200, category: 'freelance', date: '2024-01-12', createdAt: new Date().toISOString() },
-      ]);
+      const res = await fetch('/api/planner/finance', { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        const apiTx = data.data?.transactions || [];
+        setTransactions(apiTx.length > 0 ? apiTx : demoTransactions);
+      } else {
+        setTransactions(demoTransactions);
+      }
       setLoading(false);
     } catch (err) {
       setError('خطا در بارگذاری تراکنش‌ها');
@@ -74,24 +84,34 @@ export default function FinancePage() {
     }
   };
 
-  const addTransaction = () => {
+  const addTransaction = async () => {
     if (!newTransaction.amount) return;
 
-    const transaction: Transaction = {
-      id: `tx-${Date.now()}`,
-      type: newTransaction.type,
-      amount: Number(newTransaction.amount),
-      category: newTransaction.category,
-      date: newTransaction.date,
-      createdAt: new Date().toISOString(),
-    };
-
-    setTransactions((prev) => [transaction, ...prev]);
+    try {
+      const res = await fetch('/api/planner/finance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ type: newTransaction.type, amount: Number(newTransaction.amount), category: newTransaction.category, date: newTransaction.date }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTransactions((prev) => [data.data, ...prev]);
+      } else {
+        const transaction: Transaction = { id: `tx-${Date.now()}`, type: newTransaction.type, amount: Number(newTransaction.amount), category: newTransaction.category, date: newTransaction.date, createdAt: new Date().toISOString() };
+        setTransactions((prev) => [transaction, ...prev]);
+      }
+    } catch {
+      const transaction: Transaction = { id: `tx-${Date.now()}`, type: newTransaction.type, amount: Number(newTransaction.amount), category: newTransaction.category, date: newTransaction.date, createdAt: new Date().toISOString() };
+      setTransactions((prev) => [transaction, ...prev]);
+    }
     setNewTransaction({ type: 'expense', amount: '', category: 'other', date: new Date().toISOString().split('T')[0] });
     setShowAddForm(false);
   };
 
-  const deleteTransaction = (id: string) => {
+  const deleteTransaction = async (id: string) => {
+    try {
+      await fetch(`/api/planner/finance?id=${id}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
 

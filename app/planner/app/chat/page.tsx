@@ -22,10 +22,13 @@ const commands = [
   { cmd: '/انرژی', desc: 'ثبت انرژی' },
 ];
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [limitError, setLimitError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +37,7 @@ export default function ChatPage() {
 
   const sendMessage = async () => {
     if (!input.trim() || isTyping) return;
+    setLimitError(null);
 
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
@@ -43,20 +47,39 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const sentText = input.trim();
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage: Message = {
+    try {
+      const res = await fetch('/api/planner/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ message: sentText }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessages((prev) => [...prev, data.data.assistantMessage]);
+      } else if (res.status === 429) {
+        setLimitError(data.error || 'به حد مجاز پیام رسیدی.');
+      } else {
+        // fallback to local simulated response if API unavailable
+        setMessages((prev) => [...prev, {
+          id: `msg-${Date.now() + 1}`,
+          role: 'assistant',
+          content: generateResponse(sentText),
+          createdAt: new Date().toISOString(),
+        }]);
+      }
+    } catch {
+      setMessages((prev) => [...prev, {
         id: `msg-${Date.now() + 1}`,
         role: 'assistant',
-        content: generateResponse(input.trim()),
+        content: generateResponse(sentText),
         createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsTyping(false);
-    }, 1000);
+      }]);
+    }
+    setIsTyping(false);
   };
 
   const generateResponse = (text: string): string => {
@@ -181,6 +204,10 @@ export default function ChatPage() {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {limitError && (
+        <div className="mb-2 text-xs text-amber-400 bg-amber-400/10 rounded-lg px-3 py-2">{limitError}</div>
+      )}
 
       {/* Input */}
       <div className="flex gap-2">

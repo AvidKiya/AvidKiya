@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState } from '@/components/ui/states';
 
@@ -11,14 +11,35 @@ interface Event {
   time?: string;
 }
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState<Event[]>([
-    { id: '1', title: 'جلسه تیم', date: new Date().toISOString().split('T')[0], time: '10:00' },
-    { id: '2', title: 'ورزش', date: new Date().toISOString().split('T')[0], time: '18:00' },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '' });
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    const demo: Event[] = [
+      { id: '1', title: 'جلسه تیم', date: new Date().toISOString().split('T')[0], time: '10:00' },
+      { id: '2', title: 'ورزش', date: new Date().toISOString().split('T')[0], time: '18:00' },
+    ];
+    try {
+      const res = await fetch('/api/planner/calendar', { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        setEvents(data.data && data.data.length > 0 ? data.data : demo);
+      } else {
+        setEvents(demo);
+      }
+    } catch {
+      setEvents(demo);
+    }
+  };
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -31,22 +52,34 @@ export default function CalendarPage() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
-  const addEvent = () => {
+  const addEvent = async () => {
     if (!newEvent.title || !newEvent.date) return;
 
-    const event: Event = {
-      id: `event-${Date.now()}`,
-      title: newEvent.title,
-      date: newEvent.date,
-      time: newEvent.time || undefined,
-    };
-
-    setEvents((prev) => [...prev, event]);
+    try {
+      const res = await fetch('/api/planner/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ title: newEvent.title, date: newEvent.date, time: newEvent.time || undefined }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEvents((prev) => [...prev, data.data]);
+      } else {
+        const event: Event = { id: `event-${Date.now()}`, title: newEvent.title, date: newEvent.date, time: newEvent.time || undefined };
+        setEvents((prev) => [...prev, event]);
+      }
+    } catch {
+      const event: Event = { id: `event-${Date.now()}`, title: newEvent.title, date: newEvent.date, time: newEvent.time || undefined };
+      setEvents((prev) => [...prev, event]);
+    }
     setNewEvent({ title: '', date: '', time: '' });
     setShowAddForm(false);
   };
 
-  const deleteEvent = (id: string) => {
+  const deleteEvent = async (id: string) => {
+    try {
+      await fetch(`/api/planner/calendar?id=${id}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setEvents((prev) => prev.filter((e) => e.id !== id));
   };
 

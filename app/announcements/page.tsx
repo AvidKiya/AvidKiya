@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
-
+import { useCms } from '@/lib/cms/cms-context';
 
 interface Announcement {
   id: string;
@@ -41,9 +41,12 @@ const mockAnnouncements: Announcement[] = [
 ];
 
 export default function AnnouncementsPage() {
+  const { cms } = useCms();
   const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'all'>('active');
 
-  const filteredAnnouncements = mockAnnouncements.filter((a) => {
+  const source: Announcement[] = cms.announcements.length > 0 ? cms.announcements : mockAnnouncements;
+
+  const filteredAnnouncements = source.filter((a) => {
     if (activeTab === 'active') return !a.archived;
     if (activeTab === 'archived') return a.archived;
     return true;

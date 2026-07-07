@@ -35,22 +35,22 @@ export default function HomePage() {
             <AsciiLogo small />
           </div>
           <h1 className="text-[24px] md:text-[30px] font-[700] tracking-[-0.015em] leading-tight">
-            {tf(cms.identity.fullName)}
+            {tf(cms.dashboard.heroTitleA)}
             <span className="text-text-3 font-[500] mx-[10px]">—</span>
-            <span className="gradient-text">{tf(cms.identity.title)}</span>
+            <span className="gradient-text">{tf(cms.dashboard.heroTitleB)}</span>
           </h1>
           <p className="text-[13.5px] md:text-[14.5px] text-text-2 mt-2 max-w-[620px] leading-relaxed">
-            {tf(cms.identity.bio)}
+            {tf(cms.dashboard.heroDescription)}
             <span className="mx-2 text-text-3">•</span>
             <span className="text-text-3">{tf(cms.identity.location)} • {cms.identity.yearsExperience}+ {t('سال تجربه','years')}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 text-[12px] shrink-0">
           <Link href="/projects" className="glass-btn !py-2 !px-4 text-[13px]">
-            {t('مشاهده پروژه‌ها','View projects')}
+            {tf(cms.dashboard.ctaPrimary)}
           </Link>
           <Link href="/contact" className="glass-btn-primary !py-2 !px-4 text-[13px]">
-            {t('شروع همکاری','Hire me')}
+            {tf(cms.dashboard.ctaSecondary)}
           </Link>
         </div>
       </div>

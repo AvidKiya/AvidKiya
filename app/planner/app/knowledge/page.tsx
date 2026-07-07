@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState } from '@/components/ui/states';
 
@@ -12,33 +12,71 @@ interface Note {
   createdAt: string;
 }
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function KnowledgePage() {
-  const [notes, setNotes] = useState<Note[]>([
-    { id: '1', title: 'یادداشت تست', content: 'محتوای تست', tags: ['تست'], createdAt: new Date().toISOString() },
-  ]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [newNote, setNewNote] = useState({ title: '', content: '', tags: '' });
   const [searchQuery, setSearchQuery] = useState('');
 
-  const addNote = () => {
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const fetchNotes = async () => {
+    const demo: Note[] = [
+      { id: '1', title: 'یادداشت تست', content: 'محتوای تست', tags: ['تست'], createdAt: new Date().toISOString() },
+    ];
+    try {
+      const res = await fetch('/api/planner/notes', { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        setNotes(data.data && data.data.length > 0 ? data.data : demo);
+      } else {
+        setNotes(demo);
+      }
+    } catch {
+      setNotes(demo);
+    }
+  };
+
+  const addNote = async () => {
     if (!newNote.title.trim()) return;
+    const tags = newNote.tags.split(',').map((t) => t.trim()).filter(Boolean);
 
-    const note: Note = {
-      id: `note-${Date.now()}`,
-      title: newNote.title,
-      content: newNote.content,
-      tags: newNote.tags.split(',').map((t) => t.trim()).filter(Boolean),
-      createdAt: new Date().toISOString(),
-    };
-
-    setNotes((prev) => [note, ...prev]);
+    try {
+      const res = await fetch('/api/planner/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ title: newNote.title, content: newNote.content, tags }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotes((prev) => [data.data, ...prev]);
+      } else {
+        const note: Note = { id: `note-${Date.now()}`, title: newNote.title, content: newNote.content, tags, createdAt: new Date().toISOString() };
+        setNotes((prev) => [note, ...prev]);
+      }
+    } catch {
+      const note: Note = { id: `note-${Date.now()}`, title: newNote.title, content: newNote.content, tags, createdAt: new Date().toISOString() };
+      setNotes((prev) => [note, ...prev]);
+    }
     setNewNote({ title: '', content: '', tags: '' });
     setShowAddForm(false);
   };
 
-  const updateNote = () => {
+  const updateNote = async () => {
     if (!editingNote || !editingNote.title.trim()) return;
+
+    try {
+      await fetch('/api/planner/notes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ id: editingNote.id, title: editingNote.title, content: editingNote.content, tags: editingNote.tags }),
+      });
+    } catch {}
 
     setNotes((prev) =>
       prev.map((n) => (n.id === editingNote.id ? editingNote : n))
@@ -46,7 +84,10 @@ export default function KnowledgePage() {
     setEditingNote(null);
   };
 
-  const deleteNote = (id: string) => {
+  const deleteNote = async (id: string) => {
+    try {
+      await fetch(`/api/planner/notes?id=${id}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setNotes((prev) => prev.filter((n) => n.id !== id));
   };
 

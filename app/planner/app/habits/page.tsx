@@ -87,6 +87,8 @@ function HeatmapCalendar({ logs }: { logs: HabitLog[] }) {
   );
 }
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logs, setLogs] = useState<HabitLog[]>([]);
@@ -99,32 +101,30 @@ export default function HabitsPage() {
     fetchHabits();
   }, []);
 
+  const demoHabits: Habit[] = [
+    { id: '1', name: 'ورزش', frequency: 'daily', streak: 5, createdAt: new Date().toISOString() },
+    { id: '2', name: 'مطالعه', frequency: 'daily', streak: 3, createdAt: new Date().toISOString() },
+    { id: '3', name: 'نوشتن', frequency: 'weekly', streak: 2, createdAt: new Date().toISOString() },
+  ];
+
   const fetchHabits = async () => {
     try {
       setLoading(true);
-      // Mock data
-      setHabits([
-        { id: '1', name: 'ورزش', frequency: 'daily', streak: 5, createdAt: new Date().toISOString() },
-        { id: '2', name: 'مطالعه', frequency: 'daily', streak: 3, createdAt: new Date().toISOString() },
-        { id: '3', name: 'نوشتن', frequency: 'weekly', streak: 2, createdAt: new Date().toISOString() },
-      ]);
-
-      // Generate mock logs
-      const mockLogs: HabitLog[] = [];
-      const today = new Date();
-      for (let i = 0; i < 30; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        if (Math.random() > 0.3) {
-          mockLogs.push({
-            habitId: '1',
-            date: date.toISOString().split('T')[0],
-            completed: Math.random() > 0.2,
-          });
+      const res = await fetch('/api/planner/habits', { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        const apiHabits = data.data?.habits || [];
+        const apiLogs = data.data?.logs || [];
+        if (apiHabits.length > 0) {
+          setHabits(apiHabits.map((h: any) => ({ ...h, streak: h.streak ?? 0 })));
+          setLogs(apiLogs);
+        } else {
+          setHabits(demoHabits);
+          setLogs([]);
         }
+      } else {
+        setHabits(demoHabits);
       }
-      setLogs(mockLogs);
-
       setLoading(false);
     } catch (err) {
       setError('خطا در بارگذاری عادت‌ها');
@@ -132,31 +132,48 @@ export default function HabitsPage() {
     }
   };
 
-  const addHabit = () => {
+  const addHabit = async () => {
     if (!newHabit.name.trim()) return;
 
-    const habit: Habit = {
-      id: `habit-${Date.now()}`,
-      name: newHabit.name,
-      frequency: newHabit.frequency,
-      streak: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    setHabits((prev) => [...prev, habit]);
+    try {
+      const res = await fetch('/api/planner/habits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ name: newHabit.name, frequency: newHabit.frequency }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHabits((prev) => [...prev, { ...data.data, streak: 0 }]);
+      } else {
+        const habit: Habit = { id: `habit-${Date.now()}`, name: newHabit.name, frequency: newHabit.frequency, streak: 0, createdAt: new Date().toISOString() };
+        setHabits((prev) => [...prev, habit]);
+      }
+    } catch {
+      const habit: Habit = { id: `habit-${Date.now()}`, name: newHabit.name, frequency: newHabit.frequency, streak: 0, createdAt: new Date().toISOString() };
+      setHabits((prev) => [...prev, habit]);
+    }
     setNewHabit({ name: '', frequency: 'daily' });
     setShowAddForm(false);
   };
 
-  const checkIn = (habitId: string) => {
+  const checkIn = async (habitId: string) => {
     const today = new Date().toISOString().split('T')[0];
     const existingLog = logs.find((l) => l.habitId === habitId && l.date === today);
+    const newCompleted = !existingLog?.completed;
+
+    try {
+      await fetch('/api/planner/habits', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ habitId, date: today, completed: newCompleted }),
+      });
+    } catch {}
 
     if (existingLog) {
       setLogs((prev) =>
         prev.map((l) =>
           l.habitId === habitId && l.date === today
-            ? { ...l, completed: !l.completed }
+            ? { ...l, completed: newCompleted }
             : l
         )
       );
@@ -171,18 +188,18 @@ export default function HabitsPage() {
     setHabits((prev) =>
       prev.map((h) => {
         if (h.id !== habitId) return h;
-        const todayLog = logs.find(
-          (l) => l.habitId === habitId && l.date === today
-        );
         return {
           ...h,
-          streak: todayLog?.completed ? h.streak - 1 : h.streak + 1,
+          streak: existingLog?.completed ? h.streak - 1 : h.streak + 1,
         };
       })
     );
   };
 
-  const deleteHabit = (habitId: string) => {
+  const deleteHabit = async (habitId: string) => {
+    try {
+      await fetch(`/api/planner/habits?id=${habitId}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setHabits((prev) => prev.filter((h) => h.id !== habitId));
     setLogs((prev) => prev.filter((l) => l.habitId !== habitId));
   };

@@ -32,6 +32,8 @@ const priorityLabels = {
   high: 'زیاد',
 };
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,16 +48,21 @@ export default function TasksPage() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      // In production, fetch from API
-      // const res = await fetch('/api/planner/tasks');
-      // const data = await res.json();
-      
-      // Mock data
-      setTasks([
-        { id: '1', title: 'جلسه تیم', status: 'todo', priority: 'high', due: '۱۴۰۳/۱۰/۱۵', createdAt: new Date().toISOString() },
-        { id: '2', title: 'کدنویسی پروژه', status: 'inprogress', priority: 'medium', createdAt: new Date().toISOString() },
-        { id: '3', title: 'ارسال گزارش', status: 'done', priority: 'low', createdAt: new Date().toISOString() },
-      ]);
+      const res = await fetch('/api/planner/tasks', { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data.data && data.data.length > 0 ? data.data : [
+          { id: '1', title: 'جلسه تیم', status: 'todo', priority: 'high', due: '۱۴۰۳/۱۰/۱۵', createdAt: new Date().toISOString() },
+          { id: '2', title: 'کدنویسی پروژه', status: 'inprogress', priority: 'medium', createdAt: new Date().toISOString() },
+          { id: '3', title: 'ارسال گزارش', status: 'done', priority: 'low', createdAt: new Date().toISOString() },
+        ]);
+      } else {
+        setTasks([
+          { id: '1', title: 'جلسه تیم', status: 'todo', priority: 'high', due: '۱۴۰۳/۱۰/۱۵', createdAt: new Date().toISOString() },
+          { id: '2', title: 'کدنویسی پروژه', status: 'inprogress', priority: 'medium', createdAt: new Date().toISOString() },
+          { id: '3', title: 'ارسال گزارش', status: 'done', priority: 'low', createdAt: new Date().toISOString() },
+        ]);
+      }
       setLoading(false);
     } catch (err) {
       setError('خطا در بارگذاری وظایف');
@@ -63,29 +70,60 @@ export default function TasksPage() {
     }
   };
 
-  const addTask = () => {
+  const addTask = async () => {
     if (!newTask.title.trim()) return;
 
-    const task: Task = {
-      id: `task-${Date.now()}`,
-      title: newTask.title,
-      status: 'todo',
-      priority: newTask.priority,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch('/api/planner/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ title: newTask.title, priority: newTask.priority }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTasks((prev) => [...prev, data.data]);
+      } else {
+        const task: Task = {
+          id: `task-${Date.now()}`,
+          title: newTask.title,
+          status: 'todo',
+          priority: newTask.priority,
+          createdAt: new Date().toISOString(),
+        };
+        setTasks((prev) => [...prev, task]);
+      }
+    } catch {
+      const task: Task = {
+        id: `task-${Date.now()}`,
+        title: newTask.title,
+        status: 'todo',
+        priority: newTask.priority,
+        createdAt: new Date().toISOString(),
+      };
+      setTasks((prev) => [...prev, task]);
+    }
 
-    setTasks((prev) => [...prev, task]);
     setNewTask({ title: '', priority: 'medium' });
     setShowAddForm(false);
   };
 
-  const moveTask = (taskId: string, newStatus: Task['status']) => {
+  const moveTask = async (taskId: string, newStatus: Task['status']) => {
+    try {
+      await fetch('/api/planner/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ id: taskId, status: newStatus }),
+      });
+    } catch {}
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
     );
   };
 
-  const deleteTask = (taskId: string) => {
+  const deleteTask = async (taskId: string) => {
+    try {
+      await fetch(`/api/planner/tasks?id=${taskId}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
@@ -115,6 +153,7 @@ export default function TasksPage() {
               placeholder="عنوان وظیفه"
               className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-primary focus:outline-none"
               autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && addTask()}
             />
             <select
               value={newTask.priority}
@@ -169,7 +208,7 @@ export default function TasksPage() {
                         </span>
                       </div>
                       {task.due && (
-                        <div className="text-xs text-text-3 mb-3 flex items-center gap-1"><AppIcon name="calendar" size={12} /> {task.due}</div>
+                        <div className="text-xs text-text-3 mb-3 flex items-center gap-1"><AppIcon name="calendar" size={11} /> {task.due}</div>
                       )}
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {column.id !== 'done' && (

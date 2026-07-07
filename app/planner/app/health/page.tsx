@@ -20,6 +20,8 @@ const healthTypes: Record<HealthLog['type'], { label: string; icon: IconName; un
   mood: { label: 'حال', icon: 'smile', unit: '/10', max: 10, color: 'text-blue-400' },
 };
 
+const authHeader = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('kiya_jwt') || '' : ''}` });
+
 export default function HealthPage() {
   const [logs, setLogs] = useState<HealthLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,24 +41,33 @@ export default function HealthPage() {
     fetchLogs();
   }, []);
 
+  const buildDemoLogs = (): HealthLog[] => {
+    const mockLogs: HealthLog[] = [];
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      mockLogs.push(
+        { id: `h-${i}-1`, type: 'sleep', value: 6 + Math.random() * 3, date: dateStr, createdAt: new Date().toISOString() },
+        { id: `h-${i}-2`, type: 'energy', value: 5 + Math.random() * 5, date: dateStr, createdAt: new Date().toISOString() },
+        { id: `h-${i}-3`, type: 'mood', value: 5 + Math.random() * 5, date: dateStr, createdAt: new Date().toISOString() },
+      );
+    }
+    return mockLogs;
+  };
+
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      // Mock data
-      const mockLogs: HealthLog[] = [];
-      const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        
-        mockLogs.push(
-          { id: `h-${i}-1`, type: 'sleep', value: 6 + Math.random() * 3, date: dateStr, createdAt: new Date().toISOString() },
-          { id: `h-${i}-2`, type: 'energy', value: 5 + Math.random() * 5, date: dateStr, createdAt: new Date().toISOString() },
-          { id: `h-${i}-3`, type: 'mood', value: 5 + Math.random() * 5, date: dateStr, createdAt: new Date().toISOString() },
-        );
+      const res = await fetch('/api/planner/health', { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        const apiLogs = data.data?.logs || [];
+        setLogs(apiLogs.length > 0 ? apiLogs : buildDemoLogs());
+      } else {
+        setLogs(buildDemoLogs());
       }
-      setLogs(mockLogs);
       setLoading(false);
     } catch (err) {
       setError('خطا در بارگذاری لاگ‌ها');
@@ -64,23 +75,34 @@ export default function HealthPage() {
     }
   };
 
-  const addLog = () => {
+  const addLog = async () => {
     if (!newLog.value) return;
 
-    const log: HealthLog = {
-      id: `health-${Date.now()}`,
-      type: newLog.type,
-      value: Number(newLog.value),
-      date: newLog.date,
-      createdAt: new Date().toISOString(),
-    };
-
-    setLogs((prev) => [log, ...prev]);
+    try {
+      const res = await fetch('/api/planner/health', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ type: newLog.type, value: Number(newLog.value), date: newLog.date }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLogs((prev) => [data.data, ...prev]);
+      } else {
+        const log: HealthLog = { id: `health-${Date.now()}`, type: newLog.type, value: Number(newLog.value), date: newLog.date, createdAt: new Date().toISOString() };
+        setLogs((prev) => [log, ...prev]);
+      }
+    } catch {
+      const log: HealthLog = { id: `health-${Date.now()}`, type: newLog.type, value: Number(newLog.value), date: newLog.date, createdAt: new Date().toISOString() };
+      setLogs((prev) => [log, ...prev]);
+    }
     setNewLog({ type: 'sleep', value: '', date: new Date().toISOString().split('T')[0] });
     setShowAddForm(false);
   };
 
-  const deleteLog = (id: string) => {
+  const deleteLog = async (id: string) => {
+    try {
+      await fetch(`/api/planner/health?id=${id}`, { method: 'DELETE', headers: authHeader() });
+    } catch {}
     setLogs((prev) => prev.filter((l) => l.id !== id));
   };
 
