@@ -1,100 +1,39 @@
-// Persian validation messages and rules
+import { z } from "zod";
 
-export interface ValidationRule {
-  required?: boolean;
-  pattern?: RegExp;
-  minLength?: number;
-  maxLength?: number;
-  min?: number;
-  max?: number;
-  custom?: (value: string) => string | null;
-}
+export const createOrderSchema = z.object({
+  categorySlug: z.string().min(1),
+  serviceSlug: z.string().min(1),
+  fullName: z.string().trim().min(3, "نام باید حداقل ۳ حرف باشد").max(150),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^0?9\d{9}$/, "شماره موبایل معتبر نیست"),
+  email: z.string().trim().email("ایمیل معتبر نیست").optional().or(z.literal("")),
+  description: z.string().trim().min(10, "توضیحات باید حداقل ۱۰ حرف باشد").max(4000),
+  quantity: z.number().int().min(1).max(500).default(1),
+  urgent: z.boolean().default(false),
+  attachment: z
+    .object({
+      name: z.string().max(255),
+      mime: z.string().max(100),
+      data: z.string(), // base64
+    })
+    .nullable()
+    .optional(),
+});
 
-export interface ValidationError {
-  field: string;
-  message: string;
-}
+export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
-const messages = {
-  required: 'این فیلد الزامی است',
-  email: 'ایمیل معتبر نیست',
-  minLength: (n: number) => `حداقل ${n} کاراکتر وارد کنید`,
-  maxLength: (n: number) => `حداکثر ${n} کاراکتر مجاز است`,
-  pattern: 'فرمت وارد شده معتبر نیست',
-  phone: 'شماره تلفن معتبر نیست',
-  url: 'آدرس وب معتبر نیست',
-  password: 'رمز عبور باید حداقل ۸ کاراکتر باشد',
-  passwordMatch: 'رمز عبور مطابقت ندارد',
-  number: 'لطفاً یک عدد وارد کنید',
-  min: (n: number) => `مقدار باید حداقل ${n} باشد`,
-  max: (n: number) => `مقدار باید حداکثر ${n} باشد`,
-};
+export const updateOrderSchema = z.object({
+  status: z.enum(["pending", "accepted", "completed", "delivered", "cancelled"]).optional(),
+  adminNote: z.string().max(4000).optional(),
+});
 
-const patterns = {
-  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  phone: /^(\+98|98|0)?9\d{9}$/,
-  url: /^https?:\/\/.+/,
-  persian: /^[\u0600-\u06FF\s]+$/,
-  english: /^[a-zA-Z\s]+$/,
-  kiaCode: /^KIYA-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/,
-};
-
-export function validate(value: string, rules: ValidationRule): string | null {
-  if (rules.required && !value.trim()) {
-    return messages.required;
-  }
-
-  if (value && rules.minLength && value.length < rules.minLength) {
-    return messages.minLength(rules.minLength);
-  }
-
-  if (value && rules.maxLength && value.length > rules.maxLength) {
-    return messages.maxLength(rules.maxLength);
-  }
-
-  if (value && rules.pattern && !rules.pattern.test(value)) {
-    return messages.pattern;
-  }
-
-  if (value && rules.custom) {
-    return rules.custom(value);
-  }
-
-  return null;
-}
-
-export function validateForm(data: Record<string, string>, schema: Record<string, ValidationRule>): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  for (const [field, rules] of Object.entries(schema)) {
-    const error = validate(data[field] || '', rules);
-    if (error) {
-      errors.push({ field, message: error });
-    }
-  }
-
-  return errors;
-}
-
-export const fieldRules = {
-  required: { required: true },
-  email: { required: true, pattern: patterns.email },
-  phone: { pattern: patterns.phone },
-  url: { pattern: patterns.url },
-  name: { required: true, minLength: 2, maxLength: 100 },
-  message: { required: true, minLength: 10, maxLength: 2000 },
-  password: { required: true, minLength: 8 },
-  kiaCode: { required: true, pattern: patterns.kiaCode },
-  title: { required: true, minLength: 2, maxLength: 200 },
-  amount: { required: true, min: 0 },
-};
-
-export const honeypot = {
-  name: 'website',
-  label: 'Website',
-};
-
-export function checkHoneypot(formData: FormData): boolean {
-  const value = formData.get(honeypot.name);
-  return !value || value === '';
-}
+export const contactSchema = z.object({
+  name: z.string().trim().min(2).max(150),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^0?9\d{9}$/, "شماره موبایل معتبر نیست"),
+  message: z.string().trim().min(5).max(2000),
+});

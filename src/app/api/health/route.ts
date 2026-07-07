@@ -1,16 +1,13 @@
-import { successResponse } from '@/lib/api-types';
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 
-export const runtime = 'edge';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return successResponse({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    services: {
-      api: 'operational',
-      database: 'operational',
-      cache: 'operational',
-    },
-  });
+  try {
+    await db.execute(sql`select 1`);
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ ok: false }, { status: 500 });
+  }
 }
