@@ -192,6 +192,17 @@ export const defaultCmsState: CmsState = {
       { id:'pro', name:{fa:'Pro',en:'Pro'}, priceMonthly:9, priceYearly:89, features:[{fa:'نامحدود',en:'Unlimited'},{fa:'Knowledge Graph',en:'Knowledge Graph'}], highlighted:true, cta:{fa:'ارتقا به Pro',en:'Upgrade Pro'} },
       { id:'pro-ai', name:{fa:'Pro+AI',en:'Pro+AI'}, priceMonthly:19, priceYearly:179, features:[{fa:'AI نامحدود',en:'Unlimited AI'},{fa:'Finance + Health',en:'Finance + Health'}], cta:{fa:'شروع Pro+AI',en:'Get Pro+AI'} },
     ],
+    ai: {
+      freeLayerProvider: 'workers-ai',
+      paidLayerProvider: 'openai',
+      freeChatLimitPerDay: 10,
+      systemPersona: 'صادق، بی‌طرف، گاهی چالش‌برانگیز، هرگز فراموش نمی‌کند',
+    },
+    telegram: {
+      botUsername: '@AvidKiyaBot',
+      webhookEnabled: false,
+      welcomeMessage: 'سلام! من دستیار شخصی KIYA هستم.',
+    },
   },
   messages: [],
   music: {

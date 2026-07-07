@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Brain, LayoutDashboard, CheckSquare, FolderKanban, Target, Repeat, Calendar, BookOpen, Wallet, HeartPulse, MessageSquare, Lightbulb, BarChart3, Settings, LogOut, MessageCircleHeart } from 'lucide-react';
+import { Brain, LayoutDashboard, CheckSquare, FolderKanban, Target, Repeat, Calendar, BookOpen, Wallet, HeartPulse, MessageSquare, Lightbulb, BarChart3, Settings, LogOut, MessageCircleHeart, ShieldCheck } from 'lucide-react';
 import { OnboardingTour } from '@/components/onboarding-tour';
 import { NotificationBell } from '@/components/notification-bell';
 import { FeedbackWidget } from '@/components/feedback-widget';
@@ -43,6 +43,9 @@ export default function PlannerAppLayout({children}:{children:React.ReactNode}){
         </div>
         <div className="flex items-center gap-2 text-[12px]">
           <span className="hidden sm:inline text-text-3">license: {typeof window!=='undefined' ? localStorage.getItem('kiya_license')?.slice(0,12)+'…' : ''}</span>
+          {typeof window!=='undefined' && localStorage.getItem('kiya_is_admin')==='1' && (
+            <Link href="/planner/admin" className="glass-btn !px-3 !py-[7px] text-[12px] flex items-center gap-1 text-amber"><ShieldCheck size={13}/> پنل مدیر KIYA</Link>
+          )}
           <NotificationBell />
           <button onClick={()=>{localStorage.removeItem('kiya_license_ok'); router.push('/planner/login')}} className="glass-btn !px-3 !py-[7px] text-[12px] flex items-center gap-1"><LogOut size={13}/> خروج</button>
         </div>

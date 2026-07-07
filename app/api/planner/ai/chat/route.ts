@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { checkRateLimit, rateLimitedResponse } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -81,6 +82,21 @@ export async function POST(request: NextRequest) {
     const secret = process.env.JWT_SECRET || 'default-secret';
     const payload = await verifyJwt(token, secret);
     if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
+
+    // پلن رایگان: حداکثر ۱۰ پیام AI در روز (طبق 24-FINAL-REQUIREMENTS.md بخش A4)
+    const isFree = payload.plan === 'free';
+    const rl = await checkRateLimit(null, `ai-chat:${payload.sub}`, {
+      preset: 'aiChat',
+      ...(isFree ? { windowMs: 86400000, maxRequests: 10 } : {}),
+    });
+    if (!rl.allowed) {
+      return errorResponse(
+        isFree
+          ? 'به حد پلن رایگان رسیدی (۱۰ پیام در روز). با Pro نامحدود چت کن →'
+          : 'تعداد درخواست‌ها زیاده. کمی صبر کن.',
+        429
+      );
+    }
 
     const body = await request.json();
     const { message } = body;

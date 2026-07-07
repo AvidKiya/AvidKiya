@@ -14,15 +14,36 @@ export default function PlannerLogin(){
     e.preventDefault();
     setErr('');
     setLoading(true);
-    // mock validate
-    await new Promise(r=>setTimeout(r, 700));
-    const valid = /^KIYA-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code.toUpperCase()) || code.toLowerCase()==='admin' || code.toLowerCase()==='demo';
-    if (valid) {
-      localStorage.setItem('kiya_license', code.toUpperCase());
-      localStorage.setItem('kiya_license_ok', '1');
-      router.push('/planner/app');
-    } else {
-      setErr('کد لایسنس معتبر نیست — فرمت: KIYA-XXXX-XXXX-XXXX — یا از کد demo استفاده کن');
+
+    const raw = code.trim();
+    const isShortcut = raw.toLowerCase()==='admin' || raw.toLowerCase()==='demo';
+    // کدهای میانبر تست به فرمت رسمی لایسنس نگاشت می‌شوند تا API واقعی بتواند اعتبارسنجی کند
+    const normalized = raw.toLowerCase()==='admin'
+      ? 'KIYA-ADMIN-0000-0001'
+      : raw.toLowerCase()==='demo'
+        ? 'KIYA-DEMO-0001-ABCD'
+        : raw.toUpperCase();
+
+    try {
+      const res = await fetch('/api/planner/auth/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: normalized }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        const isAdmin = !!data.data?.user?.isAdmin;
+        localStorage.setItem('kiya_license', normalized);
+        localStorage.setItem('kiya_license_ok', '1');
+        localStorage.setItem('kiya_is_admin', isAdmin ? '1' : '0');
+        localStorage.setItem('kiya_jwt', data.data?.token || '');
+        router.push(isAdmin ? '/planner/admin' : '/planner/app');
+      } else {
+        setErr(data.error || 'کد لایسنس معتبر نیست — فرمت: KIYA-XXXX-XXXX-XXXX — یا از کد demo استفاده کن');
+      }
+    } catch {
+      setErr('اتصال برقرار نشد. اینترنتت رو چک کن و دوباره امتحان کن.');
     }
     setLoading(false);
   };
@@ -57,7 +78,7 @@ export default function PlannerLogin(){
         </form>
 
         <div className="mt-6 pt-5 border-t border-glass-border text-[12.5px] text-text-2 space-y-2 text-start" dir="rtl">
-          <div>• تست: کد <code className="bg-white/[0.06] px-1.5 py-0.5 rounded">demo</code> یا <code className="bg-white/[0.06] px-1.5 py-0.5 rounded">admin</code></div>
+          <div>• تست: کد <code className="bg-white/[0.06] px-1.5 py-0.5 rounded">demo</code> یا کد مدیریتی <code className="bg-white/[0.06] px-1.5 py-0.5 rounded">admin</code></div>
           <div>• لایسنس ندارید؟ <a href="/pricing" className="text-primary hover:underline">۱۴ روز رایگان شروع کنید</a></div>
           <div>• پشتیبانی تلگرام: <a className="text-primary" href="https://t.me/avidkiya" target="_blank">@avidkiya</a></div>
         </div>

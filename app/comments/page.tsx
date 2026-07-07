@@ -30,6 +30,20 @@ export default function CommentsPage() {
       return;
     }
 
+    // Rate limit سمت کلاینت — حداکثر ۳ نظر در ساعت (طبق 24-FINAL-REQUIREMENTS.md بخش A3)
+    try {
+      const key = 'ak_comment_times';
+      const now = Date.now();
+      const hour = 60 * 60 * 1000;
+      const times: number[] = JSON.parse(localStorage.getItem(key) || '[]').filter((t: number) => now - t < hour);
+      if (times.length >= 3) {
+        setErrors({ text: 'تعداد نظرات مجاز در این ساعت تمام شده. کمی بعد دوباره امتحان کن.' });
+        return;
+      }
+      times.push(now);
+      localStorage.setItem(key, JSON.stringify(times));
+    } catch {}
+
     // Validate
     const newErrors: Record<string, string> = {};
 

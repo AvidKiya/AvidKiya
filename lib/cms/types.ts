@@ -251,6 +251,17 @@ export interface CmsState {
   planner: {
     enabled: boolean;
     plans: Plan[];
+    ai: {
+      freeLayerProvider: string;
+      paidLayerProvider: string;
+      freeChatLimitPerDay: number;
+      systemPersona: string;
+    };
+    telegram: {
+      botUsername: string;
+      webhookEnabled: boolean;
+      welcomeMessage: string;
+    };
   };
   messages: Array<{id:string; name:string; email:string; message:string; date:string; read:boolean}>;
   music: {

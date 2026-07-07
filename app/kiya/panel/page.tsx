@@ -456,31 +456,63 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // COUPONS
   if(section==='coupons'){
+    const coupons = cms.coupons;
+    const addCoupon = () => {
+      const code = prompt('کد کوپن (مثلاً SUMMER20)');
+      if (!code) return;
+      const value = Number(prompt('مقدار تخفیف (درصد)', '10')) || 10;
+      const newCoupon = {
+        id: 'cpn'+Date.now(),
+        code: code.toUpperCase(),
+        type: 'percentage' as const,
+        value,
+        uses: 0,
+        firstPurchaseOnly: false,
+        enabled: true,
+      };
+      updateCms({coupons:[newCoupon, ...coupons]});
+    };
     return (
-      <GlassCard className="!p-5">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="font-[700]">کوپن‌ها / تخفیف</h2>
-          <button className="glass-btn-primary !py-[7px] !px-3 text-[12px]">+ کوپن جدید</button>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h2 className="font-[700]">کوپن‌ها / تخفیف — {coupons.length} عدد</h2>
+          <button onClick={addCoupon} className="glass-btn-primary !py-[7px] !px-3 text-[12px] flex items-center gap-1"><Plus size={14}/> کوپن جدید</button>
         </div>
-        <div className="overflow-auto">
-          <table className="w-full text-[12.5px]">
-            <thead className="text-text-3 text-[11px]">
-              <tr><th className="text-start p-2">کد</th><th>نوع</th><th>مقدار</th><th>استفاده</th><th>انقضا</th><th>وضعیت</th></tr>
-            </thead>
-            <tbody>
-              {[
-                ['WELCOME','درصد','15%','42 / 500','۱۴۰۵/۰۶/۳۱','فعال'],
-                ['KIYA15','درصد','15%','128 / ∞','—','فعال'],
-                ['NOWRUZ50','درصد','50%','0 / 100','۱۴۰۵/۰۱/۱۵','غیرفعال'],
-              ].map(r=>(
-                <tr key={r[0]} className="border-t border-glass-border/60">
-                  {r.map((c,i)=><td key={i} className="py-[10px] px-2 text-center first:text-start font-mono text-[12px]">{c}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </GlassCard>
+        <GlassCard className="!p-5">
+          {coupons.length === 0 ? (
+            <div className="text-center text-text-3 text-[13px] py-8">هنوز کوپنی ساخته نشده</div>
+          ) : (
+            <div className="overflow-auto">
+              <table className="w-full text-[12.5px]">
+                <thead className="text-text-3 text-[11px]">
+                  <tr><th className="text-start p-2">کد</th><th>نوع</th><th>مقدار</th><th>استفاده</th><th>انقضا</th><th>اولین خرید</th><th>وضعیت</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {coupons.map((c,i)=>(
+                    <tr key={c.id} className="border-t border-glass-border/60">
+                      <td className="py-[10px] px-2 text-start font-mono">{c.code}</td>
+                      <td className="text-center px-2">{c.type==='percentage'?'درصد':'ثابت'}</td>
+                      <td className="text-center px-2">{c.type==='percentage'?`${c.value}%`:`$${c.value}`}</td>
+                      <td className="text-center px-2">{c.uses} / {c.maxUses ?? '∞'}</td>
+                      <td className="text-center px-2">{c.expiresAt || '—'}</td>
+                      <td className="text-center px-2">{c.firstPurchaseOnly ? 'بله' : 'خیر'}</td>
+                      <td className="text-center px-2">
+                        <button onClick={()=>{ const a=[...coupons]; a[i]={...c, enabled:!c.enabled}; updateCms({coupons:a}); }}
+                          className={c.enabled ? 'text-emerald text-[11px]' : 'text-text-3 text-[11px]'}>
+                          ● {c.enabled ? 'فعال' : 'غیرفعال'}
+                        </button>
+                      </td>
+                      <td className="text-center px-2">
+                        <button onClick={()=>updateCms({coupons:coupons.filter(x=>x.id!==c.id)})} className="text-rose"><Trash2 size={13}/></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </GlassCard>
+      </div>
     );
   }
 

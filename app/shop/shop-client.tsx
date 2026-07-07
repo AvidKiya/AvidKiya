@@ -17,6 +17,8 @@ export default function ShopClient(){
   const [cart, setCart] = useState<CartItem[]>([]);
   const [coupon, setCoupon] = useState('');
   const [couponOk, setCouponOk] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<typeof cms.coupons[number] | null>(null);
   const [openCart, setOpenCart] = useState(false);
   const [checkoutDone, setCheckoutDone] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -43,7 +45,9 @@ export default function ShopClient(){
   }).filter(Boolean) as any[];
 
   const subtotal = cartItems.reduce((s,i)=> s + i.price * i.qty, 0);
-  const discount = couponOk ? Math.round(subtotal*0.15) : 0;
+  const discount = appliedCoupon
+    ? (appliedCoupon.type === 'percentage' ? Math.round(subtotal * (appliedCoupon.value / 100)) : Math.min(appliedCoupon.value, subtotal))
+    : 0;
   const tax = Math.round((subtotal-discount)*0.09);
   const total = subtotal - discount + tax;
 
@@ -56,7 +60,18 @@ export default function ShopClient(){
     setOpenCart(true);
   };
   const dec = (id:string)=> setCart(c=> c.map(x=> x.id===id ? {...x, qty: Math.max(0, x.qty-1)}:x).filter(x=>x.qty>0));
-  const applyCoupon = ()=> { if(coupon.toUpperCase()==='WELCOME' || coupon.toUpperCase()==='KIYA15'){ setCouponOk(true);} else {alert('کوپن نامعتبر');} };
+  const applyCoupon = () => {
+    setCouponError('');
+    const code = coupon.trim().toUpperCase();
+    if (!code) return;
+    const found = cms.coupons.find(c => c.code === code);
+    if (!found) { setCouponError('کد تخفیف نامعتبر است'); return; }
+    if (!found.enabled) { setCouponError('این کد تخفیف غیرفعال است'); return; }
+    if (found.maxUses && found.uses >= found.maxUses) { setCouponError('سقف استفاده از این کد پر شده'); return; }
+    if (found.expiresAt && new Date(found.expiresAt) < new Date()) { setCouponError('این کد تخفیف منقضی شده'); return; }
+    setAppliedCoupon(found);
+    setCouponOk(true);
+  };
 
   if(checkoutDone){
     return (
@@ -167,15 +182,21 @@ export default function ShopClient(){
                 <div className="flex gap-2">
                   <input
                     value={coupon}
-                    onChange={e=>setCoupon(e.target.value)}
-                    placeholder="کد تخفیف — WELCOME"
+                    onChange={e=>{setCoupon(e.target.value); setCouponError('');}}
+                    placeholder="کد تخفیف — WELCOME10"
                     className="glass-input !py-[9px] text-[12.5px] flex-1"
+                    dir="ltr"
                   />
                   <button onClick={applyCoupon} disabled={couponOk} className="glass-btn !py-[9px] !px-3 text-[12px] flex items-center gap-1">
                     <Tag size={13} /> اعمال
                   </button>
                 </div>
-                {couponOk && <div className="text-emerald text-[11px] mt-1.5 flex items-center gap-1"><Check size={11} /> کوپن ۱۵٪ اعمال شد</div>}
+                {couponOk && appliedCoupon && (
+                  <div className="text-emerald text-[11px] mt-1.5 flex items-center gap-1">
+                    <Check size={11} /> کوپن {appliedCoupon.type==='percentage' ? `${appliedCoupon.value}%` : `$${appliedCoupon.value}`} اعمال شد
+                  </div>
+                )}
+                {couponError && <div className="text-rose text-[11px] mt-1.5">{couponError}</div>}
               </div>
 
               {/* totals */}

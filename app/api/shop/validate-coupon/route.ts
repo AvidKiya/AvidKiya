@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { checkRateLimit, rateLimitedResponse, getClientKey } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -39,6 +40,9 @@ coupons.set('FLAT5', {
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit(null, `coupon:${getClientKey(request)}`, { windowMs: 60000, maxRequests: 20 });
+    if (!rl.allowed) return rateLimitedResponse(rl);
+
     const body = await request.json();
     const { code, subtotal } = body;
 

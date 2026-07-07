@@ -105,7 +105,7 @@ export default function PlannerDashboard(){
       <ReferralBanner />
 
       <div className="text-[11px] text-text-3 text-center">
-        KIYA Planner v2.1 • Pro Plan • تا ۱۴۰۵/۰۸/۰۱ معتبر • <Link href="/planner/settings" className="text-primary hover:underline">مدیریت لایسنس</Link>
+        KIYA Planner v2.1 • Pro Plan • تا ۱۴۰۵/۰۸/۰۱ معتبر • <Link href="/planner/app/settings" className="text-primary hover:underline">مدیریت لایسنس</Link>
       </div>
     </div>
   );

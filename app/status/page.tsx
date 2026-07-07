@@ -41,9 +41,10 @@ const mockIncidents: Incident[] = [
 
 export default function StatusPage() {
   const [services, setServices] = useState(initialServices);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   useEffect(() => {
+    setLastRefresh(new Date());
     const interval = setInterval(() => {
       setLastRefresh(new Date());
     }, 30000);
@@ -61,7 +62,7 @@ export default function StatusPage() {
       <div className="text-center mb-12">
         <h1 className="text-3xl font-black mb-2">وضعیت سرویس‌ها</h1>
         <p className="text-text-2">
-          آخرین به‌روزرسانی: {lastRefresh.toLocaleTimeString('fa-IR')}
+          آخرین به‌روزرسانی: {lastRefresh ? lastRefresh.toLocaleTimeString('fa-IR') : '—'}
         </p>
       </div>
 

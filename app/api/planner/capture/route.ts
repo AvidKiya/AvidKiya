@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { checkRateLimit, rateLimitedResponse, getClientKey } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -55,6 +56,9 @@ export async function POST(request: NextRequest) {
     if (!payload) {
       return errorResponse('لایسنس نامعتبر است', 401);
     }
+
+    const rl = await checkRateLimit(null, `capture:${payload.sub}`, { preset: 'capture' });
+    if (!rl.allowed) return rateLimitedResponse(rl);
 
     const body = await request.json();
     const { text } = body;

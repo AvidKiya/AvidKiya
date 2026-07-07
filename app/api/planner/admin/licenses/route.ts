@@ -87,6 +87,11 @@ export async function POST(request: NextRequest) {
       newLicenses.push(newLicense);
     }
 
+    // ذخیره در حافظه موقت تا در GET بعدی قابل مشاهده باشند (باگ قبلی: اینجا هیچ‌وقت ست نمی‌شد)
+    const bucketKey = 'all';
+    const existing = licenses.get(bucketKey) || [];
+    licenses.set(bucketKey, [...existing, ...newLicenses]);
+
     return successResponse(newLicenses, `${newLicenses.length} لایسنس ایجاد شد`);
   } catch (error) {
     return errorResponse('خطا در پردازش درخواست', 500);

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -36,8 +37,12 @@ export async function POST(request: NextRequest) {
     const text = message.text || '';
     const userId = message.from.id;
 
-    // Rate limiting (simple in-memory)
-    // In production, use KV
+    // Rate limiting — جلوگیری از سیل پیام یک کاربر روی ربات
+    const rl = await checkRateLimit(null, `tg:${userId}`, { preset: 'telegram' });
+    if (!rl.allowed) {
+      generateReply(chatId, 'کمی آروم‌تر! چند ثانیه صبر کن و دوباره بفرست.');
+      return successResponse(null);
+    }
 
     // Command handling
     if (text.startsWith('/start')) {

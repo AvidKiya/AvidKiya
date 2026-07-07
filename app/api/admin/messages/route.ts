@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { checkRateLimit, rateLimitedResponse, getClientKey } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -36,6 +37,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit(null, `contact:${getClientKey(request)}`, { preset: 'contact' });
+    if (!rl.allowed) return rateLimitedResponse(rl);
+
     const body = await request.json();
     const { name, email, subject, message } = body;
 

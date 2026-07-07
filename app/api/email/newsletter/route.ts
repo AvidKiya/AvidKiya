@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 import { checkHoneypot } from '@/lib/validation';
+import { checkRateLimit, rateLimitedResponse, getClientKey } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -8,6 +9,9 @@ const subscribers = new Set<string>();
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit(null, `newsletter:${getClientKey(request)}`, { preset: 'contact' });
+    if (!rl.allowed) return rateLimitedResponse(rl);
+
     const formData = await request.formData();
     
     // Check honeypot

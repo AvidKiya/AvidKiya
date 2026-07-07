@@ -40,7 +40,7 @@ export default function ProjectsPage() {
     try {
       setLoading(true);
       const res = await fetch('/api/planner/projects', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kiya_token') || ''}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('kiya_jwt') || ''}` },
       });
       if (res.ok) {
         const data = await res.json();
@@ -63,7 +63,7 @@ export default function ProjectsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('kiya_token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('kiya_jwt') || ''}`,
         },
         body: JSON.stringify({ name: newProject }),
       });
@@ -87,7 +87,7 @@ export default function ProjectsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('kiya_token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('kiya_jwt') || ''}`,
         },
         body: JSON.stringify({ id, status }),
       });
@@ -101,7 +101,7 @@ export default function ProjectsPage() {
     try {
       await fetch(`/api/planner/projects?id=${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('kiya_token') || ''}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('kiya_jwt') || ''}` },
       });
     } catch {}
     setProjects((prev) => prev.filter((p) => p.id !== id));
