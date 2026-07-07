@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
-import { ThumbsUp, Bug, Star } from 'lucide-react';
+import { ThumbsUp, Bug, Star, Check } from 'lucide-react';
 
 interface FeatureRequest {
   id: string;
@@ -81,7 +81,7 @@ export default function FeedbackPage() {
           چه مشکلی داری؟
         </div>
         {bugSubmitted ? (
-          <div className="text-emerald text-sm py-4 text-center">✓ ممنون! گزارشت ثبت شد و بررسی می‌کنیم.</div>
+          <div className="text-emerald text-sm py-4 text-center flex items-center justify-center gap-1.5"><Check size={14} /> ممنون! گزارشت ثبت شد و بررسی می‌کنیم.</div>
         ) : (
           <>
             <textarea
@@ -105,7 +105,7 @@ export default function FeedbackPage() {
           چقدر KIYA رو به یک دوست پیشنهاد می‌دی؟
         </div>
         {npsSubmitted ? (
-          <div className="text-emerald text-sm py-2">✓ ممنون از امتیازت ({nps}/10)</div>
+          <div className="text-emerald text-sm py-2 flex items-center gap-1.5"><Check size={14} /> ممنون از امتیازت ({nps}/10)</div>
         ) : (
           <div className="flex flex-wrap gap-2 mt-3">
             {Array.from({ length: 11 }, (_, i) => i).map((n) => (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { GlassCard } from './ui/glass';
+import { Gift, X } from 'lucide-react';
 
 export function ExitPopup() {
   const [show, setShow] = useState(false);
@@ -27,12 +28,12 @@ export function ExitPopup() {
       <GlassCard className="max-w-md w-full text-center !p-8">
         <button
           onClick={() => setShow(false)}
-          className="absolute top-4 left-4 text-text-3 hover:text-text-1 text-xl"
+          className="absolute top-4 left-4 text-text-3 hover:text-text-1"
         >
-          ×
+          <X size={18} />
         </button>
 
-        <div className="text-4xl mb-4">🎁</div>
+        <div className="flex justify-center mb-4"><Gift size={38} className="text-primary" /></div>
         <h2 className="text-xl font-bold mb-2">صبر کن!</h2>
         <p className="text-text-2 text-sm mb-6">
           یه هدیه رایگان برات داریم — PDF «۱۰ عادت موفقیت» + ۷ روز Pro رایگان
@@ -53,10 +54,11 @@ export function ExitPopup() {
               setSubmitted(true);
             }
           }}
-          className="glass-btn-primary w-full py-3"
+          className="glass-btn-primary w-full py-3 flex items-center justify-center gap-2"
         >
-          هدیه رو بگیر 🎁
+          <Gift size={16} /> هدیه رو بگیر
         </button>
+
 
         <p className="text-xs text-text-3 mt-3">
           بدون اسپم. فقط محتوای مفید.

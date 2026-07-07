@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { validate, fieldRules } from '@/lib/validation';
 import { useCms } from '@/lib/cms/cms-context';
+import { Star, Check } from 'lucide-react';
 
 export default function CommentsPage() {
   const { cms, updateCms } = useCms();
@@ -64,9 +65,7 @@ export default function CommentsPage() {
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
-      <span key={i} className={i < rating ? 'text-yellow-400' : 'text-text-3'}>
-        ★
-      </span>
+      <Star key={i} size={14} className={i < rating ? 'text-yellow-400' : 'text-text-3'} fill={i < rating ? 'currentColor' : 'none'} />
     ));
   };
 
@@ -79,7 +78,7 @@ export default function CommentsPage() {
 
       {justSubmitted && (
         <GlassCard className="mb-8 text-center border-emerald/20">
-          <p className="text-emerald text-sm">✓ نظر شما ثبت شد — بعد از تایید ادمین نمایش داده می‌شود.</p>
+          <p className="text-emerald text-sm flex items-center justify-center gap-1.5"><Check size={14} /> نظر شما ثبت شد — بعد از تایید ادمین نمایش داده می‌شود.</p>
         </GlassCard>
       )}
 
@@ -142,11 +141,9 @@ export default function CommentsPage() {
                     key={star}
                     type="button"
                     onClick={() => setFormData({ ...formData, rating: star })}
-                    className={`text-2xl ${
-                      star <= formData.rating ? 'text-yellow-400' : 'text-text-3'
-                    }`}
+                    className={star <= formData.rating ? 'text-yellow-400' : 'text-text-3'}
                   >
-                    ★
+                    <Star size={22} fill={star <= formData.rating ? 'currentColor' : 'none'} />
                   </button>
                 ))}
               </div>

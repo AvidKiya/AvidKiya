@@ -42,10 +42,10 @@ export const defaultCmsState: CmsState = {
     ctaSecondary: { fa:'تماس', en:'Contact' },
     projects: [],
     stats: [
-      { id:'1', label:{fa:'پروژه تکمیل‌شده', en:'Projects Done'}, value:'120+', icon:'🚀' },
-      { id:'2', label:{fa:'مشتری راضی', en:'Happy Clients'}, value:'84', icon:'💬' },
-      { id:'3', label:{fa:'سال تجربه', en:'Years Exp'}, value:'8', icon:'⚡' },
-      { id:'4', label:{fa:'کامیت گیت‌هاب', en:'GitHub Commits'}, value:'4.2k', icon:'📦' },
+      { id:'1', label:{fa:'پروژه تکمیل‌شده', en:'Projects Done'}, value:'120+', icon:'rocket' },
+      { id:'2', label:{fa:'مشتری راضی', en:'Happy Clients'}, value:'84', icon:'message' },
+      { id:'3', label:{fa:'سال تجربه', en:'Years Exp'}, value:'8', icon:'zap' },
+      { id:'4', label:{fa:'کامیت گیت‌هاب', en:'GitHub Commits'}, value:'4.2k', icon:'package' },
     ],
   },
   about: {
@@ -55,8 +55,8 @@ export const defaultCmsState: CmsState = {
       { label:{fa:'پاسخ‌دهی',en:'Response'}, value:'<120ms' },
     ],
     quickLinks: [
-      { label:{fa:'گیت‌هاب',en:'GitHub'}, url:'https://github.com/avidkiya', icon:'🐙' },
-      { label:{fa:'رزومه',en:'Resume'}, url:'/resume', icon:'📄' },
+      { label:{fa:'گیت‌هاب',en:'GitHub'}, url:'https://github.com/avidkiya', icon:'github' },
+      { label:{fa:'رزومه',en:'Resume'}, url:'/resume', icon:'resume' },
     ],
     quote: { fa:'سادگی، نهایت پیچیدگی است.', en:'Simplicity is the ultimate sophistication.' },
     welcomeTitle: { fa:'سلام، من اَوید هستم', en:'Hi, I am Avid' },
@@ -168,9 +168,9 @@ export const defaultCmsState: CmsState = {
     title:{fa:'خدمات فریلنسری',en:'Freelance Services'},
     enabled:true,
     services:[
-      { id:'1', title:{fa:'توسعه Next.js',en:'Next.js Development'}, description:{fa:'وب‌اپ مقیاس‌پذیر',en:'Scalable web apps'}, priceFrom:1500, icon:'⚡', enabled:true },
-      { id:'2', title:{fa:'معماری Cloudflare',en:'Cloudflare Architecture'}, description:{fa:'Edge + D1 + Workers',en:'Edge + D1 + Workers'}, priceFrom:800, icon:'☁️', enabled:true },
-      { id:'3', title:{fa:'AI Agent',en:'AI Agent'}, description:{fa:'ربات هوشمند اختصاصی',en:'Custom smart agent'}, priceFrom:1200, icon:'🧠', enabled:true },
+      { id:'1', title:{fa:'توسعه Next.js',en:'Next.js Development'}, description:{fa:'وب‌اپ مقیاس‌پذیر',en:'Scalable web apps'}, priceFrom:1500, icon:'zap', enabled:true },
+      { id:'2', title:{fa:'معماری Cloudflare',en:'Cloudflare Architecture'}, description:{fa:'Edge + D1 + Workers',en:'Edge + D1 + Workers'}, priceFrom:800, icon:'cloud', enabled:true },
+      { id:'3', title:{fa:'AI Agent',en:'AI Agent'}, description:{fa:'ربات هوشمند اختصاصی',en:'Custom smart agent'}, priceFrom:1200, icon:'brain', enabled:true },
     ],
     portfolio:[ {id:'p1', title:'پلتفرم KIYA', url:'/planner'} ],
     pricing:[ {name:'Starter', price:800}, {name:'Pro', price:2500} ],

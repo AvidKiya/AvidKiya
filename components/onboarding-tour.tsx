@@ -2,32 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import { GlassCard } from './ui/glass';
+import { AppIcon, type IconName } from './ui/icons';
+import { Rocket } from 'lucide-react';
 
 interface TourStep {
   title: string;
   description: string;
+  icon: IconName;
   target: string;
 }
 
 const steps: TourStep[] = [
   {
-    title: 'خوش آمدید! 👋',
+    title: 'خوش آمدید!',
     description: 'KIYA Planner مغز دوم شماست. بذارید راهنماییتون کنیم.',
+    icon: 'supportHeart',
     target: '',
   },
   {
-    title: 'ثبت سریع ⚡',
+    title: 'ثبت سریع',
     description: 'هر فکری داری بنویس. AI خودکار دسته‌بندی می‌کنه.',
+    icon: 'zap',
     target: '.quick-capture',
   },
   {
-    title: 'وظایف 📋',
+    title: 'وظایف',
     description: 'وظایفت رو اینجا مدیریت کن. کانبان ببین.',
+    icon: 'clipboard',
     target: '',
   },
   {
-    title: 'بینش AI 🧠',
+    title: 'بینش AI',
     description: 'AI هر روز بهتون بینش می‌ده. الگوهای رفتاریتون رو کشف کن.',
+    icon: 'brain',
     target: '',
   },
 ];
@@ -67,6 +74,10 @@ export function OnboardingTour() {
           {currentStep + 1} از {steps.length}
         </div>
 
+        <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+          <AppIcon name={step.icon} size={26} />
+        </div>
+
         <h2 className="text-xl font-bold mb-3">{step.title}</h2>
         <p className="text-text-2 text-sm mb-6">{step.description}</p>
 
@@ -99,9 +110,9 @@ export function OnboardingTour() {
                 setCurrentStep((prev) => prev + 1);
               }
             }}
-            className="glass-btn-primary flex-1 py-3"
+            className="glass-btn-primary flex-1 py-3 flex items-center justify-center gap-2"
           >
-            {isLast ? 'شروع کن! 🚀' : 'بعدی'}
+            {isLast ? (<><Rocket size={16} /> شروع کن!</>) : 'بعدی'}
           </button>
         </div>
       </GlassCard>

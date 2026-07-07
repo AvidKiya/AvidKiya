@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState, LoadingSkeleton, ErrorState } from '@/components/ui/states';
+import { Check } from 'lucide-react';
 
 interface Habit {
   id: string;
@@ -264,13 +265,13 @@ export default function HabitsPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => checkIn(habit.id)}
-                className={`flex-1 py-2 rounded-lg transition-colors ${
+                className={`flex-1 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
                   isCompletedToday(habit.id)
                     ? 'bg-green-500/20 text-green-400'
                     : 'glass-btn'
                 }`}
               >
-                {isCompletedToday(habit.id) ? '✓ انجام شد' : 'ثبت امروز'}
+                {isCompletedToday(habit.id) ? (<><Check size={14} /> انجام شد</>) : 'ثبت امروز'}
               </button>
               <button
                 onClick={() => deleteHabit(habit.id)}
@@ -285,7 +286,7 @@ export default function HabitsPage() {
 
       {habits.length === 0 && !showAddForm && (
         <EmptyState
-          icon="🔥"
+          icon="flame"
           title="هنوز عادتی ندارید"
           description="اولین عادت خود را اضافه کنید و streak خود را شروع کنید."
           action={{ label: '+ افزودن عادت', onClick: () => setShowAddForm(true) }}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { validate, fieldRules } from '@/lib/validation';
 import { useCms } from '@/lib/cms/cms-context';
+import { Check } from 'lucide-react';
 
 export default function SupportPage() {
   const { cms, updateCms } = useCms();
@@ -77,7 +78,7 @@ export default function SupportPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <GlassCard>
-          <div className="text-4xl mb-4">✓</div>
+          <div className="w-14 h-14 rounded-full bg-emerald/12 text-emerald flex items-center justify-center mx-auto mb-4"><Check size={26}/></div>
           <h1 className="text-2xl font-bold mb-2">پیام شما ارسال شد</h1>
           <p className="text-text-2 mb-6">
             به زودی با شما تماس خواهیم گرفت.

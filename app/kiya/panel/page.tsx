@@ -7,7 +7,8 @@ import {
   LayoutDashboard, UserCog, Share2, Home, FileCode, FileText, Gift,
   Megaphone, MessageSquare, ShoppingBag, Briefcase, Wrench, Brain,
   Inbox, Image as ImageIcon, CalendarDays, Settings as SettingsIcon,
-  BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search
+  BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search,
+  X as XIcon, Star
 } from 'lucide-react';
 
 type SectionKey =
@@ -155,6 +156,7 @@ export default function AdminPanelV2(){
 /* ---------- Sections ---------- */
 function SectionRouter({section}:{section:SectionKey}){
   const { cms, updateCms, tf } = useCms();
+  const [newPass, setNewPass] = useState('');
 
   // DASHBOARD
   if(section==='dashboard'){
@@ -201,8 +203,8 @@ function SectionRouter({section}:{section:SectionKey}){
                 </div>
                 <div className="grid sm:grid-cols-3 gap-2 text-[12.5px] text-text-2">
                   {checklist.map(c=> (
-                    <div key={c.label} className={`rounded-[10px] px-3 py-[8px] border ${c.done ? 'bg-emerald/[0.06] border-emerald/20 text-emerald' : 'bg-white/[0.03] border-glass-border'}`}>
-                      {c.done ? '✓' : '✗'} {c.label}
+                    <div key={c.label} className={`rounded-[10px] px-3 py-[8px] border flex items-center gap-1.5 ${c.done ? 'bg-emerald/[0.06] border-emerald/20 text-emerald' : 'bg-white/[0.03] border-glass-border'}`}>
+                      {c.done ? <Check size={12} className="shrink-0" /> : <XIcon size={12} className="shrink-0 text-text-3" />} {c.label}
                     </div>
                   ))}
                 </div>
@@ -508,7 +510,6 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // CALENDAR — quotes
   if(section==='calendar'){
-    const { cms, updateCms } = useCms();
     return (
       <GlassCard className="!p-5">
         <h2 className="font-[700] mb-3">تقویم — سخنان بزرگان</h2>
@@ -531,7 +532,6 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // SETTINGS
   if(section==='settings'){
-    const [newPass, setNewPass] = useState('');
     return (
       <div className="grid md:grid-cols-2 gap-4">
         <GlassCard className="!p-5">
@@ -586,11 +586,11 @@ function SectionRouter({section}:{section:SectionKey}){
               <div key={s.id} className="grid grid-cols-[1fr_100px_50px_40px] gap-2 items-center text-[12.5px]">
                 <input value={s.label.fa} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,label:{...s.label,fa:e.target.value}}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px]" />
                 <input value={s.value} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,value:e.target.value}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px]" />
-                <input value={s.icon||''} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,icon:e.target.value}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px] text-center" placeholder="🎨" />
+                <input value={s.icon||''} onChange={e=>{ const a=[...cms.dashboard.stats]; a[i]={...s,icon:e.target.value}; updateCms({dashboard:{...cms.dashboard,stats:a}}); }} className="glass-input !py-[7px] text-center" placeholder="آیکون" />
                 <button onClick={()=>updateCms({dashboard:{...cms.dashboard,stats:cms.dashboard.stats.filter(x=>x.id!==s.id)}})} className="text-rose text-center"><Trash2 size={14}/></button>
               </div>
             ))}
-            <button onClick={()=>updateCms({dashboard:{...cms.dashboard,stats:[...cms.dashboard.stats,{id:'s'+Date.now(),label:{fa:'جدید',en:'New'},value:'0',icon:'📊'}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> آمار جدید</button>
+            <button onClick={()=>updateCms({dashboard:{...cms.dashboard,stats:[...cms.dashboard.stats,{id:'s'+Date.now(),label:{fa:'جدید',en:'New'},value:'0',icon:'chart'}]}})} className="glass-btn !py-[7px] !px-3 text-[12px]"><Plus size={13}/> آمار جدید</button>
           </div>
         </GlassCard>
       </div>
@@ -761,7 +761,11 @@ function SectionRouter({section}:{section:SectionKey}){
               <div key={c.id} className="flex items-center justify-between bg-white/[0.02] rounded-[10px] p-3 text-[12.5px] border border-glass-border">
                 <div>
                   <span className="font-[600]">{c.author}</span>
-                  {c.rating && <span className="text-amber ms-2">{'★'.repeat(c.rating)}</span>}
+                  {c.rating && (
+                    <span className="text-amber ms-2 inline-flex items-center gap-0.5 align-middle">
+                      {Array.from({length: c.rating}).map((_,i)=>(<Star key={i} size={11} fill="currentColor" />))}
+                    </span>
+                  )}
                   <span className="text-text-3 ms-2">{c.text.slice(0,60)}</span>
                 </div>
                 <button onClick={()=>updateCms({comments:cms.comments.filter(x=>x.id!==c.id)})} className="text-rose text-[11px]">حذف</button>

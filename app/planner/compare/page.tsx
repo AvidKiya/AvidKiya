@@ -1,6 +1,7 @@
 'use client';
 
 import { GlassCard } from '@/components/ui/glass';
+import { Check, X } from 'lucide-react';
 
 interface Feature {
   name: string;
@@ -21,6 +22,16 @@ const features: Feature[] = [
   { name: 'قیمت', kiya: 'رایگان+', notion: 'رایگان+', obsidian: 'رایگان', clickup: 'رایگان+', todoist: 'رایگان+' },
   { name: 'آنلاین/آفلاین', kiya: 'هر دو', notion: 'آنلاین', obsidian: 'آفلاین', clickup: 'آنلاین', todoist: 'هر دو' },
 ];
+
+function FeatureCell({ value, highlight = false }: { value: boolean | string; highlight?: boolean }) {
+  if (value === '✓') {
+    return <Check size={16} className="text-green-400 mx-auto" />;
+  }
+  if (value === '✗') {
+    return <X size={16} className="text-red-400 mx-auto" />;
+  }
+  return <span className={highlight ? 'text-primary font-bold' : ''}>{value}</span>;
+}
 
 export default function ComparePage() {
   return (
@@ -47,31 +58,11 @@ export default function ComparePage() {
               {features.map((feature) => (
                 <tr key={feature.name} className="border-b border-white/5">
                   <td className="py-3 px-4 text-text-2">{feature.name}</td>
-                  <td className="text-center py-3 px-4">
-                    <span className={feature.kiya === '✓' ? 'text-green-400' : feature.kiya === '✗' ? 'text-red-400' : 'text-primary font-bold'}>
-                      {feature.kiya === '✓' ? '✓' : feature.kiya === '✗' ? '✗' : feature.kiya}
-                    </span>
-                  </td>
-                  <td className="text-center py-3 px-4">
-                    <span className={feature.notion === '✓' ? 'text-green-400' : feature.notion === '✗' ? 'text-red-400' : ''}>
-                      {feature.notion === '✓' ? '✓' : feature.notion === '✗' ? '✗' : feature.notion}
-                    </span>
-                  </td>
-                  <td className="text-center py-3 px-4">
-                    <span className={feature.obsidian === '✓' ? 'text-green-400' : feature.obsidian === '✗' ? 'text-red-400' : ''}>
-                      {feature.obsidian === '✓' ? '✓' : feature.obsidian === '✗' ? '✗' : feature.obsidian}
-                    </span>
-                  </td>
-                  <td className="text-center py-3 px-4">
-                    <span className={feature.clickup === '✓' ? 'text-green-400' : feature.clickup === '✗' ? 'text-red-400' : ''}>
-                      {feature.clickup === '✓' ? '✓' : feature.clickup === '✗' ? '✗' : feature.clickup}
-                    </span>
-                  </td>
-                  <td className="text-center py-3 px-4">
-                    <span className={feature.todoist === '✓' ? 'text-green-400' : feature.todoist === '✗' ? 'text-red-400' : ''}>
-                      {feature.todoist === '✓' ? '✓' : feature.todoist === '✗' ? '✗' : feature.todoist}
-                    </span>
-                  </td>
+                  <td className="text-center py-3 px-4"><FeatureCell value={feature.kiya} highlight /></td>
+                  <td className="text-center py-3 px-4"><FeatureCell value={feature.notion} /></td>
+                  <td className="text-center py-3 px-4"><FeatureCell value={feature.obsidian} /></td>
+                  <td className="text-center py-3 px-4"><FeatureCell value={feature.clickup} /></td>
+                  <td className="text-center py-3 px-4"><FeatureCell value={feature.todoist} /></td>
                 </tr>
               ))}
             </tbody>

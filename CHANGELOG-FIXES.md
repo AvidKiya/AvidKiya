@@ -5,41 +5,48 @@
 
 ---
 
-## ۰. رفع خطاهای Deploy روی Cloudflare Pages (آخرین دور)
+## دور آخر: رفع باگ‌ها + حذف همه ایموجی‌ها از رابط کاربری
 
-بعد از رفع خطاهای اولیه build، در تلاش دیپلوی واقعی روی Cloudflare Pages دو خطای دیگر پیدا و رفع شد:
+### الف) باگ بحرانی React Hooks در پنل مدیر 🐛
+با تست کامل سایت، یک خطای واقعی پیدا شد: در `/kiya/panel`، بخش‌های «تقویم» و «تنظیمات» با شرط `if(section===...)` هوک `useCms()` / `useState()` را **دوباره و به‌صورت شرطی** صدا می‌زدند — این دقیقاً همان چیزی است که React به عنوان *"Rules of Hooks violation"* رد می‌کند و می‌تواند باعث کرش یا رفتار غیرقابل‌پیش‌بینی پنل مدیر شود. هر دو مورد رفع شدند (state/hook به بالای کامپوننت منتقل شد).
+
+### ب) حذف تمام ایموجی‌های رابط کاربری — جایگزینی با آیکون (طبق درخواست شما)
+یک اسکن کامل روی همه فایل‌های پروژه انجام شد و هر ایموجی که در UI واقعی رندر می‌شد با آیکون `lucide-react` (همان کتابخانه‌ای که در بقیه‌ی سایت استفاده شده) جایگزین شد:
+
+| فایل | قبل | بعد |
+|------|-----|-----|
+| `/gifts` | 💳 ☕ ₿ کنار دکمه‌های حمایت مالی | آیکون CreditCard / Coffee / Bitcoin در کارت شیشه‌ای |
+| `/notifications` + زنگ هدر | 🔔 🔥 💬 📦 | Bell / Flame / MessageCircle / Package در دایره رنگی |
+| مالی KIYA | 🍔 🚗 🛍 💰 💻 📦 | Utensils / Car / Cart / DollarSign / Laptop / Package |
+| سلامت KIYA | 😴 🏃 ⚡ 😊 💚 | Moon / Activity / Zap / Smile با رنگ اختصاصی |
+| بینش‌ها، پروژه‌ها، وظایف، دانش، اهداف، عادات KIYA | ⚡ ⏰ 🏆 💡 📁 📋 📅 🎯 🔥 📝 | آیکون‌های متناظر lucide |
+| `EmptyState` / `ErrorState` (کل سایت) | 📭 ⚠️ + ایموجی‌های رشته‌ای متفاوت هر صفحه | یک enum یکپارچه `IconName` + آیکون رنگی |
+| ExitPopup, OnboardingTour, ReferralBanner, FeedbackWidget, ErrorBoundary | 🎁 👋 ⚡ 📋 🧠 🚀 💬 🙏 ★ ⚠️ | Gift / Rocket / Brain / MessageCircle / HandHeart / Star / AlertTriangle |
+| نظرات (ستاره امتیاز) | کاراکتر متنی `★` | آیکون `Star` پر/خالی lucide |
+| قیمت‌گذاری + مقایسه رقبا (جدول‌ها) | `✓` / `✗` به صورت متن ساده | آیکون `Check` سبز / `X` قرمز |
+| صفحه تماس، فیدبک KIYA، تنظیمات KIYA، پشتیبانی، فروشگاه | `✓` تکی کنار پیام موفقیت | آیکون `Check` داخل دایره سبز (دقیقاً همان الگویی که خودتان در چک‌اوت فروشگاه استفاده کرده بودید) |
+| داده‌های CMS (`default-state.ts`) | فیلدهای `icon` با مقدار ایموجی | مقدار آن‌ها به نام آیکون (`'zap'`, `'cloud'`, ...) تغییر کرد |
+| چک‌لیست Onboarding و امتیاز ستاره‌ای در پنل مدیر | `✓`/`✗`/`★` متنی | آیکون Check / X / Star رنگی |
+
+**جایی که ایموجی نگه داشته شد (و چرا):**
+- پیام‌های ربات تلگرام (`lib/telegram/bot.ts`, `app/api/telegram/webhook/route.ts`) — این متن‌ها مستقیماً داخل چت تلگرام کاربر نمایش داده می‌شوند، جایی که پلتفرم تلگرام هیچ راهی برای رندر کامپوننت آیکون سفارشی ندارد و فقط ایموجی یونیکد پشتیبانی می‌شود.
+- محتوای شبیه‌سازی‌شده‌ی چت AI در `/planner/app/chat` — این‌ها متن پاسخ نمونه‌ی هوش مصنوعی داخل حباب گفتگو هستند (نه یک آیکون UI)، مشابه پیام‌های طبیعی دستیار هوشمند.
+- خروجی ترمینال شبیه‌سازی‌شده در صفحه‌ی VS-Code-Style پروژه‌ها (`✓ Ready`) — بخشی از یک خط فرمان واقعی (`pnpm dev`) است، نه المان رابط کاربری.
+
+اگر می‌خواهید این موارد را هم تغییر بدهید، خبر بدهید.
+
+---
+
+## ۰. رفع خطاهای Deploy روی Cloudflare Pages
 
 ### الف) خطای Edge Runtime
-```
-The following routes were not configured to run with the Edge Runtime
-```
-تمام ۲۴ تا API route (`app/api/**/route.ts`) و صفحه `app/blog/[slug]/page.tsx` به `export const runtime = 'edge';` نیاز داشتند تا Cloudflare Pages بتواند آن‌ها را به‌عنوان Edge Function بسازد. این خط به همه اضافه شد.
+تمام ۲۴ تا API route و صفحه `app/blog/[slug]/page.tsx` به `export const runtime = 'edge';` نیاز داشتند تا Cloudflare Pages بتواند آن‌ها را به‌عنوان Edge Function بسازد. این خط به همه اضافه شد.
 
 ### ب) خطای KV Namespace نامعتبر
-```
-Error 8000022: Invalid KV namespace ID (YOUR_KV_NAMESPACE_ID)
-```
-فایل `wrangler.toml` مقادیر Placeholder (`YOUR_D1_DATABASE_ID`, `YOUR_KV_NAMESPACE_ID`) داشت که هیچ‌وقت با شناسه واقعی جایگزین نشده بودند. چون در حال حاضر **هیچ کدی از این بایندینگ‌ها استفاده نمی‌کند** (همه چیز فعلاً با `localStorage` و حافظه موقت کار می‌کند)، این بخش کامنت شد تا دیپلوی بدون مانع انجام شود. راهنمای کامل برای فعال‌سازی بعدی (وقتی به دیتابیس واقعی نیاز شد) داخل خود فایل `wrangler.toml` نوشته شده.
+فایل `wrangler.toml` مقادیر Placeholder (`YOUR_D1_DATABASE_ID`, `YOUR_KV_NAMESPACE_ID`) داشت. چون فعلاً هیچ کدی از این بایندینگ‌ها استفاده نمی‌کند، این بخش کامنت شد؛ راهنمای فعال‌سازی بعدی داخل خود فایل نوشته شده.
 
 ### ج) ساخت ابزار AvidKiya Deployer 🚀
-بر اساس نمونه‌ای که فرستادید (`installer.js` — KIYA Proxy)، یک نسخه‌ی کامل و سفارشی‌شده برای همین پروژه ساخته شد:
-
-**مسیر:** `workers/deployer/worker.js` (+ `wrangler.toml` + `README.md`)
-
-این یک Cloudflare Worker **مستقل** است (جدا از سایت اصلی) که با یک رابط شیشه‌ای فارسی، با گرفتن فقط یک API Token:
-- KV Namespace واقعی می‌سازد
-- D1 Database واقعی می‌سازد و Schema پایه را اجرا می‌کند
-- یک Cloudflare Pages Project می‌سازد (و در صورت دادن یوزرنیم/ریپوی گیت‌هاب، مستقیم به آن وصل می‌کند تا هر `git push` خودکار دیپلوی شود)
-- Environment Variables (`ADMIN_TOKEN`, `JWT_SECRET`, `TELEGRAM_BOT_TOKEN`) را تنظیم می‌کند
-- Binding های KV/D1 را به پروژه Pages وصل می‌کند
-- بخش «مدیریت نصب‌های قبلی» — لیست، تعویض رمز مدیر، حذف نصب
-
-**نصب:**
-```bash
-cd workers/deployer
-npx wrangler deploy
-```
-سپس آدرس worker.dev را باز کنید و توکن Cloudflare را وارد کنید.
+بر اساس نمونه‌ای که فرستادید (`installer.js`)، یک نسخه‌ی کامل و سفارشی برای همین پروژه ساخته شد در `workers/deployer/worker.js` — با گرفتن فقط یک API Token، خودکار KV + D1 + Pages Project می‌سازد و به گیت‌هاب وصل می‌کند. نصب: `cd workers/deployer && npx wrangler deploy`.
 
 ---
 
@@ -47,17 +54,18 @@ npx wrangler deploy
 
 پروژه در حالت اولیه **اصلاً کامپایل نمی‌شد**. مشکلات زیر پیدا و رفع شدند:
 
-- تداخل `'use client'` با `export const metadata` در ۱۵ صفحه (announcements, blog, changelog, comments, contact, gifts, help, notifications, pricing, projects, services, shop, status, support, tools)
-- خطاهای TypeScript در فرم‌های KIYA Planner (finance, goals, habits, health, tasks) — تایپ‌های `useState` با `as const` اشتباه تعریف شده بودند
-- نبود تایپ‌های Cloudflare (`D1Database`, `KVNamespace`, `R2Bucket`) — یک فایل `types/cloudflare.d.ts` سبک اضافه شد (بدون بازنویسی تایپ‌های DOM استاندارد)
-- باگ در `lib/jwt.ts` (نوع `Uint8Array` با `crypto.subtle.verify`)
-- داده‌ی ناقص در `lib/cms/default-state.ts` (فیلدهای `blog`, `coupons`, `orders` وجود نداشتند و باعث خطای تایپ می‌شدند)
+- تداخل `'use client'` با `export const metadata` در ۱۵ صفحه
+- خطاهای TypeScript در فرم‌های KIYA Planner (finance, goals, habits, health, tasks)
+- نبود تایپ‌های Cloudflare (`D1Database`, `KVNamespace`, `R2Bucket`) — فایل `types/cloudflare.d.ts` اضافه شد
+- باگ در `lib/jwt.ts`
+- داده‌ی ناقص در `lib/cms/default-state.ts`
 
-**نتیجه:** `npm run build` الان با موفقیت کامل روی همه ۷۰+ صفحه اجرا می‌شود، و همچنین `npx @cloudflare/next-on-pages` (همان دستوری که Cloudflare Pages اجرا می‌کند) با موفقیت کامل تمام می‌شود.
+**نتیجه:** `npm run build` و `npx @cloudflare/next-on-pages` هر دو با موفقیت کامل روی همه صفحات اجرا می‌شوند (دوباره تست شد).
 
 ---
 
 ## ۲. کشف مهم: صفحات پیشرفته وصل نبودند! 🔴
+
 
 
 در بررسی عمیق‌تر مشخص شد **۵ صفحه اصلی سایت** یک نسخه‌ی ساده و ابتدایی (mock data) را نمایش می‌دادند، در حالی که یک نسخه‌ی **کامل و بسیار حرفه‌ای‌تر** از قبل نوشته شده بود ولی هیچ‌گاه به مسیر route وصل نشده بود:

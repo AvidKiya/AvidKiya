@@ -1,7 +1,7 @@
 'use client';
 
 import { GlassCard } from '@/components/ui/glass';
-
+import { AppIcon, type IconName } from '@/components/ui/icons';
 
 const downloads = [
   { title: 'قالب برنامه‌ریزی هفتگی', description: 'PDF قابل چاپ برای برنامه‌ریزی هفتگی', url: '#' },
@@ -9,10 +9,10 @@ const downloads = [
   { title: 'راهنمای KIYA Planner', description: 'PDF آموزش استفاده از KIYA', url: '#' },
 ];
 
-const donations = [
-  { label: 'ZarinPal', url: '#', icon: '💳' },
-  { label: 'Buy Me a Coffee', url: '#', icon: '☕' },
-  { label: 'Bitcoin', url: '#', icon: '₿' },
+const donations: { label: string; url: string; icon: IconName }[] = [
+  { label: 'ZarinPal', url: '#', icon: 'creditCard' },
+  { label: 'Buy Me a Coffee', url: '#', icon: 'coffee' },
+  { label: 'Bitcoin', url: '#', icon: 'bitcoin' },
 ];
 
 export default function GiftsPage() {
@@ -63,7 +63,9 @@ export default function GiftsPage() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-4"
                 >
-                  <span className="text-3xl">{item.icon}</span>
+                  <div className="w-11 h-11 rounded-[14px] bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <AppIcon name={item.icon} size={20} />
+                  </div>
                   <div>
                     <div className="font-bold">{item.label}</div>
                     <div className="text-sm text-text-2">حمایت مالی</div>

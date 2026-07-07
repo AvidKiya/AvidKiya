@@ -1,6 +1,7 @@
 'use client';
 
 import { GlassCard } from './glass';
+import { AppIcon, type IconName } from './icons';
 
 interface ErrorStateProps {
   message?: string;
@@ -10,7 +11,7 @@ interface ErrorStateProps {
 export function ErrorState({ message = 'خطایی رخ داد', onRetry }: ErrorStateProps) {
   return (
     <GlassCard className="text-center py-12">
-      <div className="text-4xl mb-4">⚠️</div>
+      <div className="flex justify-center mb-4"><AppIcon name="warning" size={38} className="text-amber" /></div>
       <h3 className="font-bold mb-2">خطا</h3>
       <p className="text-text-2 mb-4">{message}</p>
       {onRetry && (
@@ -43,7 +44,7 @@ export function LoadingSkeleton({ count = 3, className }: LoadingSkeletonProps) 
 }
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: IconName;
   title?: string;
   description?: string;
   action?: {
@@ -53,14 +54,14 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon = '📭',
+  icon = 'emptyInbox',
   title = 'داده‌ای وجود ندارد',
   description = 'هنوز موردی ثبت نشده است.',
   action,
 }: EmptyStateProps) {
   return (
     <GlassCard className="text-center py-12">
-      <div className="text-4xl mb-4">{icon}</div>
+      <div className="flex justify-center mb-4"><AppIcon name={icon} size={38} className="text-text-3" /></div>
       <h3 className="font-bold mb-2">{title}</h3>
       <p className="text-text-2 mb-4">{description}</p>
       {action && (

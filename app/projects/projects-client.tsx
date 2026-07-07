@@ -123,7 +123,7 @@ export default function ProjectsClient() {
               </div>
             </div>
             <div className="px-3 text-[11px] text-text-3 mb-1 flex gap-3">
-              <button onClick={()=>setTab('featured')} className={tab==='featured' ? 'text-primary' : 'hover:text-text-2'}>★ Featured</button>
+              <button onClick={()=>setTab('featured')} className={`flex items-center gap-1 ${tab==='featured' ? 'text-primary' : 'hover:text-text-2'}`}><Star size={11} /> Featured</button>
               <button onClick={()=>setTab('all')} className={tab==='all' ? 'text-primary' : 'hover:text-text-2'}>All</button>
               <span className="ms-auto">{list.length}</span>
             </div>

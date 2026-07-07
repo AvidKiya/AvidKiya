@@ -1,13 +1,14 @@
 'use client';
 
 import { GlassCard } from '@/components/ui/glass';
+import { AppIcon, type IconName } from '@/components/ui/icons';
 
 interface Insight {
   id: string;
   type: 'pattern' | 'suggestion' | 'achievement';
   title: string;
   description: string;
-  icon: string;
+  icon: IconName;
 }
 
 const insights: Insight[] = [
@@ -16,28 +17,28 @@ const insights: Insight[] = [
     type: 'pattern',
     title: 'الگوی انرژی',
     description: 'وقتی صبح ورزش می‌کنید، انرژی شما ۲.۱ واحد بیشتر است.',
-    icon: '⚡',
+    icon: 'zap',
   },
   {
     id: '2',
     type: 'pattern',
     title: 'زمان بهینه',
     description: 'بیشترین بهره‌وری شما بین ساعت ۱۰ ت۱۲ است.',
-    icon: '⏰',
+    icon: 'clock',
   },
   {
     id: '3',
     type: 'achievement',
     title: 'دستاورد جدید',
     description: '۵ روز streak ورزش ثبت کردید!',
-    icon: '🏆',
+    icon: 'trophy',
   },
   {
     id: '4',
     type: 'suggestion',
     title: 'پیشنهاد',
     description: 'برای بهبود خواب، ۱ ساعت قبل از خواب از گوشی استفاده نکنید.',
-    icon: '💡',
+    icon: 'idea',
   },
 ];
 
@@ -60,7 +61,9 @@ export default function InsightsPage() {
         {insights.map((insight) => (
           <GlassCard key={insight.id} className={typeColors[insight.type]}>
             <div className="flex items-start gap-4">
-              <span className="text-3xl">{insight.icon}</span>
+              <div className="w-11 h-11 rounded-[14px] bg-white/5 flex items-center justify-center shrink-0">
+                <AppIcon name={insight.icon} size={20} />
+              </div>
               <div>
                 <h3 className="font-bold mb-1">{insight.title}</h3>
                 <p className="text-text-2 text-sm">{insight.description}</p>

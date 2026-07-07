@@ -175,7 +175,7 @@ export default function ShopClient(){
                     <Tag size={13} /> اعمال
                   </button>
                 </div>
-                {couponOk && <div className="text-emerald text-[11px] mt-1.5">✓ کوپن ۱۵٪ اعمال شد</div>}
+                {couponOk && <div className="text-emerald text-[11px] mt-1.5 flex items-center gap-1"><Check size={11} /> کوپن ۱۵٪ اعمال شد</div>}
               </div>
 
               {/* totals */}

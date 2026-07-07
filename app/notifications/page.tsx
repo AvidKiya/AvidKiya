@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
-
+import { AppIcon, type IconName } from '@/components/ui/icons';
 
 interface Notification {
   id: string;
@@ -13,13 +13,13 @@ interface Notification {
   createdAt: string;
 }
 
-const typeIcons: Record<string, string> = {
-  expiry: '⏰',
-  report: '📊',
-  streak: '🔥',
-  comment: '💬',
-  product: '📦',
-  system: '🔔',
+const typeIcons: Record<string, IconName> = {
+  expiry: 'clock',
+  report: 'chart',
+  streak: 'flame',
+  comment: 'message',
+  product: 'package',
+  system: 'bell',
 };
 
 export default function NotificationsPage() {
@@ -88,7 +88,9 @@ export default function NotificationsPage() {
             className={!notif.read ? 'bg-primary/5 border-primary/20' : ''}
           >
             <div className="flex items-start gap-4">
-              <span className="text-2xl">{typeIcons[notif.type]}</span>
+              <div className="w-10 h-10 rounded-[12px] bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <AppIcon name={typeIcons[notif.type]} size={18} />
+              </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-bold">{notif.title}</h3>
@@ -116,7 +118,7 @@ export default function NotificationsPage() {
 
       {notifications.length === 0 && (
         <div className="text-center text-text-3 py-12">
-          <div className="text-4xl mb-4">🔔</div>
+          <div className="flex justify-center mb-4"><AppIcon name="bell" size={40} className="opacity-50" /></div>
           <p>اعلانی وجود ندارد</p>
         </div>
       )}

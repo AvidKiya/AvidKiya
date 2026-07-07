@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { GlassCard } from './ui/glass';
+import { MessageCircle, X, Star, HandHeart } from 'lucide-react';
 
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
@@ -24,9 +25,9 @@ export function FeedbackWidget() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 left-4 z-40 glass-btn-primary px-4 py-2 text-sm shadow-lg"
+        className="fixed bottom-4 left-4 z-40 glass-btn-primary px-4 py-2 text-sm shadow-lg flex items-center gap-2"
       >
-        💬 نظر شما
+        <MessageCircle size={15} /> نظر شما
       </button>
     );
   }
@@ -36,14 +37,14 @@ export function FeedbackWidget() {
       <GlassCard>
         {submitted ? (
           <div className="text-center py-4">
-            <div className="text-3xl mb-2">🙏</div>
+            <div className="flex justify-center mb-2"><HandHeart size={30} className="text-primary" /></div>
             <p className="font-bold">ممنون از نظر شما!</p>
           </div>
         ) : (
           <>
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-bold text-sm">نظر شما</h3>
-              <button onClick={() => setOpen(false)} className="text-text-3 hover:text-text-1">×</button>
+              <button onClick={() => setOpen(false)} className="text-text-3 hover:text-text-1"><X size={16} /></button>
             </div>
 
             <div className="flex gap-1 mb-3">
@@ -51,9 +52,9 @@ export function FeedbackWidget() {
                 <button
                   key={star}
                   onClick={() => setRating(star)}
-                  className={`text-2xl ${star <= rating ? 'text-yellow-400' : 'text-text-3'}`}
+                  className={star <= rating ? 'text-yellow-400' : 'text-text-3'}
                 >
-                  ★
+                  <Star size={20} fill={star <= rating ? 'currentColor' : 'none'} />
                 </button>
               ))}
             </div>

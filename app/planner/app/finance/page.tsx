@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState, LoadingSkeleton, ErrorState } from '@/components/ui/states';
+import { AppIcon, type IconName } from '@/components/ui/icons';
 
 interface Transaction {
   id: string;
@@ -13,15 +14,15 @@ interface Transaction {
   createdAt: string;
 }
 
-const categoryIcons: Record<string, string> = {
-  food: '🍔',
-  transport: '🚗',
-  shopping: '🛍️',
-  bills: '📄',
-  entertainment: '🎮',
-  salary: '💰',
-  freelance: '💻',
-  other: '📦',
+const categoryIcons: Record<string, IconName> = {
+  food: 'food',
+  transport: 'car',
+  shopping: 'cart',
+  bills: 'resume',
+  entertainment: 'game',
+  salary: 'dollar',
+  freelance: 'laptop',
+  other: 'package',
 };
 
 const categoryLabels: Record<string, string> = {
@@ -154,7 +155,9 @@ export default function FinancePage() {
               .sort(([, a], [, b]) => b - a)
               .map(([category, amount]) => (
                 <div key={category} className="flex items-center gap-3">
-                  <span className="text-xl">{categoryIcons[category] || '📦'}</span>
+                  <div className="w-8 h-8 rounded-[10px] bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <AppIcon name={categoryIcons[category] || 'package'} size={16} />
+                  </div>
                   <div className="flex-1">
                     <div className="flex justify-between mb-1">
                       <span className="text-sm">{categoryLabels[category] || category}</span>
@@ -224,9 +227,9 @@ export default function FinancePage() {
           <GlassCard key={transaction.id}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">
-                  {categoryIcons[transaction.category || 'other'] || '📦'}
-                </span>
+                <div className="w-10 h-10 rounded-[12px] bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <AppIcon name={categoryIcons[transaction.category || 'other'] || 'package'} size={18} />
+                </div>
                 <div>
                   <div className="font-bold">
                     {categoryLabels[transaction.category || 'other'] || transaction.category}
@@ -256,7 +259,7 @@ export default function FinancePage() {
 
       {transactions.length === 0 && !showAddForm && (
         <EmptyState
-          icon="💰"
+          icon="dollar"
           title="هنوز تراکنشی ندارید"
           description="اولین تراکنش خود را اضافه کنید."
           action={{ label: '+ افزودن تراکنش', onClick: () => setShowAddForm(true) }}

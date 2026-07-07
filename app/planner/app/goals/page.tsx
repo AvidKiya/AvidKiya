@@ -213,7 +213,7 @@ export default function GoalsPage() {
 
       {goals.length === 0 && !showAddForm && (
         <EmptyState
-          icon="🎯"
+          icon="target"
           title="هنوز هدفی ندارید"
           description="اولین هدف خود را اضافه کنید."
           action={{ label: '+ افزودن هدف', onClick: () => setShowAddForm(true) }}

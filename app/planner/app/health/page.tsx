@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState, LoadingSkeleton, ErrorState } from '@/components/ui/states';
+import { AppIcon, type IconName } from '@/components/ui/icons';
 
 interface HealthLog {
   id: string;
@@ -12,11 +13,11 @@ interface HealthLog {
   createdAt: string;
 }
 
-const healthTypes = {
-  sleep: { label: 'خواب', icon: '😴', unit: 'ساعت', max: 12, color: 'text-purple-400' },
-  exercise: { label: 'ورزش', icon: '🏃', unit: 'دقیقه', max: 120, color: 'text-green-400' },
-  energy: { label: 'انرژی', icon: '⚡', unit: '/10', max: 10, color: 'text-yellow-400' },
-  mood: { label: 'حال', icon: '😊', unit: '/10', max: 10, color: 'text-blue-400' },
+const healthTypes: Record<HealthLog['type'], { label: string; icon: IconName; unit: string; max: number; color: string }> = {
+  sleep: { label: 'خواب', icon: 'sleep', unit: 'ساعت', max: 12, color: 'text-purple-400' },
+  exercise: { label: 'ورزش', icon: 'activity', unit: 'دقیقه', max: 120, color: 'text-green-400' },
+  energy: { label: 'انرژی', icon: 'zap', unit: '/10', max: 10, color: 'text-yellow-400' },
+  mood: { label: 'حال', icon: 'smile', unit: '/10', max: 10, color: 'text-blue-400' },
 };
 
 export default function HealthPage() {
@@ -114,7 +115,7 @@ export default function HealthPage() {
         {(Object.keys(healthTypes) as Array<keyof typeof healthTypes>).map((type) => (
           <GlassCard key={type}>
             <div className="text-center">
-              <div className="text-3xl mb-2">{healthTypes[type].icon}</div>
+              <div className="flex justify-center mb-2"><AppIcon name={healthTypes[type].icon} size={26} className={healthTypes[type].color} /></div>
               <div className="text-sm text-text-2">{healthTypes[type].label}</div>
               <div className={`text-2xl font-bold ${healthTypes[type].color}`}>
                 {getWeeklyAverage(type)}
@@ -167,7 +168,7 @@ export default function HealthPage() {
           return (
             <GlassCard key={type}>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">{info.icon}</span>
+                <AppIcon name={info.icon} size={20} className={info.color} />
                 <h3 className="font-bold">{info.label}</h3>
               </div>
 
@@ -204,7 +205,7 @@ export default function HealthPage() {
 
       {logs.length === 0 && !showAddForm && (
         <EmptyState
-          icon="💚"
+          icon="heart"
           title="هنوز لاگی ندارید"
           description="سلامت خود را روزانه ثبت کنید."
           action={{ label: '+ افزودن لاگ', onClick: () => setShowAddForm(true) }}

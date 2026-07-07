@@ -102,7 +102,7 @@ export default function PlannerLandingClient(){
         <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {plans.map(pl=>(
             <GlassCard key={pl.id} className={`!p-5 flex flex-col ${pl.highlighted ? 'ring-[1.5px] ring-primary/40 scale-[1.015]' : ''}`}>
-              {pl.highlighted && <div className="text-[10.5px] text-primary font-[700] mb-1">★ پیشنهاد شده</div>}
+              {pl.highlighted && <div className="text-[10.5px] text-primary font-[700] mb-1 flex items-center gap-1"><Sparkles size={12} /> پیشنهاد شده</div>}
               <div className="text-[17px] font-[800] mb-1">{pl.name.fa}</div>
               <div className="text-[28px] font-black mb-1">
                 {pl.priceMonthly===0 ? 'رایگان' : `$${pl.priceMonthly}`}

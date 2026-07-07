@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState, LoadingSkeleton, ErrorState } from '@/components/ui/states';
+import { AppIcon } from '@/components/ui/icons';
 
 interface Task {
   id: string;
@@ -168,7 +169,7 @@ export default function TasksPage() {
                         </span>
                       </div>
                       {task.due && (
-                        <div className="text-xs text-text-3 mb-3">📅 {task.due}</div>
+                        <div className="text-xs text-text-3 mb-3 flex items-center gap-1"><AppIcon name="calendar" size={12} /> {task.due}</div>
                       )}
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {column.id !== 'done' && (
@@ -197,7 +198,7 @@ export default function TasksPage() {
 
       {tasks.length === 0 && !showAddForm && (
         <EmptyState
-          icon="📋"
+          icon="clipboard"
           title="هنوز وظیفه‌ای ندارید"
           description="اولین وظیفه خود را اضافه کنید."
           action={{ label: '+ افزودن وظیفه', onClick: () => setShowAddForm(true) }}

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
+import { MessageCircle } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -144,7 +145,7 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.length === 0 && (
           <div className="text-center text-text-3 py-12">
-            <div className="text-4xl mb-4">💬</div>
+            <div className="flex justify-center mb-4"><MessageCircle size={38} className="opacity-50" /></div>
             <p>پیام خود را بنویسید یا از دستورات استفاده کنید.</p>
           </div>
         )}

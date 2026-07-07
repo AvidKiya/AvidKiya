@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { EmptyState, LoadingSkeleton, ErrorState } from '@/components/ui/states';
+import { AppIcon } from '@/components/ui/icons';
 
 interface Project {
   id: string;
@@ -164,7 +165,9 @@ export default function ProjectsPage() {
           <GlassCard key={project.id}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xl">📁</span>
+                <div className="w-9 h-9 rounded-[11px] bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <AppIcon name="folder" size={16} />
+                </div>
                 <div>
                   <div className="font-bold">{project.name}</div>
                   <span className={`text-xs ${statusColors[project.status]}`}>
@@ -203,7 +206,7 @@ export default function ProjectsPage() {
 
       {filteredProjects.length === 0 && !showAddForm && (
         <EmptyState
-          icon="📁"
+          icon="folder"
           title="هنوز پروژه‌ای ندارید"
           description="اولین پروژه خود را اضافه کنید."
           action={{ label: '+ افزودن پروژه', onClick: () => setShowAddForm(true) }}

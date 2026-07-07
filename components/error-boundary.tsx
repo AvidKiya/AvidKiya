@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { GlassCard } from './ui/glass';
+import { AlertTriangle } from 'lucide-react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -36,7 +37,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       return (
         <div className="min-h-[40vh] flex items-center justify-center p-4">
           <GlassCard className="max-w-md text-center">
-            <div className="text-4xl mb-4">⚠️</div>
+            <div className="flex justify-center mb-4"><AlertTriangle size={38} className="text-amber" /></div>
             <h2 className="font-bold text-lg mb-2">خطایی رخ داد</h2>
             <p className="text-text-2 text-sm mb-4">
               متأسفانه مشکلی پیش اومد. لطفاً صفحه رو رفرش کن.

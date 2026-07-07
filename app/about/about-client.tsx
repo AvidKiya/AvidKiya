@@ -1,7 +1,7 @@
 'use client';
 import { GlassCard } from '@/components/ui/glass';
 import { useCms } from '@/lib/cms/cms-context';
-import { AppIcon } from '@/components/ui/icons';
+import { AppIcon, Icons, type IconName } from '@/components/ui/icons';
 import Link from 'next/link';
 
 export default function AboutClient(){
@@ -44,8 +44,9 @@ export default function AboutClient(){
             <div className="text-[11.5px] text-text-3 mb-2 uppercase tracking-wide">Quick links</div>
             <div className="grid grid-cols-2 gap-2 text-[12.5px]">
               {m.quickLinks.map((q,i)=>(
-                <Link key={i} href={q.url} className="glass-card !py-[9px] !px-3 text-center hover:bg-white/[0.04] transition">
-                  {q.icon} {tf(q.label)}
+                <Link key={i} href={q.url} className="glass-card !py-[9px] !px-3 text-center hover:bg-white/[0.04] transition flex items-center justify-center gap-1.5">
+                  {q.icon && q.icon in Icons && <AppIcon name={q.icon as IconName} size={13} />}
+                  {tf(q.label)}
                 </Link>
               ))}
               <Link href="https://github.com/avidkiya" target="_blank" className="glass-card !py-[9px] !px-3 text-center">GitHub</Link>

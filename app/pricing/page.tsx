@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
+import { Check } from 'lucide-react';
 
 const plans = [
   {
@@ -131,7 +132,7 @@ export default function PricingPage() {
               {isFree && <div className="mb-4" />}
               <ul className="text-sm space-y-2 text-text-2 mb-5">
                 {plan.features.map((f) => (
-                  <li key={f}>✓ {f}</li>
+                  <li key={f} className="flex items-center gap-1.5"><Check size={14} className="text-emerald shrink-0" /> {f}</li>
                 ))}
               </ul>
               <button
@@ -181,22 +182,22 @@ export default function PricingPage() {
                 <td className="py-3 px-4">ماژول مالی</td>
                 <td className="text-center py-3 px-4">—</td>
                 <td className="text-center py-3 px-4 text-primary">—</td>
-                <td className="text-center py-3 px-4">✓</td>
-                <td className="text-center py-3 px-4">✓</td>
+                <td className="text-center py-3 px-4"><Check size={15} className="text-green-400 mx-auto" /></td>
+                <td className="text-center py-3 px-4"><Check size={15} className="text-green-400 mx-auto" /></td>
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-3 px-4">ماژول سلامت</td>
                 <td className="text-center py-3 px-4">—</td>
                 <td className="text-center py-3 px-4 text-primary">—</td>
-                <td className="text-center py-3 px-4">✓</td>
-                <td className="text-center py-3 px-4">✓</td>
+                <td className="text-center py-3 px-4"><Check size={15} className="text-green-400 mx-auto" /></td>
+                <td className="text-center py-3 px-4"><Check size={15} className="text-green-400 mx-auto" /></td>
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-3 px-4"> Knowledge Graph</td>
                 <td className="text-center py-3 px-4">—</td>
-                <td className="text-center py-3 px-4 text-primary">✓</td>
-                <td className="text-center py-3 px-4">✓</td>
-                <td className="text-center py-3 px-4">✓</td>
+                <td className="text-center py-3 px-4 text-primary"><Check size={15} className="text-green-400 mx-auto" /></td>
+                <td className="text-center py-3 px-4"><Check size={15} className="text-green-400 mx-auto" /></td>
+                <td className="text-center py-3 px-4"><Check size={15} className="text-green-400 mx-auto" /></td>
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-3 px-4">تیم</td>

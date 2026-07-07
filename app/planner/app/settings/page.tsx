@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GlassCard } from '@/components/ui/glass';
+import { Check } from 'lucide-react';
 
 function downloadFile(filename: string, content: string, mime: string) {
   const blob = new Blob([content], { type: mime });
@@ -62,7 +63,7 @@ export default function SettingsPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">تنظیمات</h1>
         {saved && (
-          <span className="text-green-400 text-sm">ذخیره شد ✓</span>
+          <span className="text-green-400 text-sm flex items-center gap-1.5"><Check size={14} /> ذخیره شد</span>
         )}
       </div>
 

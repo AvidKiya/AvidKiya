@@ -183,7 +183,7 @@ export default function KnowledgePage() {
 
       {filteredNotes.length === 0 && !showAddForm && (
         <EmptyState
-          icon="📝"
+          icon="note"
           title="هنوز یادداشتی ندارید"
           description="اولین یادداشت خود را اضافه کنید."
           action={{ label: '+ افزودن یادداشت', onClick: () => setShowAddForm(true) }}
