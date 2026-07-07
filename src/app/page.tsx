@@ -1,130 +1,163 @@
-import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Clock3, FileCheck2, MessageSquareText, ShieldCheck, Sparkles, Star, UploadCloud, Wallet } from "lucide-react";
-import { GlassCard } from "@/components/GlassCard";
-import { ServiceIcon } from "@/components/ServiceIcon";
-import { ShopClock } from "@/components/ShopClock";
-import { FaqAccordion } from "@/components/FaqAccordion";
-import { serviceCategories } from "@/lib/services";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
-import { BottomNav } from "@/components/BottomNav";
-import { SearchableCounters } from "@/components/SearchableCounters";
-
-const FEATURES = [
-  { icon: ShieldCheck, title: "بدون نیاز به حضور", desc: "همه‌چیز از خونه یا محل کارتون انجام می‌شه، دقیقاً مثل مراجعه به یک کافی‌نت واقعی." },
-  { icon: FileCheck2, title: "تحویل فایل PDF نهایی", desc: "خروجی هر سفارش، یک فایل PDF مرتب و آماده چاپ یا ارسال است." },
-  { icon: Clock3, title: "تحویل سریع", desc: "بیشتر سفارش‌ها بین چند ساعت تا حداکثر ۲ روز کاری آماده می‌شن." },
-  { icon: Wallet, title: "قیمت شفاف", desc: "پیش از ثبت سفارش، هزینه دقیق کار رو می‌بینید؛ بدون هیچ هزینه پنهانی." },
-];
-
-const STEPS = [
-  { icon: Sparkles, title: "انتخاب خدمت", desc: "از بین ده‌ها خدمت کافی‌نتی، همونی که نیاز دارید رو انتخاب کنید." },
-  { icon: UploadCloud, title: "ثبت سفارش و ارسال مدارک", desc: "توضیحات و فایل موردنیاز رو آپلود می‌کنید." },
-  { icon: MessageSquareText, title: "انجام کار توسط اپراتور", desc: "تیم کیانت با دقت سفارش شما رو بررسی و اجرا می‌کنه." },
-  { icon: FileCheck2, title: "دریافت فایل PDF تحویلی", desc: "از صفحه پیگیری سفارش، فایل نهایی رو دانلود می‌کنید." },
-];
-
-const TESTIMONIALS = [
-  { name: "سارا محمدی", role: "دانشجوی ارشد", text: "پایان‌نامه‌مو نصف شب برای تایپ فرستادم، صبح فایل ورد و PDF آماده بود. دقیقاً مثل این بود که برم کافی‌نت محل ولی راحت‌تر!", rating: 5 },
-  { name: "علی رضایی", role: "کارمند اداره", text: "ثبت‌نام سامانه دولتی که همیشه گیر می‌کردم رو کیانت برام انجام داد. کد رهگیری داشتم و همه چیز شفاف بود.", rating: 5 },
-  { name: "نگار احمدی", role: "صاحب فروشگاه", text: "طراحی کارت ویزیت و پک استوری رو سفارش دادم، خیلی حرفه‌ای تحویل گرفتم.", rating: 5 },
-];
+'use client';
+import { AsciiLogo } from '@/components/ui/ascii-logo';
+import { CalendarWidget } from '@/components/calendar/calendar-widget';
+import { MenuCard } from '@/components/home/menu-card';
+import { useCms } from '@/lib/cms/cms-context';
+import Link from 'next/link';
+import { getDailyQuote } from '@/lib/calendar';
+import { useMemo } from 'react';
+import { GlassCard } from '@/components/ui/glass';
+import { AppIcon, type IconName } from '@/components/ui/icons';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 
 export default function HomePage() {
+  const { t, cms, tf } = useCms();
+  const quote = useMemo(() => getDailyQuote(), []);
+
+  const cards: {icon: IconName; title:string; desc:string; href:string; accent: 'primary'|'cyan'|'emerald'|'violet'|'amber'|'rose'}[] = [
+    { icon:'brain', title: t('KIYA','KIYA'), desc: t('مغز دوم','Second brain'), href:'/planner', accent:'violet' },
+    { icon:'shop', title: t('فروشگاه','Shop'), desc: t('محصولات','Products'), href:'/shop', accent:'emerald' },
+    { icon:'services', title: t('خدمات','Services'), desc: t('فریلنسری','Freelance'), href:'/services', accent:'cyan' },
+    { icon:'tools', title: t('ابزارها','Tools'), desc: t('آنلاین','Online'), href:'/tools', accent:'amber' },
+    { icon:'projects', title: t('پروژه‌ها','Projects'), desc: t('من','Mine'), href:'/projects', accent:'primary' },
+    { icon:'comments', title: t('نظرات','Reviews'), desc: t('کاربران','Users'), href:'/comments', accent:'rose' },
+  ];
+
+  const featured = cms.projects.customProjects.filter(p=>p.featured).slice(0,3);
+  const stats = cms.dashboard.stats;
+
   return (
-    <>
-      <SiteHeader />
-      <div className="mx-auto max-w-6xl px-3 pt-8 pb-32 sm:px-6 sm:pt-12">
-        <section className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="animate-rise">
-            <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium text-[var(--ink-dim)]">
-              <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              کافی‌نت ۱۰۰٪ مجازی — همیشه در دسترس
-            </span>
-            <h1 className="mt-6 text-[clamp(2.1rem,5.5vw,3.6rem)] font-extrabold leading-[1.2] text-[var(--ink)]">
-              کیانت؛ کافی‌نتی که<br /><span className="text-[var(--brand)]">هیچ‌وقت درش بسته نمی‌شه</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-8 text-[var(--ink-dim)] sm:text-lg">
-              از ثبت‌نام کنکور و وام ازدواج گرفته تا اظهارنامه مالیاتی و طراحی کارت ویزیت —
-              همه رو آنلاین و بدون مراجعه حضوری از «کیانت» بگیرید.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/order" className="btn-brand flex items-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold">ثبت سفارش جدید <ArrowLeft size={16} /></Link>
-              <Link href="/services" className="btn-glass rounded-2xl px-6 py-3.5 text-sm font-medium text-[var(--ink)]">مشاهده همه خدمات</Link>
-            </div>
-            <div className="mt-10 grid grid-cols-3 gap-3 sm:max-w-md">
-              {[{ n: "+۲۵۰۰", l: "سفارش موفق" }, { n: "۴.۹ / ۵", l: "رضایت مشتری" }, { n: "۲۴/۷", l: "ثبت سفارش آنلاین" }].map(s => (
-                <div key={s.l} className="glass rounded-2xl px-3 py-4 text-center"><p className="text-lg font-extrabold text-[var(--ink)] sm:text-xl">{s.n}</p><p className="mt-1 text-[11px] text-[var(--ink-dim)]">{s.l}</p></div>
-              ))}
-            </div>
+    <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10">
+      {/* Compact Hero — portfolio style */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-6 md:mb-8">
+        <div>
+          <div className="mb-3 opacity-95 scale-[0.92] origin-right md:origin-left" dir="ltr">
+            <AsciiLogo small />
           </div>
-          <div className="animate-rise" style={{ animationDelay: "0.15s" }}>
-            <GlassCard className="p-6 sm:p-7">
-              <p className="mb-1 text-xs font-medium text-[var(--ink-dim)]">پیشخوان زنده کیانت</p>
-              <ShopClock />
-              <div className="my-6 border-t border-white/10" />
-              <div className="space-y-3">
-                {[{ t: "تایپ پایان‌نامه سعیدی", s: "در حال انجام" }, { t: "کارت ویزیت فروشگاه رزا", s: "آماده تحویل" }, { t: "ثبت‌نام سامانه یارانه", s: "در انتظار بررسی" }].map(row => (
-                  <div key={row.t} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-xs sm:text-sm"><span className="text-[var(--ink)]">{row.t}</span><span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-medium text-emerald-300 sm:text-xs">{row.s}</span></div>
-                ))}
+          <h1 className="text-[24px] md:text-[30px] font-[700] tracking-[-0.015em] leading-tight">
+            {tf(cms.dashboard.heroTitleA)}
+            <span className="text-text-3 font-[500] mx-[10px]">—</span>
+            <span className="gradient-text">{tf(cms.dashboard.heroTitleB)}</span>
+          </h1>
+          <p className="text-[13.5px] md:text-[14.5px] text-text-2 mt-2 max-w-[620px] leading-relaxed">
+            {tf(cms.dashboard.heroDescription)}
+            <span className="mx-2 text-text-3">•</span>
+            <span className="text-text-3">{tf(cms.identity.location)} • {cms.identity.yearsExperience}+ {t('سال تجربه','years')}</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-[12px] shrink-0">
+          <Link href="/projects" className="glass-btn !py-2 !px-4 text-[13px]">
+            {tf(cms.dashboard.ctaPrimary)}
+          </Link>
+          <Link href="/contact" className="glass-btn-primary !py-2 !px-4 text-[13px]">
+            {tf(cms.dashboard.ctaSecondary)}
+          </Link>
+        </div>
+      </div>
+
+      {/* Two column: Calendar | Menu Grid — dense desktop */}
+      <div className="grid lg:grid-cols-[420px_1fr] gap-4 md:gap-5 items-start mb-8 md:mb-10">
+        <div className="order-2 lg:order-1">
+          <CalendarWidget />
+        </div>
+        <div className="order-1 lg:order-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-[14px]">
+            {cards.map((c,i)=> (
+              <MenuCard key={c.href} {...c} index={i} />
+            ))}
+          </div>
+          {/* quick links row — compact */}
+          <div className="flex flex-wrap gap-3 md:gap-5 text-[12.5px] text-text-2 mt-3 px-1">
+            <Link href="/about" className="hover:text-text flex items-center gap-1 transition-colors">
+              {t('درباره','About')} <ArrowLeft size={13} className="opacity-60" />
+            </Link>
+            <Link href="/resume" className="hover:text-text flex items-center gap-1 transition-colors">
+              {t('رزومه','Resume')} <ArrowLeft size={13} className="opacity-60" />
+            </Link>
+            <Link href="/blog" className="hover:text-text flex items-center gap-1 transition-colors">
+              {t('بلاگ','Blog')} <ArrowLeft size={13} className="opacity-60" />
+            </Link>
+            <Link href="/contact" className="hover:text-text flex items-center gap-1 transition-colors">
+              {t('تماس','Contact')} <ArrowLeft size={13} className="opacity-60" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Work — portfolio */}
+      <div className="mb-8 md:mb-10">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-[16px] md:text-[18px] font-bold flex items-center gap-2">
+            <AppIcon name="sparkles" size={17} className="text-amber" />
+            {t('کارهای برجسته','Featured Work')}
+          </h2>
+          <Link href="/projects" className="text-[12.5px] text-text-3 hover:text-text flex items-center gap-1">
+            {t('همه پروژه‌ها','All projects')} <ExternalLink size={13} />
+          </Link>
+        </div>
+        <div className="grid md:grid-cols-3 gap-3 md:gap-4">
+          {featured.map((p) => (
+            <GlassCard key={p.id} className="!p-4 hover:shadow-glass-lg transition-all group">
+              <div className="flex items-start justify-between mb-2">
+                <div className="text-[13.5px] font-bold">{p.title}</div>
+                <span className="text-[10.5px] px-2 py-1 rounded-full bg-white/[0.06] text-text-3">{p.language}</span>
+              </div>
+              <p className="text-[12.5px] text-text-2 leading-relaxed min-h-[38px]">{p.description}</p>
+              <div className="flex items-center justify-between mt-3 text-[11.5px] text-text-3">
+                <span className="flex items-center gap-3">
+                  <span className="flex items-center gap-1"><AppIcon name="star" size={13} /> {p.stars||0}</span>
+                  <span>TS</span>
+                </span>
+                <Link href={p.url||'/projects'} className="text-primary hover:underline flex items-center gap-1">
+                  {t('مشاهده','Open')} <ArrowLeft size={12} />
+                </Link>
               </div>
             </GlassCard>
-          </div>
-        </section>
-
-        <SearchableCounters />
-
-        <section className="mt-24">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((f, i) => (
-              <GlassCard key={f.title} className="card-hover animate-rise p-6" style={{ animationDelay: `${i * 0.08}s` }}>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/25 to-violet-500/20 text-emerald-300"><f.icon size={20} /></div>
-                <h3 className="mt-4 text-sm font-bold text-[var(--ink)] sm:text-base">{f.title}</h3>
-                <p className="mt-2 text-xs leading-6 text-[var(--ink-dim)] sm:text-sm">{f.desc}</p>
-              </GlassCard>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-24">
-          <p className="text-xs font-medium text-emerald-300">فرآیند سفارش</p>
-          <h2 className="mt-2 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">دقیقاً مثل رفتن به کافی‌نت، فقط از راه دور</h2>
-          <div className="mt-10 grid gap-5 lg:grid-cols-4">
-            {STEPS.map((step, i) => (
-              <div key={step.title} className="relative">
-                <GlassCard className="animate-rise h-full p-6" style={{ animationDelay: `${i * 0.08}s` }}>
-                  <span className="text-4xl font-extrabold text-white/10">{`0${i + 1}`}</span>
-                  <div className="-mt-6 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/25 to-violet-500/20 text-emerald-300"><step.icon size={19} /></div>
-                  <h3 className="mt-4 text-sm font-bold text-[var(--ink)]">{step.title}</h3>
-                  <p className="mt-2 text-xs leading-6 text-[var(--ink-dim)]">{step.desc}</p>
-                </GlassCard>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-24">
-          <p className="text-xs font-medium text-emerald-300">نظرات مشتریان</p>
-          <h2 className="mt-2 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">مشتری‌های کیانت چی می‌گن؟</h2>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {TESTIMONIALS.map((t, i) => (
-              <GlassCard key={t.name} className="animate-rise p-6" style={{ animationDelay: `${i * 0.08}s` }}>
-                <div className="mb-3 flex gap-0.5">{Array.from({ length: t.rating }).map((_, j) => <Star key={j} size={13} className="fill-amber-400 text-amber-400" />)}</div>
-                <p className="text-xs leading-7 text-[var(--ink-dim)] sm:text-sm">{t.text}</p>
-                <div className="mt-4 border-t border-white/10 pt-4"><p className="text-sm font-bold text-[var(--ink)]">{t.name}</p><p className="text-xs text-[var(--ink-dim)]">{t.role}</p></div>
-              </GlassCard>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-24">
-          <p className="text-xs font-medium text-emerald-300">سوالات متداول</p>
-          <h2 className="mt-2 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">هر سوالی که ممکنه داشته باشید</h2>
-          <div className="mx-auto mt-8 max-w-2xl"><FaqAccordion /></div>
-        </section>
+          ))}
+        </div>
       </div>
-      <SiteFooter />
-      <BottomNav />
-    </>
+
+      {/* Stats strip — compact */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        {stats.map(s=>(
+          <GlassCard key={s.id} className="!py-3 !px-4 text-center">
+            <div className="text-[20px] font-black tracking-tight">{s.value}</div>
+            <div className="text-[11.5px] text-text-3 mt-0.5">{tf(s.label)}</div>
+          </GlassCard>
+        ))}
+      </div>
+
+      {/* Comments — compact carousel */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <AppIcon name="comments" size={16} className="text-emerald" />
+          <h3 className="text-[15px] font-bold">{t('نظر کاربران','User reviews')}</h3>
+        </div>
+        <div className="grid md:grid-cols-3 gap-3">
+          {cms.comments.filter(c=>c.approved).slice(0,3).map(c=>(
+            <GlassCard key={c.id} className="!p-4">
+              <div className="text-[12.5px] leading-relaxed text-text-2 mb-2">“{c.text}”</div>
+              <div className="text-[11.5px] text-text-3">— {c.author}{c.role ? ` • ${c.role}` : ''}</div>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+
+      {/* Quote — compact */}
+      <GlassCard className="!py-4 !px-5 text-center max-w-3xl mx-auto">
+        <div className="text-[11px] text-text-3 mb-1 tracking-wide">{t('سخن امروز','Quote today')}</div>
+        <p className="text-[14px] md:text-[15px] leading-relaxed">«{quote.text}»</p>
+        <div className="text-[11px] text-text-3 mt-1">— {quote.author}</div>
+      </GlassCard>
+
+      {/* socials — compact, icon only */}
+      <div className="flex justify-center gap-5 mt-8 text-text-3">
+        {cms.socials.filter(s=>s.enabled).slice(0,5).map(s=>(
+          <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-text transition text-[12px]">
+            {s.platform}
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }

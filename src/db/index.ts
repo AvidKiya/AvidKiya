@@ -8,17 +8,17 @@ if (!databaseUrl) {
 }
 
 const globalForDb = globalThis as typeof globalThis & {
-  __kiyaPostgresPool?: Pool;
+  __arenaNextJsPostgresqlPool?: Pool;
 };
 
 export const pool =
-  globalForDb.__kiyaPostgresPool ??
+  globalForDb.__arenaNextJsPostgresqlPool ??
   new Pool({
     connectionString: databaseUrl,
   });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForDb.__kiyaPostgresPool = pool;
+  globalForDb.__arenaNextJsPostgresqlPool = pool;
 }
 
 export const db = drizzle(pool);
