@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "setup:telegram": "node scripts/setup-telegram.mjs",
     "check:prod": "node scripts/production-check.mjs",
-    "pages:build": "npx @cloudflare/next-on-pages@1"
+    "pages:build": "node scripts/cloudflare-free-build.mjs",
+    "pages:build:full": "npx @cloudflare/next-on-pages@1"
   },
   "dependencies": {
     "clsx": "^2.1.1",
