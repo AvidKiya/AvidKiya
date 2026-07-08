@@ -33,7 +33,7 @@ const THEME_KEY = 'avidkiya_theme';
 
 export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [cms, setCms] = useState<CmsState>(defaultCmsState);
-  const [lang, setLangState] = useState<Lang>('fa');
+  const [lang, setLangState] = useState<Lang>(defaultCmsState.settings.defaultLanguage);
   const [theme, setThemeState] = useState<Theme>('dark');
   const [editMode, setEditModeState] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced'|'syncing'|'offline'|'error'>('synced');
@@ -44,7 +44,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setCms(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved) as CmsState;
+        // Older releases shipped demo/Persian sample data. Keep only user data that
+        // matches the current blank CMS version; otherwise boot as a clean site.
+        if (parsed.version === defaultCmsState.version) setCms(parsed);
+        else localStorage.removeItem(STORAGE_KEY);
+      }
       const l = localStorage.getItem(LANG_KEY) as Lang | null;
       const th = localStorage.getItem(THEME_KEY) as Theme | null;
       if (l) setLangState(l);
@@ -63,6 +69,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cms));
+        fetch('/api/cms', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cms),
+          keepalive: true,
+        }).catch(() => {});
         setSyncStatus('synced');
       } catch { setSyncStatus('error'); }
     }, 800);
@@ -102,6 +114,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const saveCms = useCallback(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cms));
+      fetch('/api/cms', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cms),
+        keepalive: true,
+      }).catch(() => {});
       setSyncStatus('synced');
     } catch { setSyncStatus('error'); }
   }, [cms]);

@@ -1,87 +1,48 @@
 import { NextRequest } from 'next/server';
 import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { sendEmail } from '@/lib/server/email';
 
 export const runtime = 'edge';
 
-// Email templates
 const templates = {
   welcome: {
-    subject: 'خوش آمدید به AvidKiya!',
-    html: (name: string) => `
-      <div dir="rtl" style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1>خوش آمدید ${name}!</h1>
-        <p>از عضویت شما در AvidKiya متشکریم.</p>
-        <p>با استفاده از KIYA Planner می‌توانید زندگی خود را بهتر مدیریت کنید.</p>
-        <a href="https://avidkiya.com/planner" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 16px;">
-          شروع کنید
-        </a>
-      </div>
-    `,
+    subject: 'Welcome to KIYA',
+    html: (data: any) => `<div style="font-family:system-ui;max-width:620px;margin:auto"><h1>Welcome ${data?.name || ''}!</h1><p>Thanks for joining. Start planning from your KIYA dashboard.</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/planner" style="background:#5d7ae6;color:white;padding:10px 14px;border-radius:10px;text-decoration:none">Open KIYA</a></p></div>`,
   },
   licenseExpiry: {
-    subject: 'لایسنس شما در حال منقضی شدن است',
-    html: (name: string, daysLeft: number) => `
-      <div dir="rtl" style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1>یادآوری انقضای لایسنس</h1>
-        <p>سلام ${name}،</p>
-        <p>لایسنس KIYA شما تا ${daysLeft} روز دیگر منقضی می‌شود.</p>
-        <p>برای ادامه استفاده از امکانات، لطفاً اشتراک خود را تمدید کنید.</p>
-        <a href="https://avidkiya.com/pricing" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 16px;">
-          تمدید اشتراک
-        </a>
-      </div>
-    `,
+    subject: 'Your KIYA license is expiring soon',
+    html: (data: any) => `<div style="font-family:system-ui;max-width:620px;margin:auto"><h1>License expiry reminder</h1><p>Hi ${data?.name || ''}, your KIYA license expires in ${data?.daysLeft || '?'} days.</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/pricing" style="background:#5d7ae6;color:white;padding:10px 14px;border-radius:10px;text-decoration:none">Renew now</a></p></div>`,
   },
   purchaseConfirmation: {
-    subject: 'تأیید خرید',
-    html: (name: string, product: string, amount: number) => `
-      <div dir="rtl" style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1>خرید شما تأیید شد</h1>
-        <p>سلام ${name}،</p>
-        <p>خرید شما با موفقیت انجام شد:</p>
-        <ul>
-          <li>محصول: ${product}</li>
-          <li>مبلغ: $${amount}</li>
-        </ul>
-        <p>لینک دانلود به ایمیل شما ارسال خواهد شد.</p>
-      </div>
-    `,
+    subject: 'Purchase confirmation',
+    html: (data: any) => `<div style="font-family:system-ui;max-width:620px;margin:auto"><h1>Purchase confirmed</h1><p>Hi ${data?.name || ''}, your purchase was successful.</p><ul><li>Product: ${data?.product || '-'}</li><li>Amount: ${Number(data?.amount || 0).toLocaleString('en-US')} Toman</li></ul></div>`,
   },
 };
 
+async function requireAdmin(request: NextRequest) {
+  const token = extractToken(request);
+  if (!token) return null;
+  const payload = await verifyJwt(token, process.env.JWT_SECRET || 'default-secret');
+  return payload?.isAdmin ? payload : null;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
+    if (!(await requireAdmin(request))) return errorResponse('Unauthorized', 401);
+    const { to, template, data, subject, html } = await request.json();
+    if (!to) return errorResponse('Recipient is required');
 
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    if (!payload.isAdmin) {
-      return errorResponse('دسترسی غیرمجاز', 403);
+    if (html && subject) {
+      const result = await sendEmail({ to, subject, html });
+      return successResponse(result, result.sent ? 'Email sent' : 'Email queued/skipped');
     }
 
-    const body = await request.json();
-    const { to, template, data } = body;
-
-    if (!to || !template) {
-      return errorResponse('گیرنده و قالب الزامی است');
-    }
-
-    if (!templates[template as keyof typeof templates]) {
-      return errorResponse('قالب نامعتبر است');
-    }
-
-    // In production, this would use Resend API
-    // const resend = new Resend(process.env.RESEND_API_KEY);
-    // await resend.emails.send({ from, to, subject, html });
-
-    console.log(`Email sent to ${to} using template ${template}`);
-
-    return successResponse(null, 'ایمیل ارسال شد');
+    const tpl = templates[template as keyof typeof templates];
+    if (!tpl) return errorResponse('Invalid template');
+    const result = await sendEmail({ to, subject: tpl.subject, html: tpl.html(data || {}) });
+    return successResponse(result, result.sent ? 'Email sent' : 'Email queued/skipped');
   } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
+    return errorResponse(error instanceof Error ? error.message : 'Failed to send email', 500);
   }
 }

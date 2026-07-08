@@ -1,157 +1,67 @@
 import { NextRequest } from 'next/server';
-import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { makePlannerId, readPlannerList, requirePlannerUser, writePlannerList } from '@/lib/server/planner-store';
 
 export const runtime = 'edge';
 
-// In-memory store for demo
-const tasks = new Map<string, Array<{
-  id: string;
-  title: string;
-  status: string;
-  priority: string;
-  due?: string;
-  createdAt: string;
-}>>();
+type Task = { id: string; title: string; status: string; priority: string; due?: string; createdAt: string; updatedAt?: string };
+const COLLECTION = 'tasks';
 
-function generateId() {
-  return `task-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+async function auth(request: NextRequest) {
+  const payload = await requirePlannerUser(request);
+  if (!payload) return null;
+  return payload;
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) {
-      return errorResponse('لایسنس الزامی است', 401);
-    }
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) {
-      return errorResponse('لایسنس نامعتبر است', 401);
-    }
-
-    const userTasks = tasks.get(payload.sub) || [];
-    return successResponse(userTasks);
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const payload = await auth(request);
+    if (!payload) return errorResponse('License is required or invalid', 401);
+    return successResponse(await readPlannerList<Task>(payload.sub, COLLECTION));
+  } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) {
-      return errorResponse('لایسنس الزامی است', 401);
-    }
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) {
-      return errorResponse('لایسنس نامعتبر است', 401);
-    }
-
+    const payload = await auth(request);
+    if (!payload) return errorResponse('License is required or invalid', 401);
     const body = await request.json();
     const { title, status = 'todo', priority = 'medium', due } = body;
-
-    if (!title) {
-      return errorResponse('عنوان الزامی است');
-    }
-
-    const userTasks = tasks.get(payload.sub) || [];
-    const newTask = {
-      id: generateId(),
-      title,
-      status,
-      priority,
-      due,
-      createdAt: new Date().toISOString(),
-    };
-
-    userTasks.push(newTask);
-    tasks.set(payload.sub, userTasks);
-
-    return successResponse(newTask, 'وظیفه ایجاد شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    if (!title) return errorResponse('Title is required');
+    const rows = await readPlannerList<Task>(payload.sub, COLLECTION);
+    const task: Task = { id: makePlannerId('task'), title, status, priority, due, createdAt: new Date().toISOString() };
+    await writePlannerList(payload.sub, COLLECTION, [...rows, task]);
+    return successResponse(task, 'Task created');
+  } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) {
-      return errorResponse('لایسنس الزامی است', 401);
-    }
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) {
-      return errorResponse('لایسنس نامعتبر است', 401);
-    }
-
+    const payload = await auth(request);
+    if (!payload) return errorResponse('License is required or invalid', 401);
     const body = await request.json();
     const { id, title, status, priority, due } = body;
-
-    if (!id) {
-      return errorResponse('شناسه وظیفه الزامی است');
-    }
-
-    const userTasks = tasks.get(payload.sub) || [];
-    const taskIndex = userTasks.findIndex((t) => t.id === id);
-
-    if (taskIndex === -1) {
-      return errorResponse('وظیفه یافت نشد', 404);
-    }
-
-    const updatedTask = {
-      ...userTasks[taskIndex],
-      ...(title && { title }),
-      ...(status && { status }),
-      ...(priority && { priority }),
-      ...(due !== undefined && { due }),
-    };
-
-    userTasks[taskIndex] = updatedTask;
-    tasks.set(payload.sub, userTasks);
-
-    return successResponse(updatedTask, 'وظیفه به‌روزرسانی شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    if (!id) return errorResponse('Task ID is required');
+    const rows = await readPlannerList<Task>(payload.sub, COLLECTION);
+    const idx = rows.findIndex(t => t.id === id);
+    if (idx === -1) return errorResponse('Task not found', 404);
+    const updated: Task = { ...rows[idx], ...(title !== undefined && { title }), ...(status !== undefined && { status }), ...(priority !== undefined && { priority }), ...(due !== undefined && { due }), updatedAt: new Date().toISOString() };
+    rows[idx] = updated;
+    await writePlannerList(payload.sub, COLLECTION, rows);
+    return successResponse(updated, 'Task updated');
+  } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) {
-      return errorResponse('لایسنس الزامی است', 401);
-    }
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) {
-      return errorResponse('لایسنس نامعتبر است', 401);
-    }
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return errorResponse('شناسه وظیفه الزامی است');
-    }
-
-    const userTasks = tasks.get(payload.sub) || [];
-    const filteredTasks = userTasks.filter((t) => t.id !== id);
-
-    if (filteredTasks.length === userTasks.length) {
-      return errorResponse('وظیفه یافت نشد', 404);
-    }
-
-    tasks.set(payload.sub, filteredTasks);
-
-    return successResponse(null, 'وظیفه حذف شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const payload = await auth(request);
+    if (!payload) return errorResponse('License is required or invalid', 401);
+    const id = new URL(request.url).searchParams.get('id');
+    if (!id) return errorResponse('Task ID is required');
+    const rows = await readPlannerList<Task>(payload.sub, COLLECTION);
+    const next = rows.filter(t => t.id !== id);
+    if (next.length === rows.length) return errorResponse('Task not found', 404);
+    await writePlannerList(payload.sub, COLLECTION, next);
+    return successResponse(null, 'Task deleted');
+  } catch { return errorResponse('Failed to process request', 500); }
 }

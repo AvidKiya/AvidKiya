@@ -6,10 +6,10 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://plausible.io https://api.github.com https://opengraph.githubassets.com https://www.google-analytics.com",
+  "connect-src 'self' https://plausible.io https://api.github.com https://opengraph.githubassets.com https://www.google-analytics.com https://api.zarinpal.com https://sandbox.zarinpal.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://www.zarinpal.com https://sandbox.zarinpal.com",
 ].join('; ');
 
 const securityHeaders = [

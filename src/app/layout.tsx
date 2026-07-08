@@ -8,25 +8,25 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { PwaRegister } from "@/components/pwa-register";
 import { ExitPopup } from "@/components/exit-popup";
 import { Analytics } from "@/components/analytics";
+import { OfflineSync } from "@/components/offline-sync";
+import { PushRegister } from "@/components/push-register";
 
 export const metadata: Metadata = {
-  title: "اَوید کیا — Avid Kiya — DevHub OS",
-  description: "پلتفرم شخصی اَوید کیا — پرتفولیو، KIYA Planner، فروشگاه، خدمات فریلنسری — معمار سیستم",
-  keywords: ["اَوید کیا", "Avid Kiya", "avidkiya", "KIYA Planner", "مغز دوم", "Next.js", "Cloudflare"],
-  authors: [{ name: "Avid Kiya", url: "https://avidkiya.com" }],
-  creator: "Avid Kiya",
-  metadataBase: new URL("https://avidkiya.com"),
+  title: "New Site",
+  description: "A clean, configurable website shell.",
+  keywords: ["portfolio", "planner", "shop", "services", "Next.js"],
+  authors: [{ name: "Site owner" }],
+  creator: "Site owner",
+  metadataBase: new URL("https://example.com"),
   openGraph: {
     type: "website",
-    locale: "fa_IR",
-    alternateLocale: "en_US",
-    siteName: "اَوید کیا",
-    title: "اَوید کیا — DevHub OS",
-    description: "پلتفرم شخصی اَوید کیا — KIYA Planner، فروشگاه، خدمات",
+    locale: "en_US",
+    siteName: "New Site",
+    title: "New Site",
+    description: "A clean, configurable website shell.",
   },
   twitter: {
     card: "summary_large_image",
-    creator: "@avidkiya",
   },
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
@@ -43,11 +43,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('avidkiya_theme')||'dark';var l=localStorage.getItem('avidkiya_lang')||'fa';document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('dir',l==='fa'?'rtl':'ltr');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('avidkiya_theme')||'dark';var l=localStorage.getItem('avidkiya_lang')||'en';document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('dir',l==='fa'?'rtl':'ltr');}catch(e){}})();`,
           }}
         />
         <link rel="icon" href="/favicon.ico" />
@@ -69,6 +69,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AdminGate />
             <ExitPopup />
             <Analytics />
+            <OfflineSync />
+            <PushRegister />
           </ErrorBoundary>
           <PwaRegister />
         </CmsProvider>

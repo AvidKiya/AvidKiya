@@ -16,8 +16,8 @@ export default function KiyaAdminPlansPage() {
     const name = window.prompt('نام پلن (فارسی):');
     if (!name) return;
     const nameEn = window.prompt('نام پلن (انگلیسی):', name) || name;
-    const priceMonthly = Number(window.prompt('قیمت ماهانه (دلار):', '0') || 0);
-    const priceYearly = Number(window.prompt('قیمت سالانه (دلار):', '0') || 0);
+    const priceMonthly = Number(window.prompt('قیمت ماهانه (تومان):', '0') || 0);
+    const priceYearly = Number(window.prompt('قیمت سالانه (تومان):', '0') || 0);
     const newPlan: Plan = {
       id: `plan-${Date.now()}`,
       name: { fa: name, en: nameEn },
@@ -71,9 +71,9 @@ export default function KiyaAdminPlansPage() {
             </button>
             <div className="font-[800] text-[15px] mb-1">{tf(p.name)}</div>
             <div className="text-[20px] font-[800] mb-1">
-              ${p.priceMonthly}<span className="text-[11px] font-[500] text-text-3">/ماه</span>
+              {p.priceMonthly.toLocaleString('en-US')} تومان<span className="text-[11px] font-[500] text-text-3">/ماه</span>
             </div>
-            <div className="text-[11px] text-text-3 mb-3">${p.priceYearly}/سال</div>
+            <div className="text-[11px] text-text-3 mb-3">{p.priceYearly.toLocaleString('en-US')} تومان/سال</div>
             <ul className="space-y-1.5 mb-3 text-[12px]">
               {p.features.map((f, idx) => (
                 <li key={idx} className="flex items-center justify-between gap-1 text-text-2">

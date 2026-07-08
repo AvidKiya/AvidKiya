@@ -31,12 +31,19 @@ export function ExitPopup() {
 
   if (!cms.leadMagnet.exitPopupEnabled || isAppArea || !show || submitted) return null;
 
-  const submit = () => {
+  const submit = async () => {
     if (!email.includes('@')) return;
     updateCms({
       newsletter: { ...cms.newsletter, subscribers: [...cms.newsletter.subscribers, email] },
       leadMagnet: { ...cms.leadMagnet, stats: { ...cms.leadMagnet.stats, emailsCollected: cms.leadMagnet.stats.emailsCollected + 1, downloads: cms.leadMagnet.stats.downloads + 1 } },
     });
+    try {
+      await fetch('/api/email/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'exit-popup' }),
+      });
+    } catch {}
     setSubmitted(true);
   };
 

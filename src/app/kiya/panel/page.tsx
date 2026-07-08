@@ -8,13 +8,13 @@ import {
   Megaphone, MessageSquare, ShoppingBag, Briefcase, Wrench, Brain,
   Inbox, Image as ImageIcon, CalendarDays, Settings as SettingsIcon,
   BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search,
-  X as XIcon, Star
+  X as XIcon, Star, BarChart3
 } from 'lucide-react';
 
 type SectionKey =
   'dashboard'|'identity'|'socials'|'homepage'|'about'|'projects'|'resume'|
   'gifts'|'announcements'|'comments'|'shop'|'freelance'|'tools'|'kiya'|
-  'messages'|'media'|'calendar'|'settings'|'blog'|'coupons'|'emails'|'leadmagnet';
+  'messages'|'orders'|'analyticsLog'|'experimentsPanel'|'errorsLog'|'pushPanel'|'media'|'calendar'|'settings'|'blog'|'coupons'|'emails'|'leadmagnet';
 
 const SECTIONS: {key:SectionKey; fa:string; en:string; icon:any}[] = [
   {key:'dashboard', fa:'نمای کلی', en:'Dashboard', icon:LayoutDashboard},
@@ -36,6 +36,11 @@ const SECTIONS: {key:SectionKey; fa:string; en:string; icon:any}[] = [
   {key:'emails', fa:'ایمیل‌ها', en:'Emails', icon:Mail},
   {key:'leadmagnet', fa:'Lead Magnet', en:'Lead Magnet', icon:Magnet},
   {key:'messages', fa:'پیام‌ها', en:'Messages', icon:Inbox},
+  {key:'orders', fa:'سفارش‌ها', en:'Orders', icon:ShoppingBag},
+  {key:'analyticsLog', fa:'آنالیتیکس', en:'Analytics', icon:Search},
+  {key:'experimentsPanel', fa:'آزمایش‌ها', en:'A/B Tests', icon:BarChart3},
+  {key:'errorsLog', fa:'خطاها', en:'Errors', icon:XIcon},
+  {key:'pushPanel', fa:'Push', en:'Push', icon:Megaphone},
   {key:'media', fa:'رسانه', en:'Media', icon:ImageIcon},
   {key:'calendar', fa:'تقویم', en:'Calendar', icon:CalendarDays},
   {key:'settings', fa:'تنظیمات', en:'Settings', icon:SettingsIcon},
@@ -51,11 +56,46 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>){
   return <textarea {...props} className={`glass-input !py-[10px] text-[13px] resize-y ${props.className||''}`} />
 }
 
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function randomBase32(length = 32) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, b => B32[b % B32.length]).join('');
+}
+function base32ToBytes(secret: string) {
+  const clean = secret.replace(/=+$/,'').replace(/\s+/g,'').toUpperCase();
+  let bits = '';
+  for (const ch of clean) {
+    const v = B32.indexOf(ch);
+    if (v >= 0) bits += v.toString(2).padStart(5,'0');
+  }
+  const out: number[] = [];
+  for (let i=0; i+8<=bits.length; i+=8) out.push(parseInt(bits.slice(i,i+8),2));
+  return new Uint8Array(out);
+}
+async function totp(secret: string, step = Math.floor(Date.now()/30000)) {
+  const key = await crypto.subtle.importKey('raw', base32ToBytes(secret), { name:'HMAC', hash:'SHA-1' }, false, ['sign']);
+  const msg = new ArrayBuffer(8);
+  const view = new DataView(msg);
+  view.setUint32(4, step, false);
+  const h = new Uint8Array(await crypto.subtle.sign('HMAC', key, msg));
+  const o = h[h.length-1] & 15;
+  const bin = ((h[o] & 0x7f) << 24) | (h[o+1] << 16) | (h[o+2] << 8) | h[o+3];
+  return String(bin % 1000000).padStart(6,'0');
+}
+async function verifyTotp(secret: string, code: string) {
+  const clean = code.replace(/\s+/g,'');
+  const now = Math.floor(Date.now()/30000);
+  for (let drift=-1; drift<=1; drift++) if (await totp(secret, now+drift) === clean) return true;
+  return false;
+}
+
 export default function AdminPanelV2(){
   const cmsCtx = useCms();
   const { cms, updateCms, editMode, setEditMode, exportJson, importJson, syncStatus, tf } = cmsCtx;
   const [authed, setAuthed] = useState(false);
   const [pass, setPass] = useState('');
+  const [otp, setOtp] = useState('');
   const [section, setSection] = useState<SectionKey>('dashboard');
   const [q, setQ] = useState('');
 
@@ -64,9 +104,19 @@ export default function AdminPanelV2(){
     if(ok) setAuthed(true);
   } },[]);
 
-  const login = ()=> {
+  const login = async ()=> {
     const saved = localStorage.getItem('ak_admin_pass') || 'admin';
-    if(pass === saved){ sessionStorage.setItem('ak_admin_ok','1'); setAuthed(true); setEditMode(true);} else alert('رمز اشتباه');
+    if(pass !== saved){ alert('رمز اشتباه'); return; }
+    const twoEnabled = localStorage.getItem('ak_admin_2fa_enabled') === '1';
+    const secret = localStorage.getItem('ak_admin_2fa_secret') || '';
+    if(twoEnabled) {
+      const okTotp = otp && await verifyTotp(secret, otp);
+      const backupCodes: string[] = JSON.parse(localStorage.getItem('ak_admin_backup_codes') || '[]');
+      const okBackup = otp && backupCodes.includes(otp.trim().toUpperCase());
+      if(!okTotp && !okBackup) { alert('کد دو مرحله‌ای نامعتبر است'); return; }
+      if(okBackup) localStorage.setItem('ak_admin_backup_codes', JSON.stringify(backupCodes.filter(c=>c!==otp.trim().toUpperCase())));
+    }
+    sessionStorage.setItem('ak_admin_ok','1'); setAuthed(true); setEditMode(true);
   };
 
   const filteredSections = useMemo(()=> SECTIONS.filter(s=> !q || s.fa.includes(q) || s.en.toLowerCase().includes(q.toLowerCase())), [q]);
@@ -82,6 +132,9 @@ export default function AdminPanelV2(){
           <div className="text-[12px] text-text-3 mb-4">#kiya/panel — AvidKiya OS</div>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
             placeholder="رمز مدیر" className="glass-input text-center mb-3" />
+          {typeof window !== 'undefined' && localStorage.getItem('ak_admin_2fa_enabled')==='1' && (
+            <input value={otp} onChange={e=>setOtp(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="کد ۶ رقمی 2FA" className="glass-input text-center mb-3" inputMode="numeric" />
+          )}
           <button onClick={login} className="glass-btn-primary w-full">ورود امن →</button>
           <div className="text-[11px] text-text-3 mt-3">پیش‌فرض: admin — بعد از ورود حتماً عوض کنید</div>
         </GlassCard>
@@ -157,6 +210,16 @@ export default function AdminPanelV2(){
 function SectionRouter({section}:{section:SectionKey}){
   const { cms, updateCms, tf } = useCms();
   const [newPass, setNewPass] = useState('');
+  const [twoFaSecret, setTwoFaSecret] = useState('');
+  const [twoFaCode, setTwoFaCode] = useState('');
+  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+
+  useEffect(()=>{
+    if(typeof window !== 'undefined') {
+      setTwoFaEnabled(localStorage.getItem('ak_admin_2fa_enabled')==='1');
+      setTwoFaSecret(localStorage.getItem('ak_admin_2fa_secret') || '');
+    }
+  }, []);
 
   // DASHBOARD
   if(section==='dashboard'){
@@ -218,21 +281,63 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // IDENTITY
   if(section==='identity'){
+    const uploadLogo = (file?: File) => {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 512;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          let quality = 0.86;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          while (dataUrl.length > 300 * 1024 * 1.37 && quality > 0.45) {
+            quality -= 0.08;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          updateCms({ brand: { ...cms.brand, logoImage: dataUrl } });
+        };
+        img.src = String(reader.result || '');
+      };
+      reader.readAsDataURL(file);
+    };
     return (
       <GlassCard className="!p-5">
-        <h2 className="font-[700] text-[15px] mb-4">هویت برند</h2>
-        <div className="grid md:grid-cols-2 gap-3 text-[13px]">
-          <Field label="نام فارسی"><Input value={cms.identity.fullName.fa} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, fa:e.target.value}}})} /></Field>
-          <Field label="Name EN"><Input value={cms.identity.fullName.en} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, en:e.target.value}}})} dir="ltr" /></Field>
-          <Field label="عنوان FA"><Input value={cms.identity.title.fa} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, fa:e.target.value}}})} /></Field>
-          <Field label="Title EN"><Input value={cms.identity.title.en} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, en:e.target.value}}})} dir="ltr" /></Field>
-          <Field label="ایمیل"><Input value={cms.identity.email} onChange={e=>updateCms({identity:{...cms.identity, email:e.target.value}})} dir="ltr" /></Field>
-          <Field label="Years Exp"><Input type="number" value={cms.identity.yearsExperience} onChange={e=>updateCms({identity:{...cms.identity, yearsExperience:+e.target.value||0}})} /></Field>
-          <div className="md:col-span-2">
-            <Field label="Bio FA"><TextArea rows={3} value={cms.identity.bio.fa} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, fa:e.target.value}}})} /></Field>
+        <h2 className="font-[700] text-[15px] mb-4">Brand identity</h2>
+        <div className="grid md:grid-cols-[220px_1fr] gap-4 text-[13px]">
+          <div className="space-y-3">
+            <div className="w-28 h-28 rounded-[24px] glass-card !p-0 overflow-hidden flex items-center justify-center mx-auto">
+              {cms.brand.logoImage ? (
+                <img src={cms.brand.logoImage} alt="Logo preview" className="w-full h-full object-cover" />
+              ) : <span className="text-3xl font-black text-primary">{cms.brand.logoLetter || 'N'}</span>}
+            </div>
+            <label className="glass-btn !w-full !py-2 text-center cursor-pointer block">
+              Upload logo
+              <input type="file" accept="image/*" hidden onChange={e=>uploadLogo(e.target.files?.[0])} />
+            </label>
+            {cms.brand.logoImage && <button onClick={()=>updateCms({brand:{...cms.brand, logoImage:''}})} className="w-full text-rose text-[12px]">Remove logo</button>}
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <Field label="Brand name"><Input value={cms.brand.brandName} onChange={e=>updateCms({brand:{...cms.brand, brandName:e.target.value}})} dir="ltr" /></Field>
+            <Field label="Logo letter"><Input maxLength={3} value={cms.brand.logoLetter} onChange={e=>updateCms({brand:{...cms.brand, logoLetter:e.target.value}})} dir="ltr" /></Field>
+            <Field label="Primary color"><Input type="color" value={cms.brand.primaryColor} onChange={e=>updateCms({brand:{...cms.brand, primaryColor:e.target.value}})} /></Field>
+            <Field label="Accent color"><Input type="color" value={cms.brand.accentColor} onChange={e=>updateCms({brand:{...cms.brand, accentColor:e.target.value}})} /></Field>
+            <Field label="Name EN"><Input value={cms.identity.fullName.en} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, en:e.target.value}}})} dir="ltr" /></Field>
+            <Field label="Name FA"><Input value={cms.identity.fullName.fa} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, fa:e.target.value}}})} /></Field>
+            <Field label="Title EN"><Input value={cms.identity.title.en} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, en:e.target.value}}})} dir="ltr" /></Field>
+            <Field label="Title FA"><Input value={cms.identity.title.fa} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, fa:e.target.value}}})} /></Field>
+            <Field label="Email"><Input value={cms.identity.email} onChange={e=>updateCms({identity:{...cms.identity, email:e.target.value}})} dir="ltr" /></Field>
+            <Field label="Years experience"><Input type="number" value={cms.identity.yearsExperience} onChange={e=>updateCms({identity:{...cms.identity, yearsExperience:+e.target.value||0}})} /></Field>
+            <div className="md:col-span-2"><Field label="Bio EN"><TextArea rows={3} value={cms.identity.bio.en} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, en:e.target.value}}})} dir="ltr" /></Field></div>
+            <div className="md:col-span-2"><Field label="Bio FA"><TextArea rows={3} value={cms.identity.bio.fa} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, fa:e.target.value}}})} /></Field></div>
           </div>
         </div>
-        <div className="text-[11px] text-emerald mt-3 flex items-center gap-1"><Check size={13}/> Auto-save فعال — 800ms</div>
+        <div className="text-[11px] text-emerald mt-3 flex items-center gap-1"><Check size={13}/> Auto-save enabled — 800ms</div>
       </GlassCard>
     );
   }
@@ -319,7 +424,7 @@ function SectionRouter({section}:{section:SectionKey}){
         <div className="flex justify-between items-center">
           <h2 className="font-[700]">فروشگاه — {prods.length} محصول</h2>
           <button onClick={()=>{
-            const np={id:'pr'+Date.now(), title:{fa:'محصول جدید',en:'New Product'}, description:{fa:'توضیح',en:'desc'}, price:19, currency:'USD' as const, category: cms.shop.categories[0]||'قالب', enabled:true};
+            const np={id:'pr'+Date.now(), title:{fa:'',en:'New Product'}, description:{fa:'',en:''}, price:0, currency:'TMN' as const, category: cms.shop.categories[0]||'general', enabled:true};
             updateCms({shop:{...cms.shop, products:[np, ...prods]}});
           }} className="glass-btn-primary !py-[8px] !px-3 text-[12px]">+ محصول</button>
         </div>
@@ -332,6 +437,7 @@ function SectionRouter({section}:{section:SectionKey}){
               </div>
               <textarea value={p.description.fa} rows={2} onChange={e=>{ const a=[...prods]; a[i]={...p, description:{...p.description, fa:e.target.value}}; updateCms({shop:{...cms.shop, products:a}})}}
                 className="glass-input text-[12px]" />
+              <input value={p.fileUrl||''} dir="ltr" onChange={e=>{ const a=[...prods]; a[i]={...p, fileUrl:e.target.value}; updateCms({shop:{...cms.shop, products:a}})}} className="glass-input !py-[8px] text-[12px]" placeholder="Download file URL (shown after paid order)" />
               <div className="flex items-center justify-between text-[11.5px]">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={p.enabled} onChange={e=>{ const a=[...prods]; a[i]={...p, enabled:e.target.checked}; updateCms({shop:{...cms.shop, products:a}})}}/> فعال</label>
                 <span className="text-text-3">{p.category} • {p.currency}</span>
@@ -551,6 +657,21 @@ function SectionRouter({section}:{section:SectionKey}){
                 className="glass-input text-[13px]" />
               <button onClick={()=>{ if(newPass.length>=4){ localStorage.setItem('ak_admin_pass', newPass); alert('رمز عوض شد'); setNewPass(''); } }}
                 className="glass-btn-primary mt-2 w-full !py-[10px] text-[13px]">ذخیره رمز جدید</button>
+            </div>
+            <div className="border-t border-glass-border pt-3">
+              <div className="font-[700] mb-1">ورود دو مرحله‌ای (TOTP)</div>
+              <div className="text-[11.5px] text-text-3 mb-2">وضعیت: {twoFaEnabled ? 'فعال' : 'غیرفعال'}</div>
+              {!twoFaEnabled && !twoFaSecret && <button onClick={()=>{ const s=randomBase32(); localStorage.setItem('ak_admin_2fa_secret', s); setTwoFaSecret(s); }} className="glass-btn !py-[8px] !px-3 text-[12px]">ساخت Secret</button>}
+              {!twoFaEnabled && twoFaSecret && (
+                <div className="space-y-2">
+                  <div className="text-[11px] text-text-3">Secret را در Google Authenticator / 1Password وارد کنید:</div>
+                  <code className="block bg-white/[0.05] p-2 rounded text-[11px] break-all" dir="ltr">{twoFaSecret}</code>
+                  <code className="block bg-white/[0.05] p-2 rounded text-[10px] break-all" dir="ltr">{`otpauth://totp/AvidKiya:admin?secret=${twoFaSecret}&issuer=AvidKiya`}</code>
+                  <input value={twoFaCode} onChange={e=>setTwoFaCode(e.target.value)} placeholder="کد ۶ رقمی" className="glass-input !py-[8px] text-[12px]" inputMode="numeric" />
+                  <button onClick={async()=>{ if(await verifyTotp(twoFaSecret, twoFaCode)){ localStorage.setItem('ak_admin_2fa_enabled','1'); setTwoFaEnabled(true); setTwoFaCode(''); alert('2FA فعال شد'); } else alert('کد نامعتبر است'); }} className="glass-btn-primary !py-[8px] !px-3 text-[12px]">فعال‌سازی 2FA</button>
+                </div>
+              )}
+              {twoFaEnabled && <div className="space-y-2 mt-2"><button onClick={()=>{ const codes=Array.from({length:10},()=>Math.random().toString(36).slice(2,10).toUpperCase()); localStorage.setItem('ak_admin_backup_codes', JSON.stringify(codes)); alert('Backup codes:\n'+codes.join('\n')); }} className="glass-btn !py-[7px] !px-3 text-[12px]">ساخت Backup Codes</button><button onClick={()=>{ if(confirm('2FA غیرفعال شود؟')){ localStorage.removeItem('ak_admin_2fa_enabled'); localStorage.removeItem('ak_admin_2fa_secret'); localStorage.removeItem('ak_admin_backup_codes'); setTwoFaEnabled(false); setTwoFaSecret(''); } }} className="text-rose text-[12px] block">غیرفعال‌سازی 2FA</button></div>}
             </div>
           </div>
         </GlassCard>
@@ -898,6 +1019,31 @@ function SectionRouter({section}:{section:SectionKey}){
     );
   }
 
+  // ORDERS
+  if(section==='orders'){
+    return <ShopOrdersPanel />;
+  }
+
+  // ANALYTICS LOG
+  if(section==='analyticsLog'){
+    return <AdminLogPanel title="Analytics Events" endpoint="/api/analytics/event" kind="analytics" />;
+  }
+
+  // A/B TESTS
+  if(section==='experimentsPanel'){
+    return <ExperimentsPanel />;
+  }
+
+  // ERRORS LOG
+  if(section==='errorsLog'){
+    return <AdminLogPanel title="Client Errors" endpoint="/api/monitoring/error" kind="errors" />;
+  }
+
+  // PUSH
+  if(section==='pushPanel'){
+    return <PushAdminPanel />;
+  }
+
   // MEDIA
   if(section==='media'){
     return (
@@ -1016,6 +1162,96 @@ function SectionRouter({section}:{section:SectionKey}){
         <Link href="/" className="text-primary text-[12.5px] hover:underline">→ مشاهده زنده در سایت</Link>
       </div>
     </GlassCard>
+  );
+}
+
+
+/* ---------- A/B experiments panel ---------- */
+function ExperimentsPanel(){
+  const [data,setData]=useState<any>(null); const [loading,setLoading]=useState(true);
+  const getAdminToken=async()=>{const c=sessionStorage.getItem('ak_kiya_admin_jwt'); if(c) return c; const r=await fetch('/api/planner/auth/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:'KIYA-ADMIN-0000-0001'})}); const d=await r.json(); if(d.success){sessionStorage.setItem('ak_kiya_admin_jwt',d.data.token); return d.data.token;} return '';};
+  const load=async()=>{setLoading(true); const t=await getAdminToken(); const r=await fetch('/api/experiments/stats',{headers:{Authorization:`Bearer ${t}`}}); const d=await r.json(); if(d.success)setData(d.data); setLoading(false);};
+  useEffect(()=>{load();},[]);
+  const experiments=data?.summary||[];
+  return <div className="space-y-3"><div className="flex items-center justify-between"><h2 className="font-[700]">A/B Tests — {experiments.length}</h2><button onClick={load} className="glass-btn !py-[7px] !px-3 text-[12px]">Refresh</button></div>{loading?<GlassCard className="!p-6 text-center text-text-3">Loading…</GlassCard>:experiments.length===0?<GlassCard className="!p-6 text-center text-text-3">No experiments yet. Use /api/experiments to assign variants.</GlassCard>:experiments.map((exp:any)=><GlassCard key={exp.experiment} className="!p-5"><div className="flex justify-between mb-3"><b>{exp.experiment}</b><span className="text-text-3 text-[12px]">{exp.totalAssignments} assignments • {exp.totalEvents} events</span></div><div className="grid md:grid-cols-2 gap-3">{exp.variants.map((v:any)=><div key={v.variant} className="bg-white/[0.03] rounded-[12px] border border-glass-border p-3"><div className="flex justify-between text-[12px] mb-2"><b>Variant {v.variant}</b><span>{v.conversionRate}% CVR</span></div><div className="h-2 bg-white/10 rounded overflow-hidden"><div className="h-full bg-primary" style={{width:`${Math.min(100,v.conversionRate)}%`}}/></div><div className="text-text-3 text-[11px] mt-2">{v.assignments} assigned • {v.events} events • {v.conversions} conversions</div></div>)}</div></GlassCard>)}</div>;
+}
+
+/* ---------- Push admin panel ---------- */
+function PushAdminPanel(){
+  const [subs,setSubs]=useState<any[]>([]); const [title,setTitle]=useState('KIYA update'); const [message,setMessage]=useState(''); const [result,setResult]=useState('');
+  const getAdminToken=async()=>{const c=sessionStorage.getItem('ak_kiya_admin_jwt'); if(c) return c; const r=await fetch('/api/planner/auth/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:'KIYA-ADMIN-0000-0001'})}); const d=await r.json(); if(d.success){sessionStorage.setItem('ak_kiya_admin_jwt',d.data.token); return d.data.token;} return '';};
+  const load=async()=>{const t=await getAdminToken(); const r=await fetch('/api/push/subscriptions',{headers:{Authorization:`Bearer ${t}`}}); const d=await r.json(); if(d.success)setSubs(d.data||[]);};
+  useEffect(()=>{load();},[]);
+  const send=async()=>{const t=await getAdminToken(); const r=await fetch('/api/push/send',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${t}`},body:JSON.stringify({title,message})}); const d=await r.json(); setResult(d.success?`Queued ${d.data.queued} message(s)`:d.error);};
+  return <div className="space-y-3"><h2 className="font-[700]">Push Notifications — {subs.length} subscriptions</h2><GlassCard className="!p-5 space-y-3"><input value={title} onChange={e=>setTitle(e.target.value)} className="glass-input" placeholder="Title"/><textarea value={message} onChange={e=>setMessage(e.target.value)} className="glass-input" rows={3} placeholder="Message"/><button onClick={send} className="glass-btn-primary px-4 py-2">Queue notification</button>{result&&<div className="text-text-3 text-sm">{result}</div>}</GlassCard><GlassCard className="!p-5"><button onClick={load} className="glass-btn px-3 py-2 text-sm mb-3">Refresh</button><div className="space-y-2 max-h-[420px] overflow-auto">{subs.map(s=><div key={s.id} className="text-[11px] border border-glass-border rounded p-2"><b>{s.id}</b><div className="text-text-3">{s.userId||'anonymous'} • {s.createdAt}</div><div className="truncate" dir="ltr">{s.endpoint}</div></div>)}</div></GlassCard></div>;
+}
+
+/* ---------- Admin log panels ---------- */
+function AdminLogPanel({title, endpoint, kind}:{title:string; endpoint:string; kind:'analytics'|'errors'}){
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const getAdminToken = async (): Promise<string | null> => {
+    const cached = sessionStorage.getItem('ak_kiya_admin_jwt');
+    if (cached) return cached;
+    try { const res = await fetch('/api/planner/auth/validate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code:'KIYA-ADMIN-0000-0001' }) }); const data = await res.json(); if (data.success && data.data?.token) { sessionStorage.setItem('ak_kiya_admin_jwt', data.data.token); return data.data.token; } } catch {}
+    return null;
+  };
+  const load = async()=>{ setLoading(true); const token=await getAdminToken(); if(!token){setLoading(false); return;} try{ const res=await fetch(endpoint,{headers:{Authorization:`Bearer ${token}`}}); const data=await res.json(); if(data.success) setRows(data.data||[]); } finally { setLoading(false); } };
+  useEffect(()=>{ load(); }, []);
+  return <div className="space-y-3"><div className="flex items-center justify-between"><h2 className="font-[700]">{title} — {rows.length}</h2><button onClick={load} className="glass-btn !py-[7px] !px-3 text-[12px]">Refresh</button></div><GlassCard className="!p-5">{loading ? <div className="text-center text-text-3 py-6">Loading…</div> : rows.length===0 ? <div className="text-center text-text-3 py-6">No records yet.</div> : <div className="space-y-2 max-h-[620px] overflow-auto">{rows.map((r,i)=><div key={r.id||i} className="bg-white/[0.03] border border-glass-border rounded-[12px] p-3 text-[12px]"><div className="flex justify-between gap-3 mb-1"><b>{kind==='analytics' ? r.name : r.message}</b><span className="text-text-3 shrink-0">{r.createdAt ? new Date(r.createdAt).toLocaleString('en-US') : ''}</span></div><pre className="text-text-3 whitespace-pre-wrap text-[11px] overflow-auto" dir="ltr">{JSON.stringify(r, null, 2)}</pre></div>)}</div>}</GlassCard></div>;
+}
+
+/* ---------- Shop Orders (connected to /api/shop/orders) ---------- */
+interface ShopOrder {
+  orderId: string; status: string; customerName?: string; customerEmail?: string;
+  total: number; currency: string; createdAt: string; gateway?: string; refId?: string;
+  items?: Array<{name:string; quantity:number; price:number}>;
+}
+
+function ShopOrdersPanel(){
+  const [orders, setOrders] = useState<ShopOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const getAdminToken = async (): Promise<string | null> => {
+    const cached = sessionStorage.getItem('ak_kiya_admin_jwt');
+    if (cached) return cached;
+    try {
+      const res = await fetch('/api/planner/auth/validate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code:'KIYA-ADMIN-0000-0001' }) });
+      const data = await res.json();
+      if (data.success && data.data?.token) { sessionStorage.setItem('ak_kiya_admin_jwt', data.data.token); return data.data.token; }
+    } catch {}
+    return null;
+  };
+
+  const load = async () => {
+    setLoading(true);
+    const token = await getAdminToken();
+    if (!token) { setLoading(false); return; }
+    try {
+      const res = await fetch('/api/shop/orders', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) setOrders(data.data || []);
+    } finally { setLoading(false); }
+  };
+
+  useEffect(()=>{ load(); }, []);
+
+  const mark = async (orderId: string, status: string) => {
+    const token = await getAdminToken();
+    if (!token) return;
+    await fetch('/api/shop/orders', { method:'PUT', headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`}, body: JSON.stringify({ orderId, status }) });
+    await load();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between"><h2 className="font-[700]">سفارش‌ها — {orders.length}</h2><button onClick={load} className="glass-btn !py-[7px] !px-3 text-[12px]">Refresh</button></div>
+      <GlassCard className="!p-5">
+        {loading ? <div className="text-center text-text-3 py-6 text-[13px]">Loading…</div> : orders.length===0 ? <div className="text-center text-text-3 py-6 text-[13px]">هنوز سفارشی ثبت نشده است.</div> : (
+          <div className="overflow-auto"><table className="w-full text-[12.5px]"><thead className="text-text-3 text-[11px]"><tr className="border-b border-glass-border"><th className="text-start p-2">Order</th><th className="text-start p-2">Customer</th><th className="text-start p-2">Amount</th><th className="text-start p-2">Status</th><th className="text-start p-2">Date</th><th className="text-start p-2"></th></tr></thead><tbody>{orders.map(o=><tr key={o.orderId} className="border-b border-glass-border/60"><td className="p-2 font-mono text-[11px]">{o.orderId}<div className="text-text-3">{o.gateway||'manual'} {o.refId?`• ${o.refId}`:''}</div></td><td className="p-2">{o.customerName||'Guest'}<div className="text-text-3">{o.customerEmail}</div></td><td className="p-2">{Number(o.total||0).toLocaleString('en-US')} Toman</td><td className="p-2"><span className={o.status==='paid'?'text-emerald':o.status==='failed'?'text-rose':'text-amber'}>● {o.status}</span></td><td className="p-2 text-text-3">{o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US') : '—'}</td><td className="p-2"><div className="flex gap-2"><button onClick={()=>mark(o.orderId,'paid')} className="text-emerald text-[11px]">Paid</button><button onClick={()=>mark(o.orderId,'refunded')} className="text-amber text-[11px]">Refund</button></div></td></tr>)}</tbody></table></div>
+        )}
+      </GlassCard>
+    </div>
   );
 }
 

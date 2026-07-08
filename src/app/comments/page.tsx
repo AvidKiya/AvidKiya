@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { validate, fieldRules } from '@/lib/validation';
 import { useCms } from '@/lib/cms/cms-context';
@@ -8,7 +8,15 @@ import { Star, Check } from 'lucide-react';
 
 export default function CommentsPage() {
   const { cms, updateCms } = useCms();
-  const comments = cms.comments;
+  const [remoteComments, setRemoteComments] = useState(cms.comments);
+  const comments = remoteComments.length ? remoteComments : cms.comments;
+
+  useEffect(() => {
+    fetch('/api/comments')
+      .then(r => r.json())
+      .then(d => { if (d.success && Array.isArray(d.data)) setRemoteComments(d.data); })
+      .catch(() => {});
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -21,7 +29,7 @@ export default function CommentsPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [justSubmitted, setJustSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check honeypot
@@ -70,7 +78,21 @@ export default function CommentsPage() {
       createdAt: new Date().toISOString().slice(0, 10),
     };
 
-    updateCms({ comments: [newComment, ...comments] });
+    updateCms({ comments: [newComment, ...cms.comments] });
+    try {
+      await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          text: formData.text,
+          rating: formData.rating,
+          website: formData.website,
+        }),
+      });
+    } catch {}
     setFormData({ name: '', email: '', role: '', text: '', rating: 5, website: '' });
     setShowForm(false);
     setJustSubmitted(true);

@@ -46,8 +46,8 @@ export default function ServicesClient(){
             </div>
             <div className="font-[700] text-[15px] mb-1">{tf(s.title)}</div>
             <div className="text-[12.5px] text-text-2 leading-relaxed min-h-[44px]">{tf(s.description)}</div>
-            <div className="text-[12px] text-text-3 mt-3">از ${s.priceFrom?.toLocaleString()}+</div>
-            <a href="#request" className="mt-3 inline-block text-[12.5px] text-primary hover:underline">درخواست پروژه →</a>
+            <div className="text-[12px] text-text-3 mt-3">{t('از', 'From')} {(s.priceFrom || 0).toLocaleString('en-US')} {t('تومان', 'Toman')}+</div>
+            <a href="#request" className="mt-3 inline-block text-[12.5px] text-primary hover:underline">{t('درخواست پروژه', 'Request project')} →</a>
           </GlassCard>
         ))}
       </div>
@@ -85,11 +85,11 @@ export default function ServicesClient(){
             <input required placeholder="نام" className="glass-input" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
             <input required type="email" placeholder="ایمیل" dir="ltr" className="glass-input" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
             <select className="glass-input sm:col-span-2" value={form.budget} onChange={e=>setForm({...form, budget:e.target.value})}>
-              <option value="">بودجه تقریبی…</option>
-              <option>&lt; $1,000</option>
-              <option>$1,000 – $3,000</option>
-              <option>$3,000 – $8,000</option>
-              <option>$8,000+</option>
+              <option value="">{t('بودجه تقریبی…', 'Estimated budget…')}</option>
+              <option>&lt; 50,000,000 تومان</option>
+              <option>50,000,000 – 150,000,000 تومان</option>
+              <option>150,000,000 – 400,000,000 تومان</option>
+              <option>400,000,000+ تومان</option>
             </select>
             <textarea required placeholder="توضیح پروژه…" rows={4} className="glass-input sm:col-span-2 resize-none"
               value={form.message} onChange={e=>setForm({...form, message:e.target.value})} />

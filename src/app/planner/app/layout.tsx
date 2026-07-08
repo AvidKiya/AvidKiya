@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Brain, LayoutDashboard, CheckSquare, FolderKanban, Target, Repeat, Calendar, BookOpen, Wallet, HeartPulse, MessageSquare, Lightbulb, BarChart3, Settings, LogOut, MessageCircleHeart, ShieldCheck } from 'lucide-react';
+import { Brain, LayoutDashboard, CheckSquare, FolderKanban, Target, Repeat, Calendar, BookOpen, Wallet, HeartPulse, MessageSquare, Lightbulb, BarChart3, Settings, LogOut, MessageCircleHeart, ShieldCheck, Upload } from 'lucide-react';
 import { OnboardingTour } from '@/components/onboarding-tour';
 import { NotificationBell } from '@/components/notification-bell';
 import { FeedbackWidget } from '@/components/feedback-widget';
@@ -20,6 +20,7 @@ const nav = [
   {href:'/planner/app/chat', icon:MessageSquare, labelFa:'AI Chat', labelEn:'AI Chat'},
   {href:'/planner/app/insights', icon:Lightbulb, labelFa:'بینش‌ها', labelEn:'Insights'},
   {href:'/planner/app/reports', icon:BarChart3, labelFa:'گزارش‌ها', labelEn:'Reports'},
+  {href:'/planner/app/import', icon:Upload, labelFa:'ایمپورت', labelEn:'Import'},
   {href:'/planner/app/feedback', icon:MessageCircleHeart, labelFa:'بازخورد', labelEn:'Feedback'},
   {href:'/planner/app/settings', icon:Settings, labelFa:'تنظیمات', labelEn:'Settings'},
 ];

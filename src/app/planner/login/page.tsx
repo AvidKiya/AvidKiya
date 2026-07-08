@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { GlassCard, GlassButton } from '@/components/ui/glass';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Brain, KeyRound, Sparkles } from 'lucide-react';
 
 export default function PlannerLogin(){
@@ -76,6 +77,11 @@ export default function PlannerLogin(){
             {loading ? 'در حال بررسی…' : 'ورود به داشبورد →'}
           </GlassButton>
         </form>
+
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          <Link href="/api/auth/oauth/google" className="glass-btn !py-[10px] text-[12.5px]">Google</Link>
+          <Link href="/api/auth/oauth/github" className="glass-btn !py-[10px] text-[12.5px]">GitHub</Link>
+        </div>
 
         <div className="mt-6 pt-5 border-t border-glass-border text-[12.5px] text-text-2 space-y-2 text-start" dir="rtl">
           <div>• تست: کد <code className="bg-white/[0.06] px-1.5 py-0.5 rounded">demo</code> یا کد مدیریتی <code className="bg-white/[0.06] px-1.5 py-0.5 rounded">admin</code></div>

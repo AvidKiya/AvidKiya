@@ -6,7 +6,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke-test.mjs",
+    "env:doctor": "node scripts/env-doctor.mjs",
+    "test:e2e": "playwright test",
+    "setup:telegram": "node scripts/setup-telegram.mjs",
+    "check:prod": "node scripts/production-check.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -33,6 +38,10 @@
     "eslint-config-next": "16.2.6",
     "postcss": "8.5.8",
     "tailwindcss": "4.1.17",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "@playwright/test": "^1.57.0"
+  },
+  "bin": {
+    "kiya": "cli/kiya.mjs"
   }
 }

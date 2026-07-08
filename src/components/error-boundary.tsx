@@ -26,6 +26,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    try {
+      fetch('/api/monitoring/error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: error.message, stack: error.stack, componentStack: errorInfo.componentStack, path: typeof location !== 'undefined' ? location.pathname : '' }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
   }
 
   render() {

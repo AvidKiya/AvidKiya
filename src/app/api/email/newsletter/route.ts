@@ -2,59 +2,59 @@ import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 import { checkHoneypot } from '@/lib/validation';
 import { checkRateLimit, rateLimitedResponse, getClientKey } from '@/lib/rate-limit';
+import { kvGetJson, kvListJson, kvPutJson } from '@/lib/server/kv-storage';
+import { sendEmail } from '@/lib/server/email';
 
 export const runtime = 'edge';
 
-const subscribers = new Set<string>();
+type Subscriber = { email: string; createdAt: string; source?: string; confirmed: boolean };
+function key(email: string) { return `newsletter:subscriber:${email.toLowerCase()}`; }
+
+async function parseEmail(request: NextRequest) {
+  const type = request.headers.get('content-type') || '';
+  if (type.includes('application/json')) {
+    const body = await request.json();
+    return { email: String(body.email || ''), website: String(body.website || ''), source: String(body.source || 'json') };
+  }
+  const formData = await request.formData();
+  if (!checkHoneypot(formData)) return { email: '', website: 'bot', source: 'bot' };
+  return { email: String(formData.get('email') || ''), website: '', source: String(formData.get('source') || 'form') };
+}
 
 export async function POST(request: NextRequest) {
   try {
     const rl = await checkRateLimit(`newsletter:${getClientKey(request)}`, { preset: 'contact' });
     if (!rl.allowed) return rateLimitedResponse(rl);
 
-    const formData = await request.formData();
-    
-    // Check honeypot
-    if (!checkHoneypot(formData)) {
-      // Silently reject bot submissions
-      return successResponse(null, 'عضویت شما تأیید شد');
-    }
-
-    const email = formData.get('email') as string;
-
-    if (!email) {
-      return errorResponse('ایمیل الزامی است');
-    }
-
-    // Validate email format
+    const { email, website, source } = await parseEmail(request);
+    if (website) return successResponse(null, 'Subscription confirmed');
+    if (!email) return errorResponse('Email is required');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return errorResponse('ایمیل معتبر نیست');
-    }
+    if (!emailRegex.test(email)) return errorResponse('Email is invalid');
 
-    if (subscribers.has(email.toLowerCase())) {
-      return errorResponse('این ایمیل قبلاً ثبت شده است');
-    }
+    const normalized = email.toLowerCase();
+    const existing = await kvGetJson<Subscriber | null>(key(normalized), null);
+    if (existing) return errorResponse('This email is already subscribed');
 
-    subscribers.add(email.toLowerCase());
+    const sub: Subscriber = { email: normalized, createdAt: new Date().toISOString(), source, confirmed: true };
+    await kvPutJson(key(normalized), sub);
 
-    // In production, this would:
-    // 1. Save to database
-    // 2. Send confirmation email via Resend
-    // 3. Add to email list
+    sendEmail({
+      to: normalized,
+      subject: 'Welcome!',
+      html: `<div style="font-family:system-ui;max-width:620px;margin:auto"><h1>Welcome!</h1><p>Thanks for subscribing. You will receive updates and free resources here.</p></div>`,
+      text: 'Thanks for subscribing.',
+    }).catch(() => {});
 
-    return successResponse(null, 'عضویت شما با موفقیت ثبت شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
+    return successResponse(null, 'Subscription registered successfully');
+  } catch {
+    return errorResponse('Failed to process request', 500);
   }
 }
 
 export async function GET() {
   try {
-    return successResponse({
-      count: subscribers.size,
-    });
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const subscribers = await kvListJson<Subscriber>('newsletter:subscriber:');
+    return successResponse({ count: subscribers.length, subscribers });
+  } catch { return errorResponse('Failed to process request', 500); }
 }

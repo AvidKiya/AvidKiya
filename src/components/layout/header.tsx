@@ -13,6 +13,8 @@ const nav = [
   { href: '/projects', labelFa: 'پروژه‌ها', labelEn: 'Projects' },
   { href: '/planner', labelFa: 'KIYA', labelEn: 'KIYA' },
   { href: '/shop', labelFa: 'فروشگاه', labelEn: 'Shop' },
+  { href: '/marketplace', labelFa: 'مارکت', labelEn: 'Market' },
+  { href: '/gifts', labelFa: 'هدیه‌ها', labelEn: 'Gifts' },
   { href: '/services', labelFa: 'خدمات', labelEn: 'Services' },
   { href: '/tools', labelFa: 'ابزارها', labelEn: 'Tools' },
   { href: '/about', labelFa: 'درباره', labelEn: 'About' },
@@ -29,11 +31,15 @@ export function Header() {
     <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-glass-border" style={{background:'color-mix(in oklab, rgb(var(--bg)) 84%, transparent)'}}>
       <div className="max-w-6xl mx-auto px-4 md:px-6 h-[62px] flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-[10px] font-[700] shrink-0">
-          <div className="w-9 h-9 rounded-[13px] flex items-center justify-center glass-card !p-0">
-            <span className="text-primary font-black text-[15px]">{cms.brand.logoLetter || 'A'}</span>
+          <div className="w-9 h-9 rounded-[13px] flex items-center justify-center glass-card !p-0 overflow-hidden">
+            {cms.brand.logoImage ? (
+              <img src={cms.brand.logoImage} alt={cms.brand.brandName || tf(cms.identity.fullName) || 'Logo'} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-primary font-black text-[15px]">{cms.brand.logoLetter || 'N'}</span>
+            )}
           </div>
           <span className="hidden sm:block text-[14.5px] tracking-[-0.01em] whitespace-nowrap">
-            {tf(cms.identity.fullName)}
+            {cms.brand.brandName || tf(cms.identity.fullName) || 'New Site'}
           </span>
         </Link>
 
@@ -59,7 +65,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="hidden md:block"><CommandPalette /></div>
+          <CommandPalette />
           <NotificationBell />
           <button onClick={toggleLang} className="glass-btn !px-3 !py-2 text-xs flex items-center gap-1.5" aria-label="Toggle language">
             <Globe size={15} />

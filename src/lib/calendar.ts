@@ -142,13 +142,12 @@ export const QUOTES = {
 
 export function getDailyQuote(date = new Date()): { text: string; author: string } {
   const all = [
-    ...QUOTES.kourosh.map(t => ({text:t, author:'کوروش بزرگ'})),
-    ...QUOTES.mohammadReza.map(t => ({text:t, author:'محمدرضا شاه پهلوی'})),
-    ...QUOTES.rezaShah.map(t => ({text:t, author:'رضا شاه'})),
+    { text: 'Start simple, improve continuously, and let the site grow with your content.', author: 'System' },
+    { text: 'A clean launch is better than a crowded demo.', author: 'System' },
+    { text: 'Configure only what you need; leave the rest intentionally empty.', author: 'System' },
   ];
   const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(),0,0).getTime()) / 86400000);
-  const q = all[dayOfYear % all.length];
-  return q;
+  return all[dayOfYear % all.length];
 }
 
 // تقویم ماه کامل

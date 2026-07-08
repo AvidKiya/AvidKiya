@@ -1,128 +1,22 @@
 import { NextRequest } from 'next/server';
-import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { makePlannerId, readPlannerList, requirePlannerUser, writePlannerList } from '@/lib/server/planner-store';
 
 export const runtime = 'edge';
 
-const goals = new Map<string, Array<{
-  id: string;
-  title: string;
-  level: string;
-  progress: number;
-  createdAt: string;
-}>>();
+type Goal = { id: string; title: string; level: string; progress: number; createdAt: string; updatedAt?: string };
+const COLLECTION = 'goals';
 
-function generateId() {
-  return `goal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const userGoals = goals.get(payload.sub) || [];
-    return successResponse(userGoals);
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
-}
+export async function GET(request: NextRequest) { try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); return successResponse(await readPlannerList<Goal>(p.sub, COLLECTION)); } catch { return errorResponse('Failed to process request', 500); } }
 
 export async function POST(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const body = await request.json();
-    const { title, level = 'weekly' } = body;
-
-    if (!title) return errorResponse('عنوان الزامی است');
-
-    const userGoals = goals.get(payload.sub) || [];
-    const newGoal = {
-      id: generateId(),
-      title,
-      level,
-      progress: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    userGoals.push(newGoal);
-    goals.set(payload.sub, userGoals);
-
-    return successResponse(newGoal, 'هدف ایجاد شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); const { title, level = 'weekly' } = await request.json(); if (!title) return errorResponse('Title is required'); const rows = await readPlannerList<Goal>(p.sub, COLLECTION); const goal: Goal = { id: makePlannerId('goal'), title, level, progress: 0, createdAt: new Date().toISOString() }; await writePlannerList(p.sub, COLLECTION, [...rows, goal]); return successResponse(goal, 'Goal created'); } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function PUT(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const body = await request.json();
-    const { id, title, level, progress } = body;
-
-    if (!id) return errorResponse('شناسه هدف الزامی است');
-
-    const userGoals = goals.get(payload.sub) || [];
-    const goalIndex = userGoals.findIndex((g) => g.id === id);
-
-    if (goalIndex === -1) return errorResponse('هدف یافت نشد', 404);
-
-    const updatedGoal = {
-      ...userGoals[goalIndex],
-      ...(title && { title }),
-      ...(level && { level }),
-      ...(progress !== undefined && { progress }),
-    };
-
-    userGoals[goalIndex] = updatedGoal;
-    goals.set(payload.sub, userGoals);
-
-    return successResponse(updatedGoal, 'هدف به‌روزرسانی شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); const { id, title, level, progress } = await request.json(); if (!id) return errorResponse('Goal ID is required'); const rows = await readPlannerList<Goal>(p.sub, COLLECTION); const idx = rows.findIndex(g => g.id === id); if (idx === -1) return errorResponse('Goal not found', 404); const updated: Goal = { ...rows[idx], ...(title !== undefined && { title }), ...(level !== undefined && { level }), ...(progress !== undefined && { progress: Number(progress) }), updatedAt: new Date().toISOString() }; rows[idx] = updated; await writePlannerList(p.sub, COLLECTION, rows); return successResponse(updated, 'Goal updated'); } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) return errorResponse('شناسه هدف الزامی است');
-
-    const userGoals = goals.get(payload.sub) || [];
-    const filteredGoals = userGoals.filter((g) => g.id !== id);
-
-    if (filteredGoals.length === userGoals.length) {
-      return errorResponse('هدف یافت نشد', 404);
-    }
-
-    goals.set(payload.sub, filteredGoals);
-    return successResponse(null, 'هدف حذف شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); const id = new URL(request.url).searchParams.get('id'); if (!id) return errorResponse('Goal ID is required'); const rows = await readPlannerList<Goal>(p.sub, COLLECTION); const next = rows.filter(g => g.id !== id); if (next.length === rows.length) return errorResponse('Goal not found', 404); await writePlannerList(p.sub, COLLECTION, next); return successResponse(null, 'Goal deleted'); } catch { return errorResponse('Failed to process request', 500); }
 }

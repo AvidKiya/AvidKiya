@@ -20,7 +20,9 @@ const items: Item[] = [
   { id:'home', labelFa:'خانه', labelEn:'Home', href:'/', keywords:'home خانه اصلی', icon:'home', cat:'navigate' },
   { id:'projects', labelFa:'پروژه‌ها', labelEn:'Projects', href:'/projects', keywords:'project پروژه کد github', icon:'projects', cat:'navigate' },
   { id:'planner', labelFa:'KIYA Planner', labelEn:'KIYA Planner', href:'/planner', keywords:'kiya planner مغز دوم ai', icon:'brain', cat:'app' },
-  { id:'shop', labelFa:'فروشگاه', labelEn:'Shop', href:'/shop', keywords:'shop فروشگاه محصول', icon:'shop', cat:'commerce' },
+  { id:'shop', labelFa:'فروشگاه', labelEn:'Shop', href:'/shop', keywords:'shop فروشگاه محصول payment invoice', icon:'shop', cat:'commerce' },
+  { id:'marketplace', labelFa:'مارکت', labelEn:'Marketplace', href:'/marketplace', keywords:'marketplace products services tools مارکت', icon:'shop', cat:'commerce' },
+  { id:'gifts', labelFa:'هدیه‌ها', labelEn:'Gifts', href:'/gifts', keywords:'gifts free downloads donate هدیه', icon:'gift', cat:'content' },
   { id:'services', labelFa:'خدمات', labelEn:'Services', href:'/services', keywords:'service خدمات فریلنس', icon:'services', cat:'commerce' },
   { id:'tools', labelFa:'ابزارها', labelEn:'Tools', href:'/tools', keywords:'tools ابزار آنلاین', icon:'tools', cat:'app' },
   { id:'blog', labelFa:'بلاگ', labelEn:'Blog', href:'/blog', keywords:'blog بلاگ مقاله', icon:'book', cat:'content' },
@@ -179,7 +181,7 @@ export function CommandPalette() {
 
                 {q && flat.length===0 && (
                   <div className="px-5 py-10 text-center text-text-3 text-[13px]">
-                    نتیجه‌ای برای «{q}» پیدا نشد
+                    {t(`نتیجه‌ای برای «${q}» پیدا نشد`, `No results for “${q}”`)}
                   </div>
                 )}
 
@@ -218,9 +220,9 @@ export function CommandPalette() {
 
               <div className="px-3 md:px-4 py-[9px] border-t border-glass-border text-[10.5px] md:text-[11px] text-text-3 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="flex items-center gap-1"><span className="kbd">↑↓</span> حرکت</span>
-                  <span className="flex items-center gap-1"><span className="kbd">↵</span> انتخاب</span>
-                  <span className="flex items-center gap-1"><span className="kbd">ESC</span> بستن</span>
+                  <span className="flex items-center gap-1"><span className="kbd">↑↓</span> {t('حرکت','Move')}</span>
+                  <span className="flex items-center gap-1"><span className="kbd">↵</span> {t('انتخاب','Select')}</span>
+                  <span className="flex items-center gap-1"><span className="kbd">ESC</span> {t('بستن','Close')}</span>
                 </div>
                 <div className="flex items-center gap-1 opacity-90">
                   <span className="font-[600]">KIYA</span>

@@ -1,140 +1,37 @@
 import { NextRequest } from 'next/server';
-import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { makePlannerId, readPlannerList, requirePlannerUser, writePlannerList } from '@/lib/server/planner-store';
 
 export const runtime = 'edge';
 
-const habits = new Map<string, Array<{
-  id: string;
-  name: string;
-  frequency: string;
-  createdAt: string;
-}>>();
-
-const habitLogs = new Map<string, Array<{
-  id: string;
-  habitId: string;
-  date: string;
-  completed: boolean;
-}>>();
-
-function generateId() {
-  return `habit-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
+type Habit = { id: string; name: string; frequency: string; createdAt: string };
+type HabitLog = { id: string; habitId: string; date: string; completed: boolean };
+const HABITS = 'habits';
+const LOGS = 'habitLogs';
 
 export async function GET(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const userHabits = habits.get(payload.sub) || [];
-    const userLogs = habitLogs.get(payload.sub) || [];
-    
-    return successResponse({
-      habits: userHabits,
-      logs: userLogs,
-    });
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); const habits = await readPlannerList<Habit>(p.sub, HABITS); const logs = await readPlannerList<HabitLog>(p.sub, LOGS); return successResponse({ habits, logs }); } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const body = await request.json();
-    const { name, frequency = 'daily' } = body;
-
-    if (!name) return errorResponse('عنوان الزامی است');
-
-    const userHabits = habits.get(payload.sub) || [];
-    const newHabit = {
-      id: generateId(),
-      name,
-      frequency,
-      createdAt: new Date().toISOString(),
-    };
-
-    userHabits.push(newHabit);
-    habits.set(payload.sub, userHabits);
-
-    return successResponse(newHabit, 'عادت ایجاد شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); const { name, frequency = 'daily' } = await request.json(); if (!name) return errorResponse('Habit name is required'); const rows = await readPlannerList<Habit>(p.sub, HABITS); const habit: Habit = { id: makePlannerId('habit'), name, frequency, createdAt: new Date().toISOString() }; await writePlannerList(p.sub, HABITS, [...rows, habit]); return successResponse(habit, 'Habit created'); } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const body = await request.json();
-    const { habitId, date, completed = true } = body;
-
-    if (!habitId) return errorResponse('شناسه عادت الزامی است');
-
-    const userLogs = habitLogs.get(payload.sub) || [];
-    const existingLog = userLogs.find(
-      (l) => l.habitId === habitId && l.date === (date || new Date().toISOString().split('T')[0])
-    );
-
-    if (existingLog) {
-      existingLog.completed = completed;
-    } else {
-      userLogs.push({
-        id: generateId(),
-        habitId,
-        date: date || new Date().toISOString().split('T')[0],
-        completed,
-      });
-    }
-
-    habitLogs.set(payload.sub, userLogs);
-    return successResponse(null, 'عادت ثبت شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401);
+    const { habitId, date, completed = true } = await request.json();
+    if (!habitId) return errorResponse('Habit ID is required');
+    const day = date || new Date().toISOString().split('T')[0];
+    const logs = await readPlannerList<HabitLog>(p.sub, LOGS);
+    const idx = logs.findIndex(l => l.habitId === habitId && l.date === day);
+    if (idx >= 0) logs[idx] = { ...logs[idx], completed };
+    else logs.push({ id: makePlannerId('habit'), habitId, date: day, completed });
+    await writePlannerList(p.sub, LOGS, logs);
+    return successResponse(null, 'Habit logged');
+  } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) return errorResponse('شناسه عادت الزامی است');
-
-    const userHabits = habits.get(payload.sub) || [];
-    const filteredHabits = userHabits.filter((h) => h.id !== id);
-
-    if (filteredHabits.length === userHabits.length) {
-      return errorResponse('عادت یافت نشد', 404);
-    }
-
-    habits.set(payload.sub, filteredHabits);
-    return successResponse(null, 'عادت حذف شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); const id = new URL(request.url).searchParams.get('id'); if (!id) return errorResponse('Habit ID is required'); const rows = await readPlannerList<Habit>(p.sub, HABITS); const next = rows.filter(h => h.id !== id); if (next.length === rows.length) return errorResponse('Habit not found', 404); await writePlannerList(p.sub, HABITS, next); const logs = await readPlannerList<HabitLog>(p.sub, LOGS); await writePlannerList(p.sub, LOGS, logs.filter(l => l.habitId !== id)); return successResponse(null, 'Habit deleted'); } catch { return errorResponse('Failed to process request', 500); }
 }

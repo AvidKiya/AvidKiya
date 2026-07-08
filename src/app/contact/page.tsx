@@ -31,7 +31,7 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check honeypot
@@ -72,6 +72,18 @@ export default function ContactPage() {
       read: false,
     };
     updateCms({ messages: [newMessage, ...cms.messages] });
+    try {
+      await fetch('/api/admin/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
+    } catch {}
 
     setSubmitted(true);
   };

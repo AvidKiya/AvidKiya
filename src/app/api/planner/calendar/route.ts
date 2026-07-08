@@ -1,128 +1,52 @@
 import { NextRequest } from 'next/server';
-import { verifyJwt, extractToken } from '@/lib/jwt';
 import { successResponse, errorResponse } from '@/lib/api-types';
+import { makePlannerId, readPlannerList, requirePlannerUser, writePlannerList } from '@/lib/server/planner-store';
 
 export const runtime = 'edge';
 
-const events = new Map<string, Array<{
-  id: string;
-  title: string;
-  date: string;
-  time?: string;
-  createdAt: string;
-}>>();
-
-function generateId() {
-  return `event-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
+type Event = { id: string; title: string; date: string; time?: string; createdAt: string; updatedAt?: string };
+const COLLECTION = 'calendar';
 
 export async function GET(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const userEvents = events.get(payload.sub) || [];
-    return successResponse(userEvents);
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+  try { const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401); return successResponse(await readPlannerList<Event>(p.sub, COLLECTION)); } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const body = await request.json();
-    const { title, date, time } = body;
-
-    if (!title || !date) return errorResponse('عنوان و تاریخ الزامی است');
-
-    const userEvents = events.get(payload.sub) || [];
-    const newEvent = {
-      id: generateId(),
-      title,
-      date,
-      time,
-      createdAt: new Date().toISOString(),
-    };
-
-    userEvents.push(newEvent);
-    events.set(payload.sub, userEvents);
-
-    return successResponse(newEvent, 'رویداد ایجاد شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401);
+    const { title, date, time } = await request.json();
+    if (!title || !date) return errorResponse('Title and date are required');
+    const rows = await readPlannerList<Event>(p.sub, COLLECTION);
+    const event: Event = { id: makePlannerId('event'), title, date, time, createdAt: new Date().toISOString() };
+    await writePlannerList(p.sub, COLLECTION, [...rows, event]);
+    return successResponse(event, 'Event created');
+  } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const body = await request.json();
-    const { id, title, date, time } = body;
-
-    if (!id) return errorResponse('شناسه رویداد الزامی است');
-
-    const userEvents = events.get(payload.sub) || [];
-    const eventIndex = userEvents.findIndex((e) => e.id === id);
-
-    if (eventIndex === -1) return errorResponse('رویداد یافت نشد', 404);
-
-    const updatedEvent = {
-      ...userEvents[eventIndex],
-      ...(title && { title }),
-      ...(date && { date }),
-      ...(time !== undefined && { time }),
-    };
-
-    userEvents[eventIndex] = updatedEvent;
-    events.set(payload.sub, userEvents);
-
-    return successResponse(updatedEvent, 'رویداد به‌روزرسانی شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401);
+    const { id, title, date, time } = await request.json();
+    if (!id) return errorResponse('Event ID is required');
+    const rows = await readPlannerList<Event>(p.sub, COLLECTION);
+    const idx = rows.findIndex(e => e.id === id);
+    if (idx === -1) return errorResponse('Event not found', 404);
+    const updated: Event = { ...rows[idx], ...(title !== undefined && { title }), ...(date !== undefined && { date }), ...(time !== undefined && { time }), updatedAt: new Date().toISOString() };
+    rows[idx] = updated;
+    await writePlannerList(p.sub, COLLECTION, rows);
+    return successResponse(updated, 'Event updated');
+  } catch { return errorResponse('Failed to process request', 500); }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const token = extractToken(request);
-    if (!token) return errorResponse('لایسنس الزامی است', 401);
-
-    const secret = process.env.JWT_SECRET || 'default-secret';
-    const payload = await verifyJwt(token, secret);
-    if (!payload) return errorResponse('لایسنس نامعتبر است', 401);
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) return errorResponse('شناسه رویداد الزامی است');
-
-    const userEvents = events.get(payload.sub) || [];
-    const filteredEvents = userEvents.filter((e) => e.id !== id);
-
-    if (filteredEvents.length === userEvents.length) {
-      return errorResponse('رویداد یافت نشد', 404);
-    }
-
-    events.set(payload.sub, filteredEvents);
-    return successResponse(null, 'رویداد حذف شد');
-  } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
-  }
+    const p = await requirePlannerUser(request); if (!p) return errorResponse('License is required or invalid', 401);
+    const id = new URL(request.url).searchParams.get('id');
+    if (!id) return errorResponse('Event ID is required');
+    const rows = await readPlannerList<Event>(p.sub, COLLECTION);
+    const next = rows.filter(e => e.id !== id);
+    if (next.length === rows.length) return errorResponse('Event not found', 404);
+    await writePlannerList(p.sub, COLLECTION, next);
+    return successResponse(null, 'Event deleted');
+  } catch { return errorResponse('Failed to process request', 500); }
 }

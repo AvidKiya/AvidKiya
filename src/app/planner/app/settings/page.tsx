@@ -46,14 +46,18 @@ export default function SettingsPage() {
     }
   };
 
-  const requestDelete = () => {
+  const requestDelete = async () => {
     if (deleteConfirm.trim() !== settings.name.trim()) return;
+    const token = localStorage.getItem('kiya_jwt');
+    await fetch('/api/planner/account/delete', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({}) }).catch(() => {});
     localStorage.setItem('kiya_delete_requested_at', new Date().toISOString());
     setDeleteScheduled(true);
     setDeleteOpen(false);
   };
 
-  const cancelDelete = () => {
+  const cancelDelete = async () => {
+    const token = localStorage.getItem('kiya_jwt');
+    await fetch('/api/planner/account/delete', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
     localStorage.removeItem('kiya_delete_requested_at');
     setDeleteScheduled(false);
   };

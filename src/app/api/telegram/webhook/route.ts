@@ -1,145 +1,173 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-types';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { kvGetJson, kvPutJson } from '@/lib/server/kv-storage';
+import { makePlannerId, readPlannerList, writePlannerList } from '@/lib/server/planner-store';
+import { sendTelegramMessage, setTelegramWebhook } from '@/lib/server/telegram';
 
 export const runtime = 'edge';
 
 interface TelegramMessage {
   message_id: number;
-  from: {
-    id: number;
-    first_name: string;
-    username?: string;
-  };
-  chat: {
-    id: number;
-  };
+  from: { id: number; first_name: string; username?: string };
+  chat: { id: number };
   text?: string;
 }
 
-const userStates = new Map<number, { step: string; licenseCode?: string }>();
+type TelegramLink = { telegramUserId: number; chatId: number; licenseId: string; licenseCode: string; username?: string; firstName?: string; linkedAt: string };
+type Task = { id: string; title: string; status: string; priority?: string; due?: string; createdAt: string };
+type Goal = { id: string; title: string; level?: string; progress?: number; createdAt: string };
+type HealthLog = { id: string; type: 'sleep'|'exercise'|'energy'|'mood'; value: number; date: string; createdAt: string };
+type Note = { id: string; title: string; content?: string; tags?: string; createdAt: string };
+type Capture = { id: string; text: string; category?: string; createdAt: string };
 
-function generateReply(chatId: number, text: string) {
-  // In production, this would call Telegram Bot API
-  console.log(`Reply to ${chatId}: ${text}`);
+function tgKey(userId: number) { return `telegram:user:${userId}`; }
+function codeKey(code: string) { return `kiya:license-code:${code.toUpperCase()}`; }
+function today() { return new Date().toISOString().slice(0, 10); }
+async function reply(chatId: number, text: string) { await sendTelegramMessage(chatId, text).catch(() => {}); }
+
+async function getLink(userId: number) { return kvGetJson<TelegramLink | null>(tgKey(userId), null); }
+async function requireLink(userId: number, chatId: number) {
+  const link = await getLink(userId);
+  if (!link) await reply(chatId, 'Please link your KIYA license first:\n/link KIYA-XXXX-XXXX-XXXX');
+  return link;
+}
+
+function categorizeText(text: string): string {
+  const lower = text.toLowerCase();
+  if (lower.includes('todo') || lower.includes('task') || lower.includes('باید') || lower.includes('انجام')) return 'task';
+  if (lower.includes('meeting') || lower.includes('جلسه') || lower.includes('time') || lower.includes('وقت')) return 'event';
+  if (lower.includes('idea') || lower.includes('ایده')) return 'idea';
+  return 'note';
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const update = await request.json();
-    
-    if (!update.message) {
-      return successResponse(null);
-    }
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (secret && request.headers.get('x-telegram-bot-api-secret-token') !== secret) return errorResponse('Unauthorized', 401);
 
+    const update = await request.json();
+    if (!update.message) return successResponse(null);
     const message: TelegramMessage = update.message;
     const chatId = message.chat.id;
-    const text = message.text || '';
+    const text = (message.text || '').trim();
     const userId = message.from.id;
 
-    // Rate limiting — جلوگیری از سیل پیام یک کاربر روی ربات
     const rl = await checkRateLimit(`tg:${userId}`, { preset: 'telegram' });
-    if (!rl.allowed) {
-      generateReply(chatId, 'کمی آروم‌تر! چند ثانیه صبر کن و دوباره بفرست.');
-      return successResponse(null);
-    }
+    if (!rl.allowed) { await reply(chatId, 'Slow down a little. Try again in a few seconds.'); return successResponse(null); }
 
-    // Command handling
     if (text.startsWith('/start')) {
-      generateReply(chatId, 'سلام! به KIYA Planner خوش آمدید.\n\nلطفاً لایسنس خود را وارد کنید:\n/link KIYA-XXXX-XXXX-XXXX');
+      {
+        const base = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || '';
+        await reply(chatId, `Welcome to KIYA Bot. Link your license:\n/link KIYA-XXXX-XXXX-XXXX\n\nMini App: ${base ? `${base.replace(/\/$/, '')}/telegram/mini` : 'set NEXT_PUBLIC_SITE_URL'}\n\nCommands: /tasks /goals /status /energy /mood /idea /report /help`);
+      }
       return successResponse(null);
     }
 
     if (text.startsWith('/link')) {
-      const parts = text.split(' ');
-      if (parts.length < 2) {
-        generateReply(chatId, 'لطفاً لایسنس را وارد کنید:\n/link KIYA-XXXX-XXXX-XXXX');
-        return successResponse(null);
-      }
-
-      const licenseCode = parts[1];
-      const licensePattern = /^KIYA-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-      
-      if (!licensePattern.test(licenseCode)) {
-        generateReply(chatId, 'فرمت لایسنس نامعتبر است.');
-        return successResponse(null);
-      }
-
-      // In production, validate license against database
-      userStates.set(userId, { step: 'linked', licenseCode });
-      generateReply(chatId, 'لایسنس شما با موفقیت فعال شد!\n\nدستورات:\n/tasks - وظایف امروز\n/goals - اهداف\n/status - وضعیت\n/energy [1-10] - ثبت انرژی');
+      const licenseCode = text.split(' ')[1]?.toUpperCase();
+      if (!licenseCode) { await reply(chatId, 'Usage:\n/link KIYA-XXXX-XXXX-XXXX'); return successResponse(null); }
+      const licenseId = await kvGetJson<string | null>(codeKey(licenseCode), null);
+      if (!licenseId) { await reply(chatId, 'License was not found. Create it in the admin panel first.'); return successResponse(null); }
+      const link: TelegramLink = { telegramUserId: userId, chatId, licenseId, licenseCode, username: message.from.username, firstName: message.from.first_name, linkedAt: new Date().toISOString() };
+      await kvPutJson(tgKey(userId), link);
+      await reply(chatId, 'License linked successfully. You can now use /tasks, /goals, /status, /energy 7, /idea your idea, or just send any text for quick capture.');
       return successResponse(null);
     }
 
+
+    if (text.startsWith('/mini')) {
+      const base = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || '';
+      await reply(chatId, base ? `Open KIYA Mini App:
+${base.replace(/\/$/, '')}/telegram/mini` : 'Mini App URL is not configured. Set NEXT_PUBLIC_SITE_URL.');
+      return successResponse(null);
+    }
+
+    if (text.startsWith('/help')) {
+      await reply(chatId, 'KIYA Bot commands:\n/start\n/link KIYA-XXXX-XXXX-XXXX\n/mini - open Mini App\n/tasks\n/goals\n/status\n/report\n/energy [1-10]\n/mood [good|ok|bad]\n/idea [text]\nAny text = Quick Capture');
+      return successResponse(null);
+    }
+
+    const link = await requireLink(userId, chatId);
+    if (!link) return successResponse(null);
+    const uid = link.licenseId;
+
     if (text.startsWith('/tasks')) {
-      generateReply(chatId, '📋 وظایف امروز:\n\n1. جلسه تیم - ساعت ۱۰\n2. کدنویسی پروژه - ساعت ۱۴\n3. ورزش - ساعت ۱۸');
+      const tasks = await readPlannerList<Task>(uid, 'tasks');
+      const open = tasks.filter(t => t.status !== 'done').slice(0, 8);
+      await reply(chatId, open.length ? `Tasks:\n${open.map((t, i) => `${i+1}. ${t.title} (${t.status}${t.due ? `, due ${t.due}` : ''})`).join('\n')}` : 'No open tasks yet. Send any task text to capture it.');
       return successResponse(null);
     }
 
     if (text.startsWith('/goals')) {
-      generateReply(chatId, '🎯 اهداف فعال:\n\n1. یادگیری React (پیشرفت: ۶۰٪)\n2. ورزش روزانه (پیشرفت: ۸۰٪)');
+      const goals = await readPlannerList<Goal>(uid, 'goals');
+      await reply(chatId, goals.length ? `Goals:\n${goals.slice(0,8).map((g,i)=>`${i+1}. ${g.title} — ${g.progress ?? 0}%`).join('\n')}` : 'No goals yet.');
       return successResponse(null);
     }
 
-    if (text.startsWith('/status')) {
-      generateReply(chatId, '📊 وضعیت امروز:\n\n✅ ۲ وظیفه تکمیل شده\n⏱ ۳ ساعت کار مفید\n🔥 ۵ روز streak');
+    if (text.startsWith('/status') || text.startsWith('/report')) {
+      const [tasks, goals, habits, health] = await Promise.all([
+        readPlannerList<Task>(uid, 'tasks'), readPlannerList<Goal>(uid, 'goals'), readPlannerList<any>(uid, 'habits'), readPlannerList<HealthLog>(uid, 'health')
+      ]);
+      await reply(chatId, `Status:\nTasks: ${tasks.length} total, ${tasks.filter(t=>t.status==='done').length} done\nGoals: ${goals.length}\nHabits: ${habits.length}\nHealth logs: ${health.length}`);
       return successResponse(null);
     }
 
     if (text.startsWith('/energy')) {
-      const parts = text.split(' ');
-      const value = parts[1] ? parseInt(parts[1]) : null;
-      
-      if (!value || value < 1 || value > 10) {
-        generateReply(chatId, 'لطفاً مقدار انرژی را بین ۱ تا ۱۰ وارد کنید:\n/energy 7');
-        return successResponse(null);
-      }
-
-      generateReply(chatId, `⚡ انرژی شما ثبت شد: ${value}/10`);
+      const value = Number(text.split(' ')[1]);
+      if (!value || value < 1 || value > 10) { await reply(chatId, 'Usage: /energy 7'); return successResponse(null); }
+      const rows = await readPlannerList<HealthLog>(uid, 'health');
+      rows.push({ id: makePlannerId('health'), type: 'energy', value, date: today(), createdAt: new Date().toISOString() });
+      await writePlannerList(uid, 'health', rows);
+      await reply(chatId, `Energy logged: ${value}/10`);
       return successResponse(null);
     }
 
     if (text.startsWith('/mood')) {
-      const parts = text.split(' ');
-      const mood = parts[1];
-      
-      if (!mood || !['good', 'ok', 'bad'].includes(mood)) {
-        generateReply(chatId, 'لطفاً حالت خود را وارد کنید:\n/mood good\n/mood ok\n/mood bad');
-        return successResponse(null);
-      }
-
-      const moodEmoji = mood === 'good' ? '😊' : mood === 'ok' ? '😐' : '😔';
-      generateReply(chatId, `${moodEmoji} حالت شما ثبت شد.`);
+      const mood = text.split(' ')[1];
+      const map: Record<string, number> = { bad: 3, ok: 6, good: 9 };
+      if (!map[mood]) { await reply(chatId, 'Usage: /mood good | ok | bad'); return successResponse(null); }
+      const rows = await readPlannerList<HealthLog>(uid, 'health');
+      rows.push({ id: makePlannerId('health'), type: 'mood', value: map[mood], date: today(), createdAt: new Date().toISOString() });
+      await writePlannerList(uid, 'health', rows);
+      await reply(chatId, `Mood logged: ${mood}`);
       return successResponse(null);
     }
 
     if (text.startsWith('/idea')) {
       const idea = text.replace('/idea', '').trim();
-      if (!idea) {
-        generateReply(chatId, 'لطفاً ایده خود را بنویسید:\n/idea ایده من');
-        return successResponse(null);
-      }
-
-      generateReply(chatId, `💡 ایده ذخیره شد: "${idea}"`);
+      if (!idea) { await reply(chatId, 'Usage: /idea your idea'); return successResponse(null); }
+      const notes = await readPlannerList<Note>(uid, 'notes');
+      notes.push({ id: makePlannerId('note'), title: idea.slice(0, 60), content: idea, tags: 'idea,telegram', createdAt: new Date().toISOString() });
+      await writePlannerList(uid, 'notes', notes);
+      await reply(chatId, `Idea saved: "${idea}"`);
       return successResponse(null);
     }
 
-    if (text.startsWith('/help')) {
-      generateReply(chatId, '📖 راهنمای KIYA Bot:\n\n/start - شروع\n/link KIYA-XXXX - فعال‌سازی لایسنس\n/tasks - وظایف امروز\n/goals - اهداف\n/status - وضعیت\n/energy [1-10] - ثبت انرژی\n/mood [good/ok/bad] - ثبت حالت\n/idea [متن] - ذخیره ایده\n/help - راهنما');
-      return successResponse(null);
-    }
-
-    // Default: Quick capture
-    if (text.trim()) {
-      generateReply(chatId, `✅ ثبت شد: "${text.trim()}"`);
+    if (text) {
+      const captures = await readPlannerList<Capture>(uid, 'captures');
+      const category = categorizeText(text);
+      captures.push({ id: makePlannerId('capture'), text, category, createdAt: new Date().toISOString() });
+      await writePlannerList(uid, 'captures', captures);
+      await reply(chatId, `Saved as ${category}: "${text}"`);
     }
 
     return successResponse(null);
   } catch (error) {
-    return errorResponse('خطا در پردازش درخواست', 500);
+    return errorResponse(error instanceof Error ? error.message : 'Failed to process request', 500);
   }
 }
 
-export async function GET() {
-  return successResponse({ status: 'ok' });
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  if (url.searchParams.get('setup') === '1') {
+    try {
+      const base = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || `${url.protocol}//${url.host}`;
+      const result = await setTelegramWebhook(`${base.replace(/\/$/, '')}/api/telegram/webhook`);
+      return successResponse(result, 'Telegram webhook configured');
+    } catch (error) {
+      return errorResponse(error instanceof Error ? error.message : 'Telegram webhook setup failed', 500);
+    }
+  }
+  return successResponse({ status: 'ok', configured: !!process.env.TELEGRAM_BOT_TOKEN });
 }
