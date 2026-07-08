@@ -1,4 +1,6 @@
-# رفع خطای Cloudflare Pages build
+# رفع خطاهای Cloudflare Pages build/publish
+
+## خطای اول: ERESOLVE dependency tree
 
 خطای گزارش‌شده:
 
@@ -7,29 +9,17 @@ ERESOLVE unable to resolve dependency tree
 @cloudflare/next-on-pages / wrangler / @cloudflare/workers-types
 ```
 
-## علت
+### رفع انجام‌شده
 
-Cloudflare هنگام اجرای:
+1. فایل `.npmrc` اضافه شد:
 
-```bash
-npx @cloudflare/next-on-pages@1
-```
-
-پکیج را موقت نصب می‌کرد و npm به خاطر conflict بین نسخه‌های `wrangler` و `@cloudflare/workers-types` fail می‌شد.
-
-## رفع انجام‌شده
-
-### 1. اضافه شدن `.npmrc`
-
-```text
+```ini
 legacy-peer-deps=true
 fund=false
 audit=false
 ```
 
-### 2. Pin کردن devDependencyهای Cloudflare
-
-در `package.json` اضافه شد:
+2. پکیج‌های Cloudflare در `package.json` pin شدند:
 
 ```json
 "@cloudflare/next-on-pages": "1.13.16",
@@ -37,55 +27,115 @@ audit=false
 "@cloudflare/workers-types": "4.20240208.0"
 ```
 
-### 3. اضافه شدن script build مخصوص Pages
+3. اسکریپت Cloudflare Pages اضافه شد:
 
 ```json
 "pages:build": "npx @cloudflare/next-on-pages@1"
 ```
 
-### 4. Edge runtime برای route داینامیک پروژه
+پیشنهاد build command در Cloudflare:
 
-فایل زیر اصلاح شد:
+```bash
+npm run pages:build
+```
+
+---
+
+## خطای دوم: Edge Runtime برای dynamic route
+
+خطا:
+
+```text
+/projects/[repo] must export runtime = 'edge'
+```
+
+### رفع انجام‌شده
+
+در فایل زیر:
 
 ```text
 src/app/projects/[repo]/page.tsx
 ```
 
-و این خط اضافه شد:
+این خط اضافه شد:
 
 ```ts
 export const runtime = 'edge';
 ```
 
-چون `next-on-pages` همه routeهای non-static را Edge Runtime می‌خواهد.
+---
+
+## خطای سوم: No such module "node:stream"
+
+خطا در مرحله publish:
+
+```text
+Error: Failed to publish your Function. Got error: Uncaught Error: No such module "node:stream".
+```
+
+### علت
+
+خروجی Next/next-on-pages و بعضی dependencyهای runtime به polyfillهای Node نیاز دارند. Cloudflare Worker باید با compatibility flag مخصوص Node اجرا شود.
+
+### رفع انجام‌شده
+
+در `wrangler.toml` اضافه شد:
+
+```toml
+compatibility_flags = ["nodejs_compat"]
+```
+
+فایل نهایی `wrangler.toml`:
+
+```toml
+name = "avidkiya"
+compatibility_date = "2026-07-07"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+NODE_VERSION = "22"
+```
+
+---
 
 ## تست انجام‌شده
 
 ```bash
+npm install
+npm run typecheck
+npm run build
+npm run lint
+npm run smoke
 npm run pages:build
 ```
 
-نتیجه: موفق.
+نتیجه local build و next-on-pages build موفق بود.
 
-خروجی مهم:
+نکته: چون `pages:build` پوشه `.vercel/` می‌سازد، در `eslint.config.mjs` مسیر `.vercel/**` به ignore اضافه شد تا lint بعد از build هم خطا ندهد.
 
-```text
-Build completed
-Generated '.vercel/output/static/_worker.js/index.js'
-```
+> مرحله publish واقعی فقط داخل Cloudflare با همین `compatibility_flags` رفع می‌شود.
 
-## تنظیم Cloudflare Pages
+---
 
-Build command:
+## تنظیم نهایی Cloudflare Pages
+
+### Build command
 
 ```bash
 npm run pages:build
 ```
 
-Output directory طبق `wrangler.toml`:
+### Output directory
 
 ```text
 .vercel/output/static
 ```
 
-یا اگر Cloudflare خودش wrangler.toml را بخواند، همین مقدار را تشخیص می‌دهد.
+### Node version
+
+```text
+22
+```
+
+اگر Cloudflare از `wrangler.toml` بخواند، output و NODE_VERSION را خودش تشخیص می‌دهد.
