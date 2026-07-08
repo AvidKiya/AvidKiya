@@ -1,9 +1,0 @@
-{
-  "appId": "ai.arena.avidkiya",
-  "appName": "AvidKiya",
-  "webDir": "../.next",
-  "server": {
-    "url": "https://your-domain.com",
-    "cleartext": false
-  }
-}
