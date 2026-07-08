@@ -9,13 +9,13 @@ import { CommandPalette } from '@/components/search/command-palette';
 
 const nav = [
   { href: '/', labelFa: 'خانه', labelEn: 'Home' },
+  { href: '/cafe', labelFa: 'کافی‌نت', labelEn: 'Café-Net' },
+  { href: '/planner', labelFa: 'پلنر', labelEn: 'Planner' },
   { href: '/projects', labelFa: 'پروژه‌ها', labelEn: 'Projects' },
-  { href: '/planner', labelFa: 'KIYA', labelEn: 'KIYA' },
-  { href: '/shop', labelFa: 'فروشگاه', labelEn: 'Shop' },
   { href: '/services', labelFa: 'خدمات', labelEn: 'Services' },
+  { href: '/shop', labelFa: 'فروشگاه', labelEn: 'Shop' },
   { href: '/tools', labelFa: 'ابزارها', labelEn: 'Tools' },
   { href: '/about', labelFa: 'درباره', labelEn: 'About' },
-  { href: '/resume', labelFa: 'رزومه', labelEn: 'Resume' },
   { href: '/contact', labelFa: 'تماس', labelEn: 'Contact' },
 ];
 

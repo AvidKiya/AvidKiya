@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/glass';
 import { useCms } from '@/lib/cms/cms-context';
-import { Check, Sparkles, Zap, Shield, Clock, Brain } from 'lucide-react';
+import { Check, Sparkles, Zap, Shield, Clock, Brain, Coffee, ArrowUpRight } from 'lucide-react';
 
 function IconBox({children}:{children:React.ReactNode}) {
   return <div className="w-11 h-11 rounded-[14px] bg-primary/10 text-primary flex items-center justify-center mb-3">{children}</div>;
@@ -119,6 +119,36 @@ export default function PlannerLandingClient(){
         <div className="text-center text-[11.5px] text-text-3 mt-5">
           پرداخت امن • فاکتور رسمی • ۳۰ روز گارانتی بازگشت وجه • پشتیبانی تلگرام
         </div>
+      </section>
+
+      {/* Cross-promotion: Café-Net */}
+      <section className="py-10">
+        <Link href="/cafe" className="group block">
+          <GlassCard className="!p-6 md:!p-8 bg-gradient-to-br from-emerald/5 to-primary/5 hover:shadow-glass-lg transition-all">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-[18px] bg-emerald/15 text-emerald flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Coffee size={28} />
+                </div>
+                <div>
+                  <div className="text-[11px] text-emerald font-medium mb-1">KIANET — کافی‌نت آنلاین</div>
+                  <h3 className="text-[18px] md:text-[20px] font-[800] mb-2">
+                    {t('۳۸+ خدمت کافی‌نتی — بدون مراجعه حضوری', '38+ Café Services — No Visit Needed')}
+                  </h3>
+                  <p className="text-[13px] text-text-2 leading-relaxed">
+                    {t(
+                      'ثبت‌نام کنکور، وام ازدواج، اظهارنامه مالیاتی، طراحی رزومه و ده‌ها خدمت دیگر — همه آنلاین.',
+                      'University registration, loans, tax declarations, resume design & more — all online.'
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="glass-btn !px-5 !py-2.5 text-[13px] whitespace-nowrap self-start md:self-center">
+                {t('مشاهده خدمات', 'View Services')} <ArrowUpRight size={14} className="inline mr-1" />
+              </div>
+            </div>
+          </GlassCard>
+        </Link>
       </section>
 
       {/* FAQ / CTA */}

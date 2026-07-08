@@ -42,10 +42,10 @@ export const defaultCmsState: CmsState = {
     ctaSecondary: { fa:'تماس', en:'Contact' },
     projects: [],
     stats: [
-      { id:'1', label:{fa:'پروژه تکمیل‌شده', en:'Projects Done'}, value:'120+', icon:'🚀' },
-      { id:'2', label:{fa:'مشتری راضی', en:'Happy Clients'}, value:'84', icon:'💬' },
-      { id:'3', label:{fa:'سال تجربه', en:'Years Exp'}, value:'8', icon:'⚡' },
-      { id:'4', label:{fa:'کامیت گیت‌هاب', en:'GitHub Commits'}, value:'4.2k', icon:'📦' },
+      { id:'1', label:{fa:'سفارش تکمیل‌شده', en:'Orders Done'}, value:'0', icon:'📦' },
+      { id:'2', label:{fa:'مشتری راضی', en:'Happy Clients'}, value:'0', icon:'💬' },
+      { id:'3', label:{fa:'خدمت فعال', en:'Active Services'}, value:'38', icon:'⚡' },
+      { id:'4', label:{fa:'روز فعالیت', en:'Days Active'}, value:'0', icon:'📅' },
     ],
   },
   about: {
@@ -73,6 +73,7 @@ export const defaultCmsState: CmsState = {
   projects: {
     customProjects: [
       { id:'kiya', title:'KIYA Planner', description:'مغز دوم AI — مدیریت زندگی', language:'TypeScript', stars:128, url:'/planner', featured:true },
+      { id:'kianet', title:'KIYA-NET (کافی‌نت)', description:'کافی‌نت آنلاین — ۳۸+ خدمت مجازی', language:'Next.js', stars:86, url:'/cafe', featured:true },
       { id:'devhub', title:'DevHub OS', description:'پلتفرم شخصی اَوید کیا', language:'Next.js', stars:96, url:'/', featured:true },
       { id:'shopkit', title:'Shop Kit', description:'فروشگاه دیجیتال headless', language:'TypeScript', stars:54, url:'/shop', featured:false },
     ]
@@ -133,9 +134,10 @@ export const defaultCmsState: CmsState = {
     title:{fa:'خدمات فریلنسری',en:'Freelance Services'},
     enabled:true,
     services:[
-      { id:'1', title:{fa:'توسعه Next.js',en:'Next.js Development'}, description:{fa:'وب‌اپ مقیاس‌پذیر',en:'Scalable web apps'}, priceFrom:1500, icon:'⚡', enabled:true },
-      { id:'2', title:{fa:'معماری Cloudflare',en:'Cloudflare Architecture'}, description:{fa:'Edge + D1 + Workers',en:'Edge + D1 + Workers'}, priceFrom:800, icon:'☁️', enabled:true },
-      { id:'3', title:{fa:'AI Agent',en:'AI Agent'}, description:{fa:'ربات هوشمند اختصاصی',en:'Custom smart agent'}, priceFrom:1200, icon:'🧠', enabled:true },
+      { id:'1', title:{fa:'کافی‌نت آنلاین',en:'Online Café-Net'}, description:{fa:'۳۸+ خدمت مجازی — ثبت‌نام، مالیات، طراحی',en:'38+ virtual services — registration, tax, design'}, priceFrom:25, icon:'☕', enabled:true },
+      { id:'2', title:{fa:'KIYA Planner',en:'KIYA Planner'}, description:{fa:'مغز دوم AI — مدیریت زندگی هوشمند',en:'AI Second Brain — Smart life management'}, priceFrom:0, icon:'🧠', enabled:true },
+      { id:'3', title:{fa:'توسعه Next.js',en:'Next.js Development'}, description:{fa:'وب‌اپ مقیاس‌پذیر',en:'Scalable web apps'}, priceFrom:1500, icon:'⚡', enabled:true },
+      { id:'4', title:{fa:'معماری Cloudflare',en:'Cloudflare Architecture'}, description:{fa:'Edge + D1 + Workers',en:'Edge + D1 + Workers'}, priceFrom:800, icon:'☁️', enabled:true },
     ],
     portfolio:[ {id:'p1', title:'پلتفرم KIYA', url:'/planner'} ],
     pricing:[ {name:'Starter', price:800}, {name:'Pro', price:2500} ],

@@ -1,127 +1,123 @@
-# اَوید کیا — AvidKiya Platform
+# 🚀 AvidKiya — پلتفرم یکپارچه اَوید کیا
 
-پلتفرم شخصی اَوید کیا — DevHub OS + Liquid Glass
-
-یک وبسایت واحد Next.js 15 شامل:
-
-- 🏠 صفحه اصلی ساده (۶ کارت + تقویم هخامنشی + ساعت زنده)
-- 📄 پرتفولیو (VS Code Style + GitHub API)
-- 🧠 KIYA Planner (مغز دوم AI + لایسنس)
-- 🛒 فروشگاه محصولات دیجیتال
-- 💼 فریلنسرینگ
-- 🔧 ابزارها
-- 📝 بلاگ
-- 📄 رزومه Print-optimized
-- 🤖 ربات تلگرام منشی (Mini App)
-- 🔐 پنل مدیر مخفی #kiya/panel
+پلتفرم شخصی **اَوید کیا** — ترکیب پرتفولیو، کافی‌نت آنلاین (KIYA-NET) و KIYA Planner در یک سایت واحد با UI مشترک.
 
 ---
 
-## فاز ۱ — تکمیل شد ✅
+## ✨ ویژگی‌ها
 
-- [x] Next.js 15 + App Router + TypeScript
-- [x] Tailwind CSS + Design System DevHub OS
-- [x] Liquid Glass UI
-- [x] تم تاریک (پیش‌فرض) + تم روشن
-- [x] RTL فارسی + LTR انگلیسی — سوییچر یکپارچه
-- [x] فونت Vazirmatn self-host
-- [x] Layout اصلی + Header TabBar iOS-style + Footer ASCII
-- [x] تقویم هخامنشی کامل:
-  - شمسی / شاهنشاهی / یزدگردی
-  - نام ۳۰ روز باستانی
-  - جشن‌ها + سخن روز
-  - ساعت زنده فارسی
-  - تقویم ماه ۳۰ روزه
-- [x] CMS System:
-  - CmsState تایپ‌شده کامل
-  - CmsProvider (React Context)
-  - localStorage + Auto-save 800ms
-  - Edit-in-place آماده
-  - Export / Import JSON
-  - API Route /api/cms (Edge + KV ready)
-- [x] صفحه اصلی فلسفه ساده:
-  - ASCII Art
-  - Calendar Widget شیشه‌ای
-  - ۶ کارت منو با stagger animation
-  - سخن روز
-  - ۳ لینک پایین
-- [x] پنل مدیر اولیه (/kiya/panel — رمز: admin)
-- [x] Error / Loading / Empty States
-- [x] SEO base + not-found 404
-- [x] PWA manifest
-- [x] API health check
+### 🏠 پرتفولیو
+- صفحه اصلی با معرفی دو خدمت اصلی: **کافی‌نت آنلاین** و **KIYA Planner**
+- پروژه‌ها، رزومه، بلاگ، درباره من
+- تقویم هخامنشی با نقل‌قول روزانه
+- سیستم CMS کامل برای مدیریت محتوا
+
+### ☕ کافی‌نت آنلاین (KIYA-NET)
+- **۳۸+ خدمت کافی‌نتی** در ۷ دسته:
+  - امور قضایی و حقوقی (ثنا، ابلاغیه، سوءپیشینه)
+  - دانشگاه، مدرسه و آزمون‌ها (کنکور، انتخاب واحد)
+  - مالیات، اصناف و کسب‌وکار (اظهارنامه، کد اقتصادی)
+  - وام، امور بانکی و یارانه
+  - خودرو و پلیس +۱۰
+  - طراحی، گرافیک و چاپ
+  - تامین اجتماعی و بیمه
+- جستجوی زنده در خدمات
+- آکاردئون دسته‌بندی‌ها
+- نظرات مشتریان و FAQ
+- تعرفه شفاف با زمان تحویل
+
+### 🧠 KIYA Planner
+- مغز دوم AI — مدیریت زندگی هوشمند
+- وظایف، اهداف، عادات، دانش، مالی، سلامت
+- دستیار AI داخلی
+- تقویم هخامنشی
+- سیستم لایسنس و ورود امن
+
+### 🎨 UI مشترک (iPhone Liquid Glass)
+- تم تاریک/روشن
+- پشتیبانی RTL/LTR (فارسی/انگلیسی)
+- فونت Vazirmatn
+- طراحی شیشه‌ای (Glass Morphism)
+- رنگ برند: Tiffany Green (#21F1A8) / Cyprus (#004741)
+- کاملاً ریسپانسیو
 
 ---
 
-## اجرا
+## 🛠️ تکنولوژی‌ها
+
+- **Next.js 15** (App Router)
+- **React 18**
+- **TypeScript**
+- **Tailwind CSS 3**
+- **Framer Motion** — انیمیشن
+- **Lucide React** — آیکون‌ها
+- **Zustand** — State Management
+- **Cloudflare Pages** — Deployment
+
+---
+
+## 🚀 نصب و اجرا
 
 ```bash
-pnpm install   # یا npm install / yarn
-pnpm dev
-# http://localhost:3000
-```
+# نصب وابستگی‌ها
+npm install
 
-پنل مدیر:
-```
-http://localhost:3000/#kiya/panel
-رمز: admin
-# یا مستقیم:
-http://localhost:3000/kiya/panel
+# اجرای محیط توسعه
+npm run dev
+
+# بیلد production
+npm run build
+
+# اجرای production
+npm start
 ```
 
 ---
 
-## ساختار
+## 📁 ساختار پروژه
 
 ```
 app/
-  layout.tsx          # Root + CmsProvider + Header/Footer
-  page.tsx            # صفحه اصلی ساده — ۶ کارت
-  not-found.tsx
-  kiya/panel/         # پنل مدیر
-  projects/ planner/ shop/ services/ tools/ ...
-  api/cms/            # CMS API (Edge)
-  api/health/
+├── page.tsx              # صفحه اصلی (پرتفولیو + معرفی خدمات)
+├── cafe/
+│   ├── page.tsx          # کافی‌نت آنلاین
+│   └── cafe-client.tsx   # کامپوننت کافی‌نت
+├── planner/
+│   ├── page.tsx          # صفحه KIYA Planner
+│   ├── planner-landing-client.tsx
+│   ├── login/            # ورود با لایسنس
+│   └── app/              # اپلیکیشن پلنر
+├── services/             # خدمات فریلنسری
+├── projects/             # پروژه‌ها
+├── shop/                 # فروشگاه
+├── tools/                # ابزارهای آنلاین
+├── about/                # درباره من
+├── resume/               # رزومه
+├── blog/                 # بلاگ
+├── contact/              # تماس
+└── kiya/panel/           # پنل مدیریت CMS
+
 components/
-  ui/glass.tsx        # GlassCard / Button / States
-  layout/header.tsx   # TabBar iOS pill
-  layout/footer.tsx
-  calendar/           # تقویم هخامنشی
-  home/menu-card.tsx
+├── layout/               # Header, Footer
+├── ui/                   # Glass, Icons, ASCII Logo
+├── home/                 # Menu Card
+├── calendar/             # Calendar Widget
+└── search/               # Command Palette
+
 lib/
-  calendar.ts         # الگوریتم کامل تقویم
-  cms/
-    types.ts
-    default-state.ts
-    cms-context.tsx
-  utils.ts
-public/
-  fonts/Vazirmatn-*.woff2
-  manifest.json
+├── cafe-services.ts      # داده‌های خدمات کافی‌نت
+├── cms/                  # سیستم CMS
+├── calendar.ts           # تقویم هخامنشی
+└── utils.ts              # ابزارها
 ```
 
 ---
 
-## فناوری
+## 🎯 خدمات اصلی
 
-- Next.js 15 (App Router)
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- lucide-react
-- Zustand (آماده)
-- Cloudflare Pages + Functions + D1 + KV + R2
+1. **کافی‌نت آنلاین** (`/cafe`) — ۳۸+ خدمت مجازی بدون مراجعه حضوری
+2. **KIYA Planner** (`/planner`) — سیستم مدیریت زندگی هوشمند با AI
 
 ---
 
-## فازهای بعدی
-
-- **فاز ۲**: صفحه اصلی تکمیلی + پروژه‌ها VS Code + درباره + رزومه
-- **فاز ۳**: KIYA Planner (لایسنس + داشبورد ۱۳ صفحه + AI + تلگرام)
-- **فاز ۴**: فروشگاه + فریلنسرینگ + ابزارها + بلاگ + SEO کامل
-- **فاز ۵**: پنل مدیر کامل ۱۸+ بخش + ربات تلگرام منشی
-- **فاز ۶**: PWA + بهینه‌سازی + Deploy Cloudflare
-
----
-
-© 2585 اَوید کیا — Avid Kiya
+© ۲۵۸۵ اَوید کیا — تمامی حقوق محفوظ است.

@@ -260,11 +260,11 @@ function SectionRouter({section}:{section:SectionKey}){
                   className="glass-input !py-[8px] w-[110px]" />
               </div>
               <textarea value={p.description} rows={2}
-                onChange={e=>{ const a=[...list]; a[idx]={...p, description:e.target.value}; updateCms({projects:{customProjects:a}})}
+                onChange={e=>{ const a=[...list]; a[idx]={...p, description:e.target.value}; updateCms({projects:{customProjects:a}}); }}
                 className="glass-input text-[12px]" />
               <div className="flex items-center gap-3 text-[11.5px]">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={!!p.featured}
-                  onChange={e=>{ const a=[...list]; a[idx]={...p, featured:e.target.checked}; updateCms({projects:{customProjects:a}})} } /> Featured</label>
+                  onChange={e=>{ const a=[...list]; a[idx]={...p, featured:e.target.checked}; updateCms({projects:{customProjects:a}}); }} /> Featured</label>
                 <input type="number" value={p.stars||0}
                   onChange={e=>{ const a=[...list]; a[idx]={...p, stars:+e.target.value}; updateCms({projects:{customProjects:a}})}}
                   className="glass-input !py-[6px] w-[90px] text-[11px]" placeholder="stars" />
