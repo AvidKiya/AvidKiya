@@ -11,7 +11,8 @@
     "env:doctor": "node scripts/env-doctor.mjs",
     "test:e2e": "playwright test",
     "setup:telegram": "node scripts/setup-telegram.mjs",
-    "check:prod": "node scripts/production-check.mjs"
+    "check:prod": "node scripts/production-check.mjs",
+    "pages:build": "npx @cloudflare/next-on-pages@1"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -39,7 +40,10 @@
     "postcss": "8.5.8",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
-    "@playwright/test": "^1.57.0"
+    "@playwright/test": "^1.57.0",
+    "@cloudflare/next-on-pages": "1.13.16",
+    "wrangler": "3.114.14",
+    "@cloudflare/workers-types": "4.20240208.0"
   },
   "bin": {
     "kiya": "cli/kiya.mjs"
