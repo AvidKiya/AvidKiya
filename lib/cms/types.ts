@@ -38,7 +38,6 @@ export interface CustomProject {
 export interface CommentItem {
   id: string;
   author: string;
-  email?: string;
   role?: string;
   text: string;
   avatar?: string;
@@ -47,84 +46,16 @@ export interface CommentItem {
   createdAt: string;
 }
 
-export interface BlogPost {
-  id: string;
-  title: I18nText;
-  slug: string;
-  excerpt: I18nText;
-  content: I18nText;
-  coverImage?: string;
-  category: string;
-  tags: string[];
-  status: 'draft' | 'published' | 'scheduled';
-  publishedAt?: string;
-  scheduledAt?: string;
-  seo: {
-    title?: string;
-    description?: string;
-    keywords?: string;
-  };
-}
-
-export interface Announcement {
-  id: string;
-  title: string;
-  body: string;
-  type: 'news' | 'poll' | 'image' | 'text';
-  date: string;
-  pinned?: boolean;
-  archived?: boolean;
-  expiresAt?: string;
-  image?: string;
-  pollOptions?: Array<{ id: string; text: string; votes: number }>;
-}
-
-export interface Coupon {
-  id: string;
-  code: string;
-  type: 'percentage' | 'fixed';
-  value: number;
-  maxUses?: number;
-  uses: number;
-  expiresAt?: string;
-  firstPurchaseOnly: boolean;
-  enabled: boolean;
-}
-
-export interface Order {
-  id: string;
-  userId?: string;
-  productId: string;
-  amount: number;
-  currency: string;
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
-  couponCode?: string;
-  createdAt: string;
-}
-
-export interface Notification {
-  id: string;
-  userId: string;
-  type: 'expiry' | 'report' | 'streak' | 'comment' | 'product' | 'system';
-  title: string;
-  message?: string;
-  read: boolean;
-  createdAt: string;
-}
-
 export interface Product {
   id: string;
   title: I18nText;
   description: I18nText;
   price: number;
-  currency: 'IRR'|'USD'|'EUR'|'TMN'|'USDT';
+  currency: 'IRR'|'USD'|'EUR';
   image?: string;
   fileUrl?: string;
   category: string;
   enabled: boolean;
-  featured?: boolean;
-  discount?: number;
-  stock?: number;
 }
 
 export interface ServiceItem {
@@ -220,14 +151,8 @@ export interface CmsState {
     downloadTitle: I18nText;
     downloads: Array<{title:string; url:string}>;
   };
-  announcements: Announcement[];
+  announcements: Array<{id:string; title:string; body:string; date:string; pinned?:boolean}>;
   comments: CommentItem[];
-  blog: {
-    enabled: boolean;
-    posts: BlogPost[];
-  };
-  coupons: Coupon[];
-  orders: Order[];
   shop: {
     title: I18nText;
     enabled: boolean;

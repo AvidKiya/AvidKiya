@@ -6,7 +6,6 @@ import { useCms } from '@/lib/cms/cms-context';
 import { Menu, X, Sun, Moon, Globe, Search } from 'lucide-react';
 import { useState } from 'react';
 import { CommandPalette } from '@/components/search/command-palette';
-import { NotificationBell } from '@/components/notification-bell';
 
 const nav = [
   { href: '/', labelFa: 'خانه', labelEn: 'Home' },
@@ -60,7 +59,6 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <div className="hidden md:block"><CommandPalette /></div>
-          <NotificationBell />
           <button onClick={toggleLang} className="glass-btn !px-3 !py-2 text-xs flex items-center gap-1.5" aria-label="Toggle language">
             <Globe size={15} />
             <span className="hidden sm:inline">{lang === 'fa' ? 'EN' : 'فا'}</span>

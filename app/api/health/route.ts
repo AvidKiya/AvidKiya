@@ -1,14 +1,16 @@
-import { successResponse } from '@/lib/api-types';
-
+import { NextResponse } from 'next/server';
+export const runtime = 'edge';
 export async function GET() {
-  return successResponse({
+  return NextResponse.json({
+    ok: true,
+    service: 'avidkiya-platform',
     status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    services: {
-      api: 'operational',
-      database: 'operational',
-      cache: 'operational',
-    },
+    time: new Date().toISOString(),
+    version: '1.0.0-phase1',
+    checks: {
+      api: 'up',
+      cms: 'up',
+      db: 'n/a-phase3',
+    }
   });
 }

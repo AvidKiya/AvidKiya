@@ -1,7 +1,4 @@
-import BlogPageContent from './PageContent';
-
-export const metadata = { title: 'بلاگ — AvidKiya' };
-
-export default function BlogPage() {
-  return <BlogPageContent />;
-}
+import { Metadata } from 'next';
+import BlogClient from './blog-client';
+export const metadata = { title: 'بلاگ — اَوید کیا', description: 'مقالات فنی، معماری سیستم، AI، رشد' };
+export default function Page(){ return <BlogClient /> }
