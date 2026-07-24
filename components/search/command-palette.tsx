@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCms } from '@/lib/cms/cms-context';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,18 +17,17 @@ type Item = {
 };
 
 const items: Item[] = [
-  { id:'home', labelFa:'خانه', labelEn:'Home', href:'/', keywords:'home خانه اصلی', icon:'home', cat:'navigate' },
-  { id:'projects', labelFa:'پروژه‌ها', labelEn:'Projects', href:'/projects', keywords:'project پروژه کد github', icon:'projects', cat:'navigate' },
-  { id:'planner', labelFa:'KIYA Planner', labelEn:'KIYA Planner', href:'/planner', keywords:'kiya planner مغز دوم ai', icon:'brain', cat:'app' },
-  { id:'shop', labelFa:'فروشگاه', labelEn:'Shop', href:'/shop', keywords:'shop فروشگاه محصول', icon:'shop', cat:'commerce' },
-  { id:'services', labelFa:'خدمات', labelEn:'Services', href:'/services', keywords:'service خدمات فریلنس', icon:'services', cat:'commerce' },
-  { id:'tools', labelFa:'ابزارها', labelEn:'Tools', href:'/tools', keywords:'tools ابزار آنلاین', icon:'tools', cat:'app' },
-  { id:'blog', labelFa:'بلاگ', labelEn:'Blog', href:'/blog', keywords:'blog بلاگ مقاله', icon:'book', cat:'content' },
-  { id:'about', labelFa:'درباره', labelEn:'About', href:'/about', keywords:'about درباره من', icon:'about', cat:'navigate' },
-  { id:'resume', labelFa:'رزومه', labelEn:'Resume', href:'/resume', keywords:'resume رزومه cv', icon:'resume', cat:'navigate' },
-  { id:'contact', labelFa:'تماس', labelEn:'Contact', href:'/contact', keywords:'contact تماس ایمیل', icon:'contact', cat:'navigate' },
-  { id:'comments', labelFa:'نظرات', labelEn:'Reviews', href:'/comments', keywords:'comments نظرات', icon:'comments', cat:'content' },
-  { id:'pricing', labelFa:'قیمت‌گذاری', labelEn:'Pricing', href:'/pricing', keywords:'pricing قیمت پلن', icon:'chart', cat:'commerce' },
+  { id:'home', labelFa:'خانه', labelEn:'Home', href:'/', keywords:'home خانه اصلی پرتفولیو', icon:'home', cat:'navigate' },
+  { id:'projects', labelFa:'نمونه‌کارها', labelEn:'Projects', href:'/projects', keywords:'project پروژه نمونه‌کار کد github case study', icon:'projects', cat:'navigate' },
+  { id:'services', labelFa:'خدمات', labelEn:'Services', href:'/services', keywords:'service خدمات فریلنس طراحی توسعه وب ai', icon:'services', cat:'commerce' },
+  { id:'tools', labelFa:'ابزارها', labelEn:'Tools', href:'/tools', keywords:'tools ابزار آنلاین json password slug متن', icon:'tools', cat:'app' },
+  { id:'shop', labelFa:'فروشگاه', labelEn:'Shop', href:'/shop', keywords:'shop فروشگاه محصول قالب کیت آموزش', icon:'shop', cat:'commerce' },
+  { id:'blog', labelFa:'بلاگ', labelEn:'Blog', href:'/blog', keywords:'blog بلاگ مقاله معماری ai ui', icon:'book', cat:'content' },
+  { id:'about', labelFa:'درباره', labelEn:'About', href:'/about', keywords:'about درباره من برند', icon:'about', cat:'navigate' },
+  { id:'resume', labelFa:'رزومه', labelEn:'Resume', href:'/resume', keywords:'resume رزومه cv pdf', icon:'resume', cat:'navigate' },
+  { id:'contact', labelFa:'تماس', labelEn:'Contact', href:'/contact', keywords:'contact تماس ایمیل همکاری پروژه', icon:'contact', cat:'navigate' },
+  { id:'comments', labelFa:'نظرات', labelEn:'Reviews', href:'/comments', keywords:'comments نظرات review testimonial', icon:'comments', cat:'content' },
+  { id:'pricing', labelFa:'تعرفه خدمات', labelEn:'Service Pricing', href:'/pricing', keywords:'pricing قیمت تعرفه خدمات', icon:'chart', cat:'commerce' },
   { id:'help', labelFa:'مرکز راهنما', labelEn:'Help Center', href:'/help', keywords:'help راهنما support', icon:'book', cat:'support' },
 ];
 
@@ -85,6 +84,14 @@ export function CommandPalette() {
   // flatten for keyboard nav
   const flat = useMemo(() => q ? results.flatMap(g=>g.items) : (results[0]?.items || items.slice(0,6)), [results, q]);
 
+  const go = useCallback((it: Item) => {
+    const nr = [it.id, ...recent.filter(r=>r!==it.id)].slice(0,5);
+    setRecent(nr);
+    try { localStorage.setItem('ak_cmd_recent', JSON.stringify(nr)); } catch {}
+    setOpen(false);
+    router.push(it.href);
+  }, [recent, router]);
+
   useEffect(() => {
     if (!open) return;
     const onNav = (e: KeyboardEvent) => {
@@ -99,15 +106,7 @@ export function CommandPalette() {
     };
     window.addEventListener('keydown', onNav);
     return () => window.removeEventListener('keydown', onNav);
-  }, [open, flat, sel]);
-
-  const go = (it: Item) => {
-    const nr = [it.id, ...recent.filter(r=>r!==it.id)].slice(0,5);
-    setRecent(nr);
-    try { localStorage.setItem('ak_cmd_recent', JSON.stringify(nr)); } catch {}
-    setOpen(false);
-    router.push(it.href);
-  };
+  }, [open, flat, sel, go]);
 
   return (
     <>

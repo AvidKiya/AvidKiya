@@ -2,14 +2,17 @@ import { CmsState } from './types';
 import { QUOTES } from '../calendar';
 
 export const defaultCmsState: CmsState = {
-  version: 1,
+  version: 2,
   identity: {
     fullName: { fa: 'اَوید کیا', en: 'Avid Kiya' },
-    title: { fa: 'معمار سیستم — توسعه‌دهنده فول‌استک', en: 'Systems Architect — Full-Stack Developer' },
+    title: { fa: 'معمار سیستم و توسعه‌دهنده فول‌استک', en: 'Systems Architect & Full-Stack Developer' },
     location: { fa: 'ایران', en: 'Iran' },
     email: 'hello@avidkiya.com',
     yearsExperience: 8,
-    bio: { fa: 'معمار سیستم‌های مقیاس‌پذیر. عاشق AI و طراحی شیشه‌ای.', en: 'Architecting scalable systems. AI & Liquid Glass enthusiast.' },
+    bio: {
+      fa: 'محصول‌های وب سریع، زیبا و قابل توسعه می‌سازم؛ با تمرکز روی Next.js، Cloudflare، AI و تجربه کاربری حرفه‌ای.',
+      en: 'I build fast, elegant and scalable web products with a focus on Next.js, Cloudflare, AI and polished user experience.'
+    },
     handle: 'avidkiya',
   },
   brand: {
@@ -34,25 +37,28 @@ export const defaultCmsState: CmsState = {
     { id:'em', platform:'email', url:'mailto:hello@avidkiya.com', label:{fa:'ایمیل',en:'Email'}, enabled:true },
   ],
   dashboard: {
-    heroTag: { fa:'DEVHUB OS', en:'DEVHUB OS' },
+    heroTag: { fa:'AVIDKIYA PORTFOLIO', en:'AVIDKIYA PORTFOLIO' },
     heroTitleA: { fa:'اَوید کیا', en:'Avid Kiya' },
     heroTitleB: { fa:'معمار سیستم', en:'Systems Architect' },
-    heroDescription: { fa:'سیستم‌های مقیاس‌پذیر می‌سازم — از ایده تا دیپلوی.', en:'Building scalable systems — from idea to deploy.' },
-    ctaPrimary: { fa:'پروژه‌ها', en:'Projects' },
+    heroDescription: {
+      fa:'از ایده تا دیپلوی: طراحی محصول، توسعه فول‌استک، اتوماسیون AI و زیرساخت Edge.',
+      en:'From idea to deploy: product design, full-stack development, AI automation and Edge infrastructure.'
+    },
+    ctaPrimary: { fa:'نمونه‌کارها', en:'Projects' },
     ctaSecondary: { fa:'تماس', en:'Contact' },
     projects: [],
     stats: [
-      { id:'1', label:{fa:'سفارش تکمیل‌شده', en:'Orders Done'}, value:'0', icon:'📦' },
-      { id:'2', label:{fa:'مشتری راضی', en:'Happy Clients'}, value:'0', icon:'💬' },
-      { id:'3', label:{fa:'خدمت فعال', en:'Active Services'}, value:'38', icon:'⚡' },
-      { id:'4', label:{fa:'روز فعالیت', en:'Days Active'}, value:'0', icon:'📅' },
+      { id:'1', label:{fa:'سال تجربه', en:'Years Experience'}, value:'8+', icon:'⚡' },
+      { id:'2', label:{fa:'استک تخصصی', en:'Core Stack'}, value:'Next.js', icon:'▲' },
+      { id:'3', label:{fa:'تمرکز محصول', en:'Product Focus'}, value:'SaaS', icon:'🧩' },
+      { id:'4', label:{fa:'زیرساخت محبوب', en:'Favorite Infra'}, value:'Edge', icon:'☁️' },
     ],
   },
   about: {
     statusTitle: { fa:'وضعیت فعلی', en:'Current Status' },
     metrics: [
-      { label:{fa:'آپ‌تایم',en:'Uptime'}, value:'99.9%' },
-      { label:{fa:'پاسخ‌دهی',en:'Response'}, value:'<120ms' },
+      { label:{fa:'تمرکز',en:'Focus'}, value:'Web + AI' },
+      { label:{fa:'تحویل',en:'Delivery'}, value:'Clean & Fast' },
     ],
     quickLinks: [
       { label:{fa:'گیت‌هاب',en:'GitHub'}, url:'https://github.com/avidkiya', icon:'🐙' },
@@ -60,31 +66,39 @@ export const defaultCmsState: CmsState = {
     ],
     quote: { fa:'سادگی، نهایت پیچیدگی است.', en:'Simplicity is the ultimate sophistication.' },
     welcomeTitle: { fa:'سلام، من اَوید هستم', en:'Hi, I am Avid' },
-    welcomeBody: { fa:'توسعه‌دهنده فول‌استک با تمرکز بر معماری تمیز و AI.', en:'Full-stack dev focused on clean architecture & AI.' },
+    welcomeBody: {
+      fa:'توسعه‌دهنده فول‌استک با تمرکز بر معماری تمیز، UI حرفه‌ای، AI و زیرساخت Cloudflare/Edge.',
+      en:'Full-stack developer focused on clean architecture, polished UI, AI and Cloudflare/Edge infrastructure.'
+    },
     miniProjects: [
-      { title:'KIYA Planner', desc:'مغز دوم AI' },
-      { title:'DevHub OS', desc:'سیستم‌عامل توسعه‌دهنده' },
+      { title:'DevHub OS', desc:'پرتفولیوی حرفه‌ای و سیستم محتوای شخصی' },
+      { title:'Automation Studio', desc:'اتوماسیون‌های AI برای کسب‌وکار و محتوا' },
     ],
     recentActivity: [
-      { text:'آپدیت KIYA v2.1', date:'2025-12-20' },
-      { text:'مقاله جدید در بلاگ', date:'2025-12-18' },
+      { text:'مرتب‌سازی پرتفولیو و جداسازی پروژه‌های مستقل', date:'2026-07-24' },
+      { text:'بهینه‌سازی ابزارها و فروشگاه دیجیتال', date:'2026-07-24' },
     ],
   },
   projects: {
     customProjects: [
-      { id:'kiya', title:'KIYA Planner', description:'مغز دوم AI — مدیریت زندگی', language:'TypeScript', stars:128, url:'/planner', featured:true },
-      { id:'kianet', title:'KIYA-NET (کافی‌نت)', description:'کافی‌نت آنلاین — ۳۸+ خدمت مجازی', language:'Next.js', stars:86, url:'/cafe', featured:true },
-      { id:'devhub', title:'DevHub OS', description:'پلتفرم شخصی اَوید کیا', language:'Next.js', stars:96, url:'/', featured:true },
-      { id:'shopkit', title:'Shop Kit', description:'فروشگاه دیجیتال headless', language:'TypeScript', stars:54, url:'/shop', featured:false },
+      { id:'devhub-os', title:'DevHub OS', description:'پرتفولیوی شخصی حرفه‌ای با CMS محلی، طراحی Liquid Glass، جستجوی سریع و دیپلوی Edge.', language:'Next.js', stars:96, url:'/projects/devhub-os', featured:true },
+      { id:'automation-studio', title:'AI Automation Studio', description:'طراحی agent، جریان‌های کاری هوشمند، تولید محتوا و اتصال API برای تیم‌های کوچک.', language:'TypeScript', stars:72, url:'/projects/automation-studio', featured:true },
+      { id:'shop-tools-suite', title:'Shop & Tools Suite', description:'فروشگاه دیجیتال و مجموعه ابزارهای آنلاین داخل سایت با UX سریع و حریم‌محور.', language:'React', stars:64, url:'/projects/shop-tools-suite', featured:true },
+      { id:'edge-architecture', title:'Cloudflare Edge Architecture', description:'طراحی معماری کم‌هزینه و مقیاس‌پذیر با Workers، Pages، D1، KV و R2.', language:'Cloudflare', stars:58, url:'/projects/edge-architecture', featured:true },
+      { id:'kiya-planner-standalone', title:'KIYA Planner — Standalone Project', description:'پلنر/مغز دوم AI به‌عنوان پروژه مستقل از پرتفولیو جدا شده و آماده توسعه جداگانه است.', language:'Next.js', stars:128, url:'/projects/kiya-planner-standalone', featured:true },
+      { id:'kianet-standalone', title:'KIANET — Standalone Project', description:'کافی‌نت آنلاین به‌عنوان پروژه مستقل از سایت شخصی جدا شد تا مسیر محصولی جدا داشته باشد.', language:'Next.js', stars:86, url:'/projects/kianet-standalone', featured:true },
     ]
   },
   resume: {
-    summary: { fa:'معمار سیستم با ۸ سال تجربه در وب و AI', en:'Systems architect with 8 years in web & AI' },
+    summary: {
+      fa:'معمار سیستم و توسعه‌دهنده فول‌استک با ۸ سال تجربه در ساخت محصول وب، معماری Edge و اتوماسیون AI.',
+      en:'Systems architect and full-stack developer with 8 years of experience building web products, Edge architecture and AI automation.'
+    },
     phone: '+98-900-000-0000',
     website: 'https://avidkiya.com',
     experience: [
-      { title:'Founder / Lead Architect', company:'KIYA', period:'2022 — اکنون', desc:'ساخت پلتفرم مدیریت زندگی با AI' },
-      { title:'Senior Full-Stack', company:'Freelance', period:'2018 — 2022', desc:'پروژه‌های Next.js / Cloudflare' },
+      { title:'Founder / Systems Architect', company:'AvidKiya Studio', period:'2022 — اکنون', desc:'طراحی و توسعه محصولات وب، داشبوردهای SaaS، سیستم‌های محتوایی و اتوماسیون‌های AI.' },
+      { title:'Senior Full-Stack Developer', company:'Freelance', period:'2018 — 2022', desc:'تحویل پروژه‌های Next.js، React، Node و Cloudflare برای مشتریان بین‌المللی و داخلی.' },
     ],
     skills: [
       { name:'TypeScript / Next.js', level:95 },
@@ -102,62 +116,72 @@ export const defaultCmsState: CmsState = {
   },
   gifts: {
     title:{fa:'هدیه‌ها',en:'Gifts'},
-    subtitle:{fa:'حمایت شما دلگرمی ماست',en:'Your support means a lot'},
+    subtitle:{fa:'دانلودهای رایگان برای شروع سریع‌تر',en:'Free downloads to start faster'},
     donationLinks: [
       { label:'حمایت ریالی', url:'#' },
       { label:'Buy Me a Coffee', url:'#' },
     ],
     downloadTitle:{fa:'دانلودهای رایگان',en:'Free Downloads'},
     downloads: [
-      { title:'۱۰ عادت روزانه', url:'#' },
-      { title:'قالب برنامه‌ریزی', url:'#' },
+      { title:'چک‌لیست لانچ پرتفولیو', url:'#' },
+      { title:'قالب برنامه‌ریزی پروژه وب', url:'#' },
     ],
   },
   announcements: [
-    { id:'1', title:'راه‌اندازی KIYA v2', body:'نسخه جدید با AI agent داخلی منتشر شد.', date:'2025-12-01', pinned:true }
+    { id:'1', title:'بازطراحی پرتفولیو', body:'ساختار سایت شخصی حرفه‌ای‌تر شد و پروژه‌های مستقل از ناوبری اصلی جدا شدند.', date:'2026-07-24', pinned:true }
   ],
   comments: [
-    { id:'1', author:'سارا محمدی', role:'Product Manager', text:'KIYA واقعا زندگی‌ام را منظم کرد. عاشق تقویم هخامنشی‌اش شدم!', approved:true, createdAt:'2025-11-20', rating:5 },
-    { id:'2', author:'علی رضایی', role:'Developer', text:'معماری تمیز و UI شیشه‌ای فوق‌العاده است.', approved:true, createdAt:'2025-11-18', rating:5 },
-    { id:'3', author:'Maryam K.', role:'Designer', text:'تجربه کاربری Liquid Glass بی‌نظیر است.', approved:true, createdAt:'2025-11-10', rating:5 },
+    { id:'1', author:'سارا محمدی', role:'Product Manager', text:'تحویل منظم، UI تمیز و مستندات قابل فهم باعث شد پروژه بدون دردسر جلو برود.', approved:true, createdAt:'2026-07-10', rating:5 },
+    { id:'2', author:'علی رضایی', role:'Developer', text:'معماری پروژه تمیز و قابل توسعه بود؛ دقیقاً چیزی که برای رشد محصول لازم داشتیم.', approved:true, createdAt:'2026-07-08', rating:5 },
+    { id:'3', author:'Maryam K.', role:'Designer', text:'تجربه کاربری Liquid Glass و توجه به جزئیات واقعاً حرفه‌ای بود.', approved:true, createdAt:'2026-07-01', rating:5 },
   ],
   shop: {
     title:{fa:'فروشگاه',en:'Shop'},
     enabled:true,
-    categories:['قالب','ابزار','آموزش'],
+    categories:['قالب','ابزار','آموزش','چک‌لیست'],
     products:[
-      { id:'1', title:{fa:'قالب DevHub',en:'DevHub Template'}, description:{fa:'قالب Next.js شیشه‌ای',en:'Liquid glass Next.js template'}, price:29, currency:'USD', category:'قالب', enabled:true, image:'' },
-      { id:'2', title:{fa:'کیت KIYA',en:'KIYA Kit'}, description:{fa:'شروع سریع KIYA Planner',en:'KIYA Planner starter'}, price:49, currency:'USD', category:'ابزار', enabled:true, image:'' },
+      { id:'portfolio-kit', title:{fa:'کیت لانچ پرتفولیو',en:'Portfolio Launch Kit'}, description:{fa:'چک‌لیست، ساختار صفحات، متن آماده و الگوی معرفی حرفه‌ای.',en:'Checklist, page structure, copy blocks and professional positioning templates.'}, price:19, currency:'USD', category:'قالب', enabled:true, image:'' },
+      { id:'devhub-template', title:{fa:'قالب DevHub',en:'DevHub Template'}, description:{fa:'قالب Next.js با طراحی شیشه‌ای، RTL، دارک‌مود و صفحات آماده.',en:'Liquid glass Next.js template with RTL, dark mode and ready pages.'}, price:39, currency:'USD', category:'قالب', enabled:true, image:'' },
+      { id:'edge-starter', title:{fa:'Cloudflare Starter',en:'Cloudflare Starter'}, description:{fa:'استارتر معماری Pages/Workers با ساختار دیپلوی و مستندات.',en:'Pages/Workers architecture starter with deploy structure and docs.'}, price:49, currency:'USD', category:'ابزار', enabled:true, image:'' },
+      { id:'ai-prompts', title:{fa:'پک پرامپت اتوماسیون AI',en:'AI Automation Prompt Pack'}, description:{fa:'پرامپت‌های آماده برای تحلیل، تولید محتوا، فروش و مدیریت پروژه.',en:'Ready prompts for analysis, content, sales and project management.'}, price:15, currency:'USD', category:'آموزش', enabled:true, image:'' },
+      { id:'seo-checklist', title:{fa:'چک‌لیست SEO و لانچ',en:'SEO & Launch Checklist'}, description:{fa:'چک‌لیست ۷۲ موردی قبل از انتشار سایت و محصول دیجیتال.',en:'72-point checklist before publishing a website or digital product.'}, price:9, currency:'USD', category:'چک‌لیست', enabled:true, image:'' },
+      { id:'contract-template', title:{fa:'قالب قرارداد پروژه وب',en:'Web Project Contract Template'}, description:{fa:'نمونه ساختار قرارداد، محدوده کار، پرداخت مرحله‌ای و تحویل.',en:'Contract structure, scope, milestones, payment and delivery clauses.'}, price:12, currency:'USD', category:'چک‌لیست', enabled:true, image:'' },
     ],
   },
   freelancing: {
-    title:{fa:'خدمات فریلنسری',en:'Freelance Services'},
+    title:{fa:'خدمات حرفه‌ای',en:'Professional Services'},
     enabled:true,
     services:[
-      { id:'1', title:{fa:'کافی‌نت آنلاین',en:'Online Café-Net'}, description:{fa:'۳۸+ خدمت مجازی — ثبت‌نام، مالیات، طراحی',en:'38+ virtual services — registration, tax, design'}, priceFrom:25, icon:'☕', enabled:true },
-      { id:'2', title:{fa:'KIYA Planner',en:'KIYA Planner'}, description:{fa:'مغز دوم AI — مدیریت زندگی هوشمند',en:'AI Second Brain — Smart life management'}, priceFrom:0, icon:'🧠', enabled:true },
-      { id:'3', title:{fa:'توسعه Next.js',en:'Next.js Development'}, description:{fa:'وب‌اپ مقیاس‌پذیر',en:'Scalable web apps'}, priceFrom:1500, icon:'⚡', enabled:true },
-      { id:'4', title:{fa:'معماری Cloudflare',en:'Cloudflare Architecture'}, description:{fa:'Edge + D1 + Workers',en:'Edge + D1 + Workers'}, priceFrom:800, icon:'☁️', enabled:true },
+      { id:'1', title:{fa:'طراحی و توسعه Next.js',en:'Next.js Product Development'}, description:{fa:'وب‌اپ سریع، SEO-ready، ریسپانسیو و قابل توسعه.',en:'Fast, SEO-ready, responsive and scalable web apps.'}, priceFrom:1500, icon:'⚡', enabled:true },
+      { id:'2', title:{fa:'معماری Cloudflare / Edge',en:'Cloudflare / Edge Architecture'}, description:{fa:'Pages، Workers، D1، KV، R2 و کاهش هزینه زیرساخت.',en:'Pages, Workers, D1, KV, R2 and infrastructure cost reduction.'}, priceFrom:800, icon:'☁️', enabled:true },
+      { id:'3', title:{fa:'اتوماسیون و AI Agent',en:'Automation & AI Agents'}, description:{fa:'جریان‌های کاری هوشمند، اتصال API، RAG و دستیار اختصاصی.',en:'Smart workflows, API integrations, RAG and custom assistants.'}, priceFrom:1200, icon:'🧠', enabled:true },
+      { id:'4', title:{fa:'بازطراحی UI/UX و پرتفولیو',en:'UI/UX & Portfolio Redesign'}, description:{fa:'هویت بصری، صفحات فروش، رزومه و تجربه کاربری حرفه‌ای.',en:'Visual identity, sales pages, resume and polished user experience.'}, priceFrom:600, icon:'🎨', enabled:true },
     ],
-    portfolio:[ {id:'p1', title:'پلتفرم KIYA', url:'/planner'} ],
-    pricing:[ {name:'Starter', price:800}, {name:'Pro', price:2500} ],
+    portfolio:[
+      {id:'p1', title:'DevHub OS', url:'/projects/devhub-os'},
+      {id:'p2', title:'Shop & Tools Suite', url:'/projects/shop-tools-suite'},
+      {id:'p3', title:'Cloudflare Edge Architecture', url:'/projects/edge-architecture'},
+    ],
+    pricing:[ {name:'Starter', price:800}, {name:'Growth', price:2500}, {name:'Scale', price:6000} ],
     contactForm:{ enabled:true },
   },
   tools: {
     title:{fa:'ابزارها',en:'Tools'},
     enabled:true,
-    categories:['متن','تصویر','توسعه'],
+    categories:['متن','توسعه','امنیت','تصویر'],
     items:[
-      { id:'1', title:{fa:'تبدیل تاریخ',en:'Date Converter'}, description:{fa:'شمسی ↔ میلادی ↔ شاهنشاهی',en:'Jalali ↔ Gregorian ↔ Imperial'}, url:'/tools/date-converter', category:'توسعه', isPro:false, enabled:true },
-      { id:'2', title:{fa:'فشرده‌ساز تصویر',en:'Image Compressor'}, description:{fa:'کم‌حجم‌سازی client-side',en:'Client-side compression'}, url:'/tools/image-compress', category:'تصویر', isPro:false, enabled:true },
+      { id:'json', title:{fa:'فرمت JSON',en:'JSON Formatter'}, description:{fa:'اعتبارسنجی، مرتب‌سازی و minify JSON داخل مرورگر.',en:'Validate, beautify and minify JSON in-browser.'}, url:'#json', category:'توسعه', isPro:false, enabled:true },
+      { id:'password', title:{fa:'سازنده رمز امن',en:'Secure Password Generator'}, description:{fa:'ساخت رمز قوی با طول دلخواه و کپی سریع.',en:'Generate strong passwords with custom length and quick copy.'}, url:'#password', category:'امنیت', isPro:false, enabled:true },
+      { id:'slug', title:{fa:'ساخت اسلاگ فارسی/انگلیسی',en:'Slug Builder'}, description:{fa:'تبدیل عنوان به URL تمیز برای بلاگ و محصول.',en:'Turn titles into clean URLs for blogs and products.'}, url:'#slug', category:'متن', isPro:false, enabled:true },
+      { id:'text', title:{fa:'پاک‌سازی متن',en:'Text Cleaner'}, description:{fa:'حذف فاصله اضافه، نیم‌فاصله‌سازی ساده و شمارش کلمات.',en:'Trim extra spaces, simple Persian spacing and word count.'}, url:'#text', category:'متن', isPro:false, enabled:true },
+      { id:'image-checklist', title:{fa:'چک‌لیست بهینه‌سازی تصویر',en:'Image Optimization Checklist'}, description:{fa:'راهنمای سریع فرمت، سایز، alt و lazy-load.',en:'Quick guide for format, size, alt text and lazy loading.'}, url:'#image', category:'تصویر', isPro:false, enabled:true },
     ],
   },
   planner: {
-    enabled:true,
+    enabled:false,
     plans:[
-      { id:'free', name:{fa:'رایگان',en:'Free'}, priceMonthly:0, priceYearly:0, features:[{fa:'۵۰ capture در ماه',en:'50 captures/mo'},{fa:'AI Chat ۱۰ پیام/روز',en:'10 AI msgs/day'}], cta:{fa:'شروع رایگان',en:'Start free'} },
-      { id:'pro', name:{fa:'Pro',en:'Pro'}, priceMonthly:9, priceYearly:89, features:[{fa:'نامحدود',en:'Unlimited'},{fa:'Knowledge Graph',en:'Knowledge Graph'}], highlighted:true, cta:{fa:'ارتقا به Pro',en:'Upgrade Pro'} },
-      { id:'pro-ai', name:{fa:'Pro+AI',en:'Pro+AI'}, priceMonthly:19, priceYearly:179, features:[{fa:'AI نامحدود',en:'Unlimited AI'},{fa:'Finance + Health',en:'Finance + Health'}], cta:{fa:'شروع Pro+AI',en:'Get Pro+AI'} },
+      { id:'free', name:{fa:'رایگان',en:'Free'}, priceMonthly:0, priceYearly:0, features:[{fa:'نسخه مستقل در حال جداسازی',en:'Standalone version in separation'}], cta:{fa:'مشاهده پروژه',en:'View project'} },
+      { id:'pro', name:{fa:'Pro',en:'Pro'}, priceMonthly:0, priceYearly:0, features:[{fa:'فعلاً در پرتفولیو فعال نیست',en:'Not active in the portfolio'}], highlighted:true, cta:{fa:'مشاهده پروژه',en:'View project'} },
     ],
   },
   messages: [],
@@ -184,8 +208,8 @@ export const defaultCmsState: CmsState = {
   },
   seo:{
     siteName:'اَوید کیا — Avid Kiya',
-    description:'پلتفرم شخصی اَوید کیا — پرتفولیو، KIYA Planner، فروشگاه، خدمات فریلنسری',
-    keywords:'اَوید کیا, Avid Kiya, KIYA Planner, مغز دوم, Next.js, Cloudflare',
+    description:'پرتفولیوی حرفه‌ای اَوید کیا — معماری سیستم، توسعه فول‌استک، ابزارهای آنلاین، فروشگاه دیجیتال و خدمات AI.',
+    keywords:'اَوید کیا, Avid Kiya, پرتفولیو, Next.js, Cloudflare, AI Automation, Full Stack Developer',
     ogImage:'/og.jpg',
   },
   analytics:{ enabled:true, plausibleDomain:'avidkiya.com', googleId:'' },

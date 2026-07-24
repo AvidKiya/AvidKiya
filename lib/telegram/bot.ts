@@ -1,5 +1,5 @@
-// Telegram Secretary Bot — KIYA
-// Mini App ready
+// Telegram Secretary Bot — AvidKiya
+// Portfolio assistant mock
 
 export interface TgUpdate {
   message?: { chat:{id:number}; text?:string; from?:{id:number; first_name?:string; username?:string} };
@@ -7,24 +7,21 @@ export interface TgUpdate {
 }
 
 const COMMANDS: Record<string, string> = {
-  '/start': `سلام! من منشی هوشمند KIYA هستم 🧠
+  '/start': `سلام! من دستیار تلگرام اَوید کیا هستم 👋
 
 دستورات:
-/link KIYA-XXXX — اتصال حساب
-/tasks — وظایف امروز
-/status — آمار امروز
-/report — گزارش هفتگی
-/energy 1-10 — ثبت انرژی
-/mood good|ok|bad
-/idea … — ثبت ایده
+/status — وضعیت همکاری
+/services — خدمات
+/projects — نمونه‌کارها
+/idea … — ثبت ایده پروژه
 /search … — جستجو
 /help
 
-هر پیامی بفرستی = Quick Capture با AI`,
-  '/help': 'راهنما: /tasks /status /goals /energy /mood /idea /search /report',
-  '/tasks': '📋 وظایف امروز\n□ گزارش مالی ⏰ فردا\n□ تماس با سارا\n☑ ورزش ✅',
-  '/status': '📊 امروز:\n✅ ۳ تکمیل\n⏳ ۲ مانده\n🎯 ۱ هدف فعال\n🔥 Streak: ۵ روز\n⚡ انرژی: 7/10',
-  '/report': '📊 هفته:\n✅ ۱۵/۲۰ وظیفه\n🎯 ۲ هدف پیشرفت\n💰 ۱,۲۰۰,۰۰۰ ت هزینه\n💡 بینش: ورزش → انرژی +۲',
+هر پیامی بفرستی = به‌عنوان درخواست یا ایده پروژه ثبت می‌شود.`,
+  '/help': 'راهنما: /status /services /projects /idea /search',
+  '/status': '📊 وضعیت: آماده بررسی پروژه‌های وب، AI و Cloudflare Edge\n⏱ پاسخ معمول: کمتر از ۱۲ ساعت',
+  '/services': '🛠 خدمات:\n• Next.js Product Development\n• Cloudflare Edge Architecture\n• Automation & AI Agents\n• UI/UX & Portfolio Redesign',
+  '/projects': '💼 نمونه‌کارها:\navidkiya.com/projects\n• DevHub OS\n• Shop & Tools Suite\n• Cloudflare Edge Architecture',
 };
 
 export async function handleTelegramUpdate(update: TgUpdate, env: { KIYA_DB?: any; BOT_TOKEN?: string }) {
@@ -34,26 +31,15 @@ export async function handleTelegramUpdate(update: TgUpdate, env: { KIYA_DB?: an
   const text = (msg.text || '').trim();
 
   let reply = '';
-  if (text.startsWith('/link ')) {
-    const code = text.split(' ')[1];
-    reply = code?.startsWith('KIYA-') 
-      ? `✅ حساب متصل شد!\n🔑 ${code}\n\nحالا هر پیامی = Quick Capture\n📱 داشبورد: /planner`
-      : '❌ کد نامعتبر — فرمت: KIYA-XXXX-XXXX-XXXX';
-  } else if (COMMANDS[text.split(' ')[0]]) {
+  if (COMMANDS[text.split(' ')[0]]) {
     reply = COMMANDS[text.split(' ')[0]];
-  } else if (text.startsWith('/energy')) {
-    const n = parseInt(text.split(' ')[1]||'');
-    reply = n>=1 && n<=10 ? `⚡ انرژی ${n}/10 ثبت شد\n📈 عالیه!` : 'عدد ۱ تا ۱۰ بفرست: /energy 7';
-  } else if (text.startsWith('/mood')) {
-    reply = '😊 خلق‌وخو ثبت شد — ممنون!';
+  } else if (text.startsWith('/idea')) {
+    reply = `✅ ایده ثبت شد\n💡 ${text.replace('/idea','').trim().slice(0,80) || 'بدون عنوان'}\n\nبرای شروع رسمی، فرم تماس سایت را هم پر کن: avidkiya.com/contact`;
   } else if (text.startsWith('/search ')) {
     const q = text.replace('/search ','');
-    reply = `🔍 «${q}»\n۱. قرارداد X (۲ هفته پیش)\n۲. یادداشت قرارداد\n۳. وظیفه بررسی قرارداد`;
+    reply = `🔍 نتیجه برای «${q}»:\n۱. نمونه‌کارها: avidkiya.com/projects\n۲. خدمات: avidkiya.com/services\n۳. ابزارها: avidkiya.com/tools`;
   } else if (text.length > 0) {
-    // Quick Capture AI mock
-    const types = ['TASK','NOTE','IDEA','GOAL','REMINDER'];
-    const type = types[Math.floor(Math.random()*types.length)];
-    reply = `✅ ثبت شد | ${type}\n📋 ${text.slice(0,60)}\n⏰ یادآوری تنظیم شد\n\n📱 مشاهده در داشبورد`;
+    reply = `✅ پیام دریافت شد\n📋 ${text.slice(0,80)}\n\nبرای پاسخ سریع‌تر: avidkiya.com/contact`;
   } else {
     reply = COMMANDS['/start'];
   }
@@ -65,16 +51,14 @@ export async function handleTelegramUpdate(update: TgUpdate, env: { KIYA_DB?: an
     text: reply,
     reply_markup: {
       inline_keyboard: [
-        [{ text: '📱 باز کردن KIYA', web_app: { url: 'https://avidkiya.pages.dev/planner/app' } }],
-        [{ text: '📋 وظایف', callback_data: 'tasks' }, { text: '📊 آمار', callback_data: 'stats' }]
+        [{ text: '🌐 باز کردن سایت', url: 'https://avidkiya.com' }],
+        [{ text: '💼 نمونه‌کارها', url: 'https://avidkiya.com/projects' }, { text: '✉️ تماس', url: 'https://avidkiya.com/contact' }]
       ]
     }
   };
 }
 
-// Mini App init validation (Telegram WebApp)
 export function validateTelegramInitData(initData: string, botToken: string): boolean {
   // TODO: HMAC-SHA256 check
-  // Phase5 stub — return true in dev
   return true;
 }
