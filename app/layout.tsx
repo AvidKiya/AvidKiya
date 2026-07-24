@@ -6,9 +6,9 @@ import { Footer } from "@/components/layout/footer";
 import { AdminGate } from "@/components/layout/admin-gate-client";
 
 export const metadata: Metadata = {
-  title: "اَوید کیا — Avid Kiya — DevHub OS",
-  description: "پلتفرم شخصی اَوید کیا — پرتفولیو، KIYA Planner، فروشگاه، خدمات فریلنسری — معمار سیستم",
-  keywords: ["اَوید کیا", "Avid Kiya", "avidkiya", "KIYA Planner", "مغز دوم", "Next.js", "Cloudflare"],
+  title: "اَوید کیا — Avid Kiya — Portfolio",
+  description: "پرتفولیوی حرفه‌ای اَوید کیا — معماری سیستم، توسعه فول‌استک، ابزارهای آنلاین، فروشگاه دیجیتال و خدمات AI",
+  keywords: ["اَوید کیا", "Avid Kiya", "avidkiya", "Portfolio", "Next.js", "Cloudflare", "AI Automation", "Full Stack Developer"],
   authors: [{ name: "Avid Kiya", url: "https://avidkiya.com" }],
   creator: "Avid Kiya",
   metadataBase: new URL("https://avidkiya.com"),
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     locale: "fa_IR",
     alternateLocale: "en_US",
     siteName: "اَوید کیا",
-    title: "اَوید کیا — DevHub OS",
-    description: "پلتفرم شخصی اَوید کیا — KIYA Planner، فروشگاه، خدمات",
+    title: "اَوید کیا — Portfolio",
+    description: "پرتفولیوی حرفه‌ای اَوید کیا — نمونه‌کارها، خدمات، ابزارها و فروشگاه دیجیتال",
   },
   twitter: {
     card: "summary_large_image",

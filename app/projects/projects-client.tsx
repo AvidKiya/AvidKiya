@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { AppIcon } from '@/components/ui/icons';
 import { useCms } from '@/lib/cms/cms-context';
-import { Star, GitFork, ExternalLink, Folder, FileCode, Search } from 'lucide-react';
+import { Star, ExternalLink, Folder, FileCode, Search } from 'lucide-react';
 
 interface GHRepo {
   id: number;
@@ -190,7 +190,7 @@ export default function ProjectsClient() {
                       </h1>
                       <p className="text-text-2 text-[13.5px] mt-1.5 max-w-2xl leading-relaxed">{current.description}</p>
                     </div>
-                    <a href={current.url} target="_blank" rel="noopener noreferrer" className="glass-btn !py-2 !px-3 text-[12.5px] flex items-center gap-1.5 shrink-0">
+                    <a href={current.url} className="glass-btn !py-2 !px-3 text-[12.5px] flex items-center gap-1.5 shrink-0">
                       Open <ExternalLink size={13} />
                     </a>
                   </div>
@@ -277,7 +277,7 @@ const app = init({
             <div className="flex items-center gap-3 mt-2 text-[11px] text-text-3">
               <span className="flex items-center gap-1"><Star size={12} />{p.stars}</span>
               <span>{p.language}</span>
-              <a href={p.url} target="_blank" className="ms-auto text-primary hover:underline">GitHub →</a>
+              <a href={p.url} className="ms-auto text-primary hover:underline">مشاهده →</a>
             </div>
           </GlassCard>
         ))}

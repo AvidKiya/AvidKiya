@@ -4,7 +4,7 @@ import { GlassCard } from '@/components/ui/glass';
 import { useState, useMemo } from 'react';
 
 const POSTS = [
-  {slug:'second-brain-kiya', title:'مغز دوم چیست و چرا KIYA بهترین انتخاب است؟', excerpt:'از PARA تا AI — چگونه حافظه خارجی بسازیم که واقعا کار کند', cat:'KIYA', date:'۱۴۰۴/۱۰/۰۵', read:'7 دقیقه', featured:true},
+  {slug:'second-brain-kiya', title:'مغز دوم چیست و چطور برای خودمان سیستم دانش بسازیم؟', excerpt:'از PARA تا AI — چگونه حافظه خارجی بسازیم که واقعا کار کند', cat:'AI', date:'۱۴۰۴/۱۰/۰۵', read:'7 دقیقه', featured:true},
   {slug:'nextjs-cloudflare-edge', title:'Next.js 15 روی Cloudflare Edge — راهنمای کامل', excerpt:'کاهش هزینه ۱۰۰٪، افزایش سرعت ۳برابر — تجربه واقعی DevHub OS', cat:'معماری', date:'۱۴۰۴/۰۹/۲۸', read:'12 دقیقه', featured:true},
   {slug:'liquid-glass-ui', title:'طراحی Liquid Glass — از iOS تا وب', excerpt:'backdrop-filter، لایه‌های شیشه‌ای، و انیمیشن spring', cat:'UI/UX', date:'۱۴۰۴/۰۹/۲۰', read:'6 دقیقه', featured:false},
   {slug:'persian-calendar-algorithm', title:'الگوریتم تقویم هخامنشی در جاوااسکریپت', excerpt:'تبدیل میلادی ↔ شمسی ↔ شاهنشاهی + جشن‌ها', cat:'الگوریتم', date:'۱۴۰۴/۰۹/۱۲', read:'9 دقیقه', featured:false},
@@ -12,7 +12,7 @@ const POSTS = [
   {slug:'freelance-pricing', title:'قیمت‌گذاری فریلنسری ۲۰۲۵ — تجربه ۸ ساله', excerpt:'Anchor, Decoy, Value-based — اعداد واقعی', cat:'کسب‌وکار', date:'۱۴۰۴/۰۸/۲۸', read:'8 دقیقه', featured:false},
 ];
 
-const cats = ['همه','KIYA','معماری','UI/UX','AI','الگوریتم','کسب‌وکار'];
+const cats = ['همه','معماری','UI/UX','AI','الگوریتم','کسب‌وکار'];
 
 export default function BlogClient(){
   const [cat, setCat] = useState('همه');

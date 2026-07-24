@@ -62,9 +62,9 @@ export default function ResumeClient(){
               <section>
                 <h2 className="text-[13px] font-[700] uppercase tracking-wider text-zinc-700 mb-3 border-s-[3px] border-[#004741] ps-2">Selected Projects</h2>
                 <ul className="text-[12.5px] text-zinc-700 space-y-[7px] list-disc ps-5 marker:text-zinc-400">
-                  <li><b>KIYA Planner</b> — Second brain AI, license system, Telegram Mini App — Next.js / Cloudflare / D1</li>
-                  <li><b>DevHub OS</b> — Personal platform, Liquid Glass, Persian calendar — Edge SSR</li>
-                  <li><b>Shop Kit</b> — Headless digital shop, multi-currency — Workers</li>
+                  <li><b>DevHub OS</b> — Professional portfolio, local CMS, Liquid Glass, Persian calendar — Edge SSR</li>
+                  <li><b>Shop & Tools Suite</b> — Digital shop, cart UX, client-side utilities — React / Next.js</li>
+                  <li><b>KIYA Planner</b> — Standalone second-brain product case study — Next.js / Cloudflare / AI</li>
                 </ul>
               </section>
             </div>

@@ -4,32 +4,32 @@ import Link from 'next/link';
 
 const posts: Record<string, any> = {
   'second-brain-kiya': {
-    title: 'مغز دوم چیست و چرا KIYA بهترین انتخاب است؟',
+    title: 'مغز دوم چیست و چطور برای خودمان سیستم دانش بسازیم؟',
     date: '۱۴۰۴/۱۰/۰۵',
     read: '7 دقیقه',
-    cat: 'KIYA',
+    cat: 'AI',
     body: `مغز دوم یک سیستم خارجی قابل اعتماد است که ایده‌ها، وظایف و دانش شما را ذخیره و سازماندهی می‌کند.
 
-## چرا KIYA؟
-- ثبت سریع (Quick Capture) — در کمتر از ۲ ثانیه
-- طبقه‌بندی خودکار با AI
-- Knowledge Graph بصری
-- یادآوری هوشمند تلگرام
-- کاملاً فارسی، RTL native
+## اصل مهم
+سیستم دانش نباید یک اپلیکیشن پیچیده باشد؛ باید یک جریان ساده و تکرارپذیر باشد:
+- ثبت سریع ایده و کار
+- دسته‌بندی قابل اعتماد
+- مرور دوره‌ای
+- اتصال دانش به پروژه‌های واقعی
 
-## روش PARA در KIYA
+## روش PARA
 - **Projects**: پروژه‌های فعال
 - **Areas**: حوزه‌های مسئولیت
 - **Resources**: منابع و مرجع
-- **Archive**: آرشیف
+- **Archive**: آرشیو
 
 ## شروع در ۳ دقیقه
-1. ثبت‌نام رایگان در /planner/login
-2. اولین Capture را ثبت کن
-3. بگذار AI طبقه‌بندی کند
-4. داشبورد روزانه‌ات آماده است
+1. یک inbox ساده برای ثبت سریع بساز
+2. هر روز ۵ دقیقه inbox را خالی کن
+3. هر یادداشت را به یک پروژه یا حوزه وصل کن
+4. هفته‌ای یک‌بار خروجی‌ها را مرور کن
 
-> سادگی، نهایت پیچیدگی است — و KIYA ساده‌ترین مغز دومی است که ساخته‌ام.
+> ابزار مهم است، اما سیستم مهم‌تر است. اول جریان را بساز، بعد ابزار را انتخاب کن.
 
 — اَوید کیا`
   }
@@ -60,7 +60,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
       <GlassCard className="mt-8 !p-5 text-center">
         <div className="font-[700] mb-1">این مقاله مفید بود؟</div>
         <div className="text-[12.5px] text-text-2 mb-3">مشترک خبرنامه شو — هفته‌ای ۱ مقاله + ۱ ابزار رایگان</div>
-        <Link href="/planner/login" className="glass-btn-primary px-5 py-[10px] text-[13px] inline-block">امتحان KIYA رایگان</Link>
+        <Link href="/tools" className="glass-btn-primary px-5 py-[10px] text-[13px] inline-block">دیدن ابزارهای رایگان</Link>
       </GlassCard>
     </article>
   );

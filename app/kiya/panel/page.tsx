@@ -5,14 +5,14 @@ import { GlassCard } from '@/components/ui/glass';
 import Link from 'next/link';
 import {
   LayoutDashboard, UserCog, Share2, Home, FileCode, FileText, Gift,
-  Megaphone, MessageSquare, ShoppingBag, Briefcase, Wrench, Brain,
+  Megaphone, MessageSquare, ShoppingBag, Briefcase, Wrench, Boxes,
   Inbox, Image as ImageIcon, CalendarDays, Settings as SettingsIcon,
   BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search
 } from 'lucide-react';
 
 type SectionKey =
   'dashboard'|'identity'|'socials'|'homepage'|'about'|'projects'|'resume'|
-  'gifts'|'announcements'|'comments'|'shop'|'freelance'|'tools'|'kiya'|
+  'gifts'|'announcements'|'comments'|'shop'|'freelance'|'tools'|'standalone'|
   'messages'|'media'|'calendar'|'settings'|'blog'|'coupons'|'emails'|'leadmagnet';
 
 const SECTIONS: {key:SectionKey; fa:string; en:string; icon:any}[] = [
@@ -29,7 +29,7 @@ const SECTIONS: {key:SectionKey; fa:string; en:string; icon:any}[] = [
   {key:'shop', fa:'فروشگاه', en:'Shop', icon:ShoppingBag},
   {key:'freelance', fa:'فریلنسرینگ', en:'Freelance', icon:Briefcase},
   {key:'tools', fa:'ابزارها', en:'Tools', icon:Wrench},
-  {key:'kiya', fa:'KIYA Planner', en:'KIYA', icon:Brain},
+  {key:'standalone', fa:'پروژه‌های مستقل', en:'Standalone', icon:Boxes},
   {key:'blog', fa:'بلاگ', en:'Blog', icon:BookOpen},
   {key:'coupons', fa:'کوپن‌ها', en:'Coupons', icon:Tag},
   {key:'emails', fa:'ایمیل‌ها', en:'Emails', icon:Mail},
@@ -155,12 +155,13 @@ export default function AdminPanelV2(){
 /* ---------- Sections ---------- */
 function SectionRouter({section}:{section:SectionKey}){
   const { cms, updateCms, tf } = useCms();
+  const [newPass, setNewPass] = useState('');
 
   // DASHBOARD
   if(section==='dashboard'){
     const stats = [
       {l:'بازدید امروز',v:'1,248',d:'+12%'},
-      {l:'کاربران KIYA',v:'84',d:'+3'},
+      {l:'بازدید پروژه‌ها',v:'84',d:'+3'}, 
       {l:'فروش امروز',v:'$129',d:'2 سفارش'},
       {l:'پیام جدید',v:String(cms.messages.filter(m=>!m.read).length),d:'inbox'},
     ];
@@ -334,21 +335,21 @@ function SectionRouter({section}:{section:SectionKey}){
     );
   }
 
-  // KIYA
-  if(section==='kiya'){
-    const licenses = [
-      {code:'KIYA-DEMO-0001-ABCD', plan:'Pro', exp:'۱۴۰۵/۰۸/۱۵', user:'demo@avidkiya.com', status:'فعال'},
-      {code:'KIYA-FREE-92XZ-PPLM', plan:'Free', exp:'—', user:'sara@example.com', status:'فعال'},
-      {code:'KIYA-TEAM-A1B2-C3D4', plan:'Team', exp:'۱۴۰۵/۱۲/۰۱', user:'team@acme.ir', status:'فعال'},
+  // STANDALONE PROJECTS
+  if(section==='standalone'){
+    const standaloneProjects = [
+      {code:'kiya-planner-standalone', plan:'Project', exp:'مستقل', user:'KIYA Planner', status:'جدا شده'},
+      {code:'kianet-standalone', plan:'Project', exp:'مستقل', user:'KIANET', status:'جدا شده'},
+      {code:'future-product', plan:'Roadmap', exp:'بعدی', user:'محصول جدید', status:'برنامه‌ریزی'},
     ];
     return (
       <div className="space-y-4">
         <div className="grid sm:grid-cols-4 gap-3">
           {[
-            ['کل لایسنس‌ها','142'],
-            ['فعال','118'],
-            ['Pro','54'],
-            ['درآمد ماه',' $890'],
+            ['پروژه مستقل','2'],
+            ['در پرتفولیو','2'],
+            ['آماده ریپو','2'],
+            ['محصول بعدی','1'], 
           ].map(([l,v])=>(
             <GlassCard key={l} className="!p-4 text-center">
               <div className="text-[11.5px] text-text-3">{l}</div>
@@ -358,25 +359,25 @@ function SectionRouter({section}:{section:SectionKey}){
         </div>
         <GlassCard className="!p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="font-[700]">لایسنس‌ها</div>
+            <div className="font-[700]">پروژه‌های جداشده از پرتفولیو</div>
             <div className="flex gap-2">
-              <button className="glass-btn !py-[7px] !px-3 text-[12px]">ساخت لایسنس رایگان</button>
-              <button className="glass-btn-primary !py-[7px] !px-3 text-[12px]">ساخت Pro نامحدود</button>
+              <button className="glass-btn !py-[7px] !px-3 text-[12px]">ثبت پروژه جدید</button>
+              <button className="glass-btn-primary !py-[7px] !px-3 text-[12px]">ساخت کیس‌استادی</button>
             </div>
           </div>
           <div className="overflow-auto">
             <table className="w-full text-[12.5px]">
               <thead className="text-text-3 text-[11px] uppercase">
                 <tr className="border-b border-glass-border">
-                  <th className="text-start py-2 px-2">کد</th>
-                  <th className="text-start py-2 px-2">پلن</th>
-                  <th className="text-start py-2 px-2">کاربر</th>
-                  <th className="text-start py-2 px-2">انقضا</th>
-                  <th className="text-start py-2 px-2">وضعیت</th>
+                  <th className="text-start py-2 px-2">اسلاگ</th>
+                  <th className="text-start py-2 px-2">نوع</th>
+                  <th className="text-start py-2 px-2">عنوان</th>
+                  <th className="text-start py-2 px-2">وضعیت ریپو</th>
+                  <th className="text-start py-2 px-2">نمایش</th>
                 </tr>
               </thead>
               <tbody>
-                {licenses.map(l=>(
+                {standaloneProjects.map(l=>(
                   <tr key={l.code} className="border-b border-glass-border/60">
                     <td className="py-[10px] px-2 font-mono text-[11.5px]">{l.code}</td>
                     <td className="px-2">{l.plan}</td>
@@ -409,7 +410,7 @@ function SectionRouter({section}:{section:SectionKey}){
             <tbody>
               {[
                 ['WELCOME','درصد','15%','42 / 500','۱۴۰۵/۰۶/۳۱','فعال'],
-                ['KIYA15','درصد','15%','128 / ∞','—','فعال'],
+                ['AVID15','درصد','15%','128 / ∞','—','فعال'], 
                 ['NOWRUZ50','درصد','50%','0 / 100','۱۴۰۵/۰۱/۱۵','غیرفعال'],
               ].map(r=>(
                 <tr key={r[0]} className="border-t border-glass-border/60">
@@ -430,7 +431,7 @@ function SectionRouter({section}:{section:SectionKey}){
         <h2 className="font-[700] mb-3">ایمیل خودکار — Resend</h2>
         <div className="grid md:grid-cols-2 gap-3 text-[12.5px]">
           {[
-            ['خوش‌آمد KIYA','بعد از ثبت‌نام — فوری','فعال'],
+            ['خوش‌آمد فروشگاه','بعد از خرید — فوری','فعال'], 
             ['Onboarding Day 2','روز ۲','فعال'],
             ['انقضا ۷ روز قبل','قبل انقضا','فعال'],
             ['Win-back 30 روز','۳۰ روز غیرفعال','پیش‌نویس'],
@@ -449,7 +450,6 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // CALENDAR — quotes
   if(section==='calendar'){
-    const { cms, updateCms } = useCms();
     return (
       <GlassCard className="!p-5">
         <h2 className="font-[700] mb-3">تقویم — سخنان بزرگان</h2>
@@ -472,7 +472,6 @@ function SectionRouter({section}:{section:SectionKey}){
 
   // SETTINGS
   if(section==='settings'){
-    const [newPass, setNewPass] = useState('');
     return (
       <div className="grid md:grid-cols-2 gap-4">
         <GlassCard className="!p-5">

@@ -19,9 +19,9 @@ export async function GET(){
   return NextResponse.json({ 
     ok: true, 
     bot: '@AvidKiyaBot',
-    description: 'Telegram Secretary — KIYA',
+    description: 'Telegram Assistant — AvidKiya Portfolio',
     webhook: '/api/telegram/webhook',
-    commands: ['/start','/link','/tasks','/status','/report','/energy','/mood','/idea','/search','/help'],
-    mini_app: 'https://avidkiya.pages.dev/planner/app'
+    commands: ['/start','/status','/services','/projects','/idea','/search','/help'],
+    website: 'https://avidkiya.com'
   });
 }
