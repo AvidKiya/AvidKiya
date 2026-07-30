@@ -174,3 +174,83 @@ html[dir="ltr"] body { direction: ltr; }
 /* compact utilities */
 .container-narrow { max-width: 1100px; margin-inline: auto; }
 .kbd { font-family: ui-monospace,monospace; font-size:11px; padding:2px 7px; border-radius:6px; background: color-mix(in oklab, rgb(var(--text)) 7%, transparent); border:1px solid var(--glass-border); }
+
+/* Desktop scale */
+@media (min-width: 1280px) {
+  body { font-size: 15.5px; }
+}
+
+/* Custom cursor */
+@media (pointer: fine) {
+  .custom-cursor-enabled body,
+  .custom-cursor-enabled a,
+  .custom-cursor-enabled button,
+  .custom-cursor-enabled label,
+  .custom-cursor-enabled [role="button"] { cursor: none !important; }
+}
+.ak-cursor-ring,
+.ak-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2147483646;
+  will-change: transform;
+}
+.ak-cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid rgb(var(--primary) / .7);
+  border-radius: 999px;
+  box-shadow: 0 0 22px rgb(var(--primary) / .2), inset 0 0 16px rgb(var(--primary) / .08);
+  transition: width .16s ease, height .16s ease, border-color .16s ease, opacity .16s ease;
+  opacity: .75;
+}
+.ak-cursor-ring.is-hover { width: 54px; height: 54px; border-color: rgb(var(--amber) / .85); opacity: .9; }
+.ak-cursor-ring.is-down { width: 26px; height: 26px; }
+.ak-cursor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(var(--primary));
+  box-shadow: 0 0 18px rgb(var(--primary) / .85);
+}
+.ak-cursor-dot.is-down { transform: scale(.75); }
+
+/* Orange cat pet */
+.orange-cat-pet {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 86px;
+  height: 68px;
+  z-index: 45;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  transition: transform 1.2s cubic-bezier(.34,1.56,.64,1);
+  filter: drop-shadow(0 12px 18px rgba(0,0,0,.18));
+}
+.orange-cat-pet.is-dragging { cursor: grabbing; transition: none; z-index: 80; }
+.cat-body { position:absolute; bottom:12px; left:20px; width:54px; height:34px; border-radius:28px 28px 20px 20px; background:linear-gradient(135deg,#ffb047,#e87220); border:1px solid rgba(90,38,6,.22); }
+.cat-head { position:absolute; bottom:28px; left:8px; width:38px; height:34px; border-radius:18px 18px 15px 15px; background:linear-gradient(135deg,#ffbd59,#f07a22); border:1px solid rgba(90,38,6,.22); }
+.cat-tail { position:absolute; right:5px; bottom:29px; width:34px; height:12px; border-radius:999px; border-top:8px solid #e87220; transform:rotate(-28deg); transform-origin:left center; animation:cat-tail 1.4s ease-in-out infinite alternate; }
+.ear { position:absolute; top:-8px; width:15px; height:15px; background:#ef7b23; clip-path:polygon(50% 0,0 100%,100% 100%); }
+.ear.left{ left:4px; transform:rotate(-12deg) } .ear.right{ right:4px; transform:rotate(12deg) }
+.eye { position:absolute; top:13px; width:5px; height:5px; border-radius:50%; background:#10312b; animation:cat-blink 4s infinite; }
+.eye.left{ left:11px } .eye.right{ right:11px }
+.nose { position:absolute; top:21px; left:17px; width:5px; height:4px; border-radius:50%; background:#7c2d12; }
+.whisker { position:absolute; top:22px; width:14px; height:1px; background:rgba(60,25,8,.55); }
+.w1{ left:-8px; transform:rotate(8deg) } .w2{ right:-8px; transform:rotate(-8deg) }
+.stripe { position:absolute; top:5px; width:4px; height:16px; border-radius:999px; background:rgba(120,49,10,.26); transform:rotate(18deg); }
+.s1{ left:14px } .s2{ left:25px } .s3{ left:36px }
+.cat-paw { position:absolute; bottom:8px; width:13px; height:7px; border-radius:999px; background:#f58a2c; animation:cat-walk .6s ease-in-out infinite alternate; }
+.p1{ left:27px } .p2{ left:53px; animation-delay:.25s }
+.cat-shadow { position:absolute; left:18px; bottom:2px; width:56px; height:8px; border-radius:999px; background:rgba(0,0,0,.12); filter:blur(3px); }
+.orange-cat-pet.is-sleeping .eye { height:1px; border-radius:1px; animation:none; }
+.orange-cat-pet.is-sleeping .cat-body::after { content:'Z'; position:absolute; right:-13px; top:-23px; color:rgb(var(--primary)); font-weight:900; font-size:14px; animation:cat-z 1.2s ease-in-out infinite; }
+@keyframes cat-tail { to { transform:rotate(8deg) } }
+@keyframes cat-walk { to { transform:translateY(-3px) } }
+@keyframes cat-blink { 0%,92%,100%{ transform:scaleY(1) } 95%{ transform:scaleY(.15) } }
+@keyframes cat-z { to { transform:translateY(-10px); opacity:0; } }
+@media (max-width: 768px) { .orange-cat-pet { transform: scale(.82); opacity:.92; } }

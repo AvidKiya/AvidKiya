@@ -6,7 +6,7 @@ export function Footer() {
   const { t } = useCms();
   return (
     <footer className="mt-20 border-t border-glass-border py-12">
-      <div className="max-w-6xl mx-auto px-4 md:px-6 text-center">
+      <div className="max-w-[1500px] mx-auto px-4 md:px-8 text-center">
         <div className="flex justify-center mb-6 opacity-90">
           <AsciiLogo small />
         </div>

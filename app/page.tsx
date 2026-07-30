@@ -43,8 +43,8 @@ export default function HomePage() {
     : fallbackSites).slice(0, 4);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-5 md:px-6 py-5 md:py-10">
-      <section className="grid xl:grid-cols-[minmax(0,1fr)_390px] lg:grid-cols-[minmax(0,1fr)_360px] gap-4 md:gap-6 items-start mb-7 md:mb-10">
+    <div className="max-w-[1500px] mx-auto px-4 sm:px-5 md:px-8 py-5 md:py-10">
+      <section className="grid xl:grid-cols-[minmax(0,1fr)_420px] lg:grid-cols-[minmax(0,1fr)_390px] gap-4 md:gap-6 items-start mb-7 md:mb-10">
         <div className="space-y-4 md:space-y-5 min-w-0">
           <GlassCard className="!p-5 sm:!p-6 md:!p-8 overflow-hidden relative min-h-[430px] flex items-center">
             <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />

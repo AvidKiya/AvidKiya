@@ -4,6 +4,8 @@ import { CmsProvider } from "@/lib/cms/cms-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AdminGate } from "@/components/layout/admin-gate-client";
+import { CustomCursor } from "@/components/ui/custom-cursor";
+import { OrangeCatPet } from "@/components/ui/orange-cat-pet";
 
 export const metadata: Metadata = {
   title: "اَوید کیا — Avid Kiya — Portfolio",
@@ -61,6 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Footer />
+          <OrangeCatPet />
+          <CustomCursor />
           <AdminGate />
         </CmsProvider>
       </body>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BarChart3, Briefcase, CalendarDays, CheckCircle2, Database, FileCode2,
-  Globe2, Home, LogOut, PackagePlus, Save, Search, Settings, ShieldCheck,
+  Globe2, Home, Image as ImageIcon, LogOut, PackagePlus, Save, Search, Settings, ShieldCheck,
   ShoppingBag, Sparkles, Trash2, UserRound, Wrench
 } from 'lucide-react';
 import { useCms } from '@/lib/cms/cms-context';
@@ -135,19 +135,44 @@ function Dashboard(){
 }
 function Identity(){
   const { cms, updateCms } = useCms();
+  const uploadLogo = (file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => updateCms({ brand:{...cms.brand, logoImage:String(reader.result || '')} });
+    reader.readAsDataURL(file);
+  };
   return (
-    <GlassCard className="!p-5">
-      <PanelHeader title="هویت برند" desc="اطلاعات اصلی برند و معرفی کوتاه" />
-      <div className="grid md:grid-cols-2 gap-3">
-        <AdminInput value={cms.identity.fullName.fa} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, fa:e.target.value}}})} placeholder="نام فارسی" />
-        <AdminInput value={cms.identity.fullName.en} dir="ltr" onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, en:e.target.value}}})} placeholder="Name" />
-        <AdminInput value={cms.identity.title.fa} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, fa:e.target.value}}})} placeholder="عنوان فارسی" />
-        <AdminInput value={cms.identity.email} dir="ltr" onChange={e=>updateCms({identity:{...cms.identity, email:e.target.value}})} placeholder="Email" />
-        <AdminTextArea className="md:col-span-2" rows={4} value={cms.identity.bio.fa} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, fa:e.target.value}}})} />
-      </div>
-    </GlassCard>
+    <div className="space-y-4">
+      <GlassCard className="!p-5">
+        <PanelHeader title="لوگو و برند" desc="لوگوی سایت را اینجا آپلود کن تا جای حرف A در هدر نمایش داده شود." />
+        <div className="grid lg:grid-cols-[220px_1fr] gap-4 items-start">
+          <div className="rounded-[24px] border border-glass-border bg-white/[0.025] p-5 text-center">
+            <div className="w-24 h-24 rounded-[28px] mx-auto glass-card !p-0 overflow-hidden flex items-center justify-center mb-4">
+              {cms.brand.logoImage ? <img src={cms.brand.logoImage} alt="logo" className="w-full h-full object-cover" /> : <span className="text-primary text-4xl font-black">{cms.brand.logoLetter || 'A'}</span>}
+            </div>
+            <label className="file-picker block !p-4">
+              <input type="file" hidden accept="image/*" onChange={e=>uploadLogo(e.target.files?.[0])} />
+              <ImageIcon size={22} className="mx-auto text-primary mb-2" />
+              <b className="text-[13px]">آپلود لوگو</b>
+              <div className="text-[10.5px] text-text-3 mt-1">PNG / JPG / SVG</div>
+            </label>
+            {cms.brand.logoImage && <button onClick={()=>updateCms({brand:{...cms.brand, logoImage:''}})} className="mt-3 text-rose text-xs hover:underline">حذف لوگو</button>}
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <AdminInput value={cms.brand.brandName} onChange={e=>updateCms({brand:{...cms.brand, brandName:e.target.value}})} placeholder="نام برند" />
+            <AdminInput value={cms.brand.logoLetter} onChange={e=>updateCms({brand:{...cms.brand, logoLetter:e.target.value.slice(0,2)}})} placeholder="حرف جایگزین لوگو" />
+            <AdminInput value={cms.identity.fullName.fa} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, fa:e.target.value}}})} placeholder="نام فارسی" />
+            <AdminInput value={cms.identity.fullName.en} dir="ltr" onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, en:e.target.value}}})} placeholder="Name" />
+            <AdminInput value={cms.identity.title.fa} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, fa:e.target.value}}})} placeholder="عنوان فارسی" />
+            <AdminInput value={cms.identity.email} dir="ltr" onChange={e=>updateCms({identity:{...cms.identity, email:e.target.value}})} placeholder="Email" />
+            <AdminTextArea className="md:col-span-2" rows={4} value={cms.identity.bio.fa} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, fa:e.target.value}}})} />
+          </div>
+        </div>
+      </GlassCard>
+    </div>
   );
 }
+
 function Sites(){
   const { cms, updateCms } = useCms();
   const current = cms.externalSites || { title:{fa:'وب‌سایت‌های دیگر من', en:'My other websites'}, enabled:true, items:[] };
@@ -189,14 +214,48 @@ function Projects(){
 }
 function Shop(){
   const { cms, updateCms } = useCms(); const list=cms.shop.products;
-  return <div className="space-y-3"><PanelHeader title="فروشگاه" desc="همه قیمت‌ها به تومان ذخیره و نمایش داده می‌شوند" />
-    <div className="grid md:grid-cols-2 gap-3">{list.map((p,i)=><GlassCard key={p.id} className="!p-4 space-y-2"><AdminInput value={p.title.fa} onChange={e=>{const a=[...list]; a[i]={...p,title:{...p.title,fa:e.target.value}}; updateCms({shop:{...cms.shop,products:a}})}}/><AdminInput type="number" value={p.price} onChange={e=>{const a=[...list]; a[i]={...p,price:+e.target.value||0,currency:'IRR'}; updateCms({shop:{...cms.shop,products:a}})}}/><div className="text-xs text-text-3">{toman(p.price)}</div><AdminTextArea rows={2} value={p.description.fa} onChange={e=>{const a=[...list]; a[i]={...p,description:{...p.description,fa:e.target.value}}; updateCms({shop:{...cms.shop,products:a}})}}/></GlassCard>)}</div>
-  </div>;
+  const add = () => updateCms({shop:{...cms.shop, products:[{id:'pr'+Date.now(), title:{fa:'محصول جدید',en:'New Product'}, description:{fa:'توضیح محصول',en:'Product description'}, price:490000, currency:'IRR', category:cms.shop.categories[0]||'قالب', enabled:true}, ...list]}});
+  return (
+    <div className="space-y-3">
+      <PanelHeader title="فروشگاه" desc="همه قیمت‌ها به تومان ذخیره و نمایش داده می‌شوند" />
+      <button onClick={add} className="glass-btn-primary !py-2 !px-4 flex items-center gap-2"><PackagePlus size={16}/> محصول جدید</button>
+      <div className="grid md:grid-cols-2 gap-3">
+        {list.map((p,i)=>(
+          <GlassCard key={p.id} className="!p-4 space-y-2">
+            <AdminInput value={p.title.fa} onChange={e=>{const a=[...list]; a[i]={...p,title:{...p.title,fa:e.target.value}}; updateCms({shop:{...cms.shop,products:a}})}} />
+            <AdminInput type="number" value={p.price} onChange={e=>{const a=[...list]; a[i]={...p,price:+e.target.value||0,currency:'IRR'}; updateCms({shop:{...cms.shop,products:a}})}} />
+            <div className="text-xs text-text-3">{toman(p.price)}</div>
+            <AdminTextArea rows={2} value={p.description.fa} onChange={e=>{const a=[...list]; a[i]={...p,description:{...p.description,fa:e.target.value}}; updateCms({shop:{...cms.shop,products:a}})}}/>
+            <div className="flex justify-between items-center text-xs"><label className="flex gap-2"><input type="checkbox" checked={p.enabled} onChange={e=>{const a=[...list]; a[i]={...p,enabled:e.target.checked}; updateCms({shop:{...cms.shop,products:a}})}}/> فعال</label><button onClick={()=>updateCms({shop:{...cms.shop,products:list.filter(x=>x.id!==p.id)}})} className="text-rose flex items-center gap-1"><Trash2 size={14}/> حذف</button></div>
+          </GlassCard>
+        ))}
+      </div>
+    </div>
+  );
 }
+
 function Services(){
   const { cms, updateCms } = useCms(); const list=cms.freelancing.services;
-  return <div className="space-y-3"><PanelHeader title="خدمات" desc="تعرفه خدمات بر پایه تومان" /><div className="grid md:grid-cols-2 gap-3">{list.map((s,i)=><GlassCard key={s.id} className="!p-4 space-y-2"><AdminInput value={s.title.fa} onChange={e=>{const a=[...list]; a[i]={...s,title:{...s.title,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/><AdminInput type="number" value={s.priceFrom||0} onChange={e=>{const a=[...list]; a[i]={...s,priceFrom:+e.target.value||0}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/><div className="text-xs text-text-3">از {toman(s.priceFrom)}</div><AdminTextArea rows={2} value={s.description.fa} onChange={e=>{const a=[...list]; a[i]={...s,description:{...s.description,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/></GlassCard>)}</div></div>;
+  const add = () => updateCms({freelancing:{...cms.freelancing, services:[{id:'srv'+Date.now(), title:{fa:'خدمت جدید',en:'New Service'}, description:{fa:'توضیح خدمت',en:'Service description'}, priceFrom:25000000, icon:'sparkles', enabled:true}, ...list]}});
+  return (
+    <div className="space-y-3">
+      <PanelHeader title="خدمات" desc="تعرفه خدمات بر پایه تومان" />
+      <button onClick={add} className="glass-btn-primary !py-2 !px-4 flex items-center gap-2"><PackagePlus size={16}/> خدمت جدید</button>
+      <div className="grid md:grid-cols-2 gap-3">
+        {list.map((s,i)=>(
+          <GlassCard key={s.id} className="!p-4 space-y-2">
+            <AdminInput value={s.title.fa} onChange={e=>{const a=[...list]; a[i]={...s,title:{...s.title,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/>
+            <AdminInput type="number" value={s.priceFrom||0} onChange={e=>{const a=[...list]; a[i]={...s,priceFrom:+e.target.value||0}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/>
+            <div className="text-xs text-text-3">از {toman(s.priceFrom)}</div>
+            <AdminTextArea rows={2} value={s.description.fa} onChange={e=>{const a=[...list]; a[i]={...s,description:{...s.description,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/>
+            <div className="flex justify-between items-center text-xs"><label className="flex gap-2"><input type="checkbox" checked={s.enabled} onChange={e=>{const a=[...list]; a[i]={...s,enabled:e.target.checked}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/> فعال</label><button onClick={()=>updateCms({freelancing:{...cms.freelancing,services:list.filter(x=>x.id!==s.id)}})} className="text-rose flex items-center gap-1"><Trash2 size={14}/> حذف</button></div>
+          </GlassCard>
+        ))}
+      </div>
+    </div>
+  );
 }
+
 function Tools(){
   const { cms } = useCms();
   return <GlassCard className="!p-5"><PanelHeader title="ابزارها" desc="ابزارهای کاربردی فعال در سایت" /><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{cms.tools.items.map(t=><div key={t.id} className="rounded-[16px] border border-glass-border bg-white/[0.025] p-4"><Sparkles size={18} className="text-amber mb-2"/><b className="text-sm">{t.title.fa}</b><p className="text-xs text-text-3 mt-1 leading-6">{t.description.fa}</p></div>)}</div></GlassCard>;
