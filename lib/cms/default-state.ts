@@ -168,13 +168,14 @@ export const defaultCmsState: CmsState = {
   tools: {
     title:{fa:'ابزارها',en:'Tools'},
     enabled:true,
-    categories:['متن','توسعه','امنیت','تصویر'],
+    categories:['تاریخ','تصویر','توسعه','امنیت'],
     items:[
-      { id:'json', title:{fa:'فرمت JSON',en:'JSON Formatter'}, description:{fa:'اعتبارسنجی، مرتب‌سازی و minify JSON داخل مرورگر.',en:'Validate, beautify and minify JSON in-browser.'}, url:'#json', category:'توسعه', isPro:false, enabled:true },
+      { id:'date-converter', title:{fa:'تبدیل تاریخ',en:'Date Converter'}, description:{fa:'تبدیل شمسی، میلادی و شاهنشاهی همراه با نام روز اوستایی.',en:'Convert Jalali, Gregorian and Imperial dates with Avestan day names.'}, url:'#date-converter', category:'تاریخ', isPro:false, enabled:true },
+      { id:'image-compressor', title:{fa:'فشرده‌سازی عکس',en:'Image Compressor'}, description:{fa:'کاهش حجم تصویر داخل مرورگر بدون آپلود فایل.',en:'Compress images in-browser without uploading files.'}, url:'#image-compressor', category:'تصویر', isPro:false, enabled:true },
+      { id:'json', title:{fa:'فرمت و اعتبارسنجی JSON',en:'JSON Formatter & Validator'}, description:{fa:'اعتبارسنجی، مرتب‌سازی و Minify برای توسعه‌دهنده‌ها.',en:'Validate, beautify and minify JSON for developers.'}, url:'#json', category:'توسعه', isPro:false, enabled:true },
+      { id:'hash', title:{fa:'تولید هش SHA',en:'SHA Hash Generator'}, description:{fa:'ساخت SHA-256 و SHA-1 برای متن، توکن و checksum.',en:'Generate SHA-256 and SHA-1 for text, tokens and checksums.'}, url:'#hash', category:'امنیت', isPro:false, enabled:true },
+      { id:'base64', title:{fa:'Base64 Encode / Decode',en:'Base64 Encode / Decode'}, description:{fa:'تبدیل متن فارسی و انگلیسی به Base64 و برعکس.',en:'Encode and decode Persian/English text to and from Base64.'}, url:'#base64', category:'توسعه', isPro:false, enabled:true },
       { id:'password', title:{fa:'سازنده رمز امن',en:'Secure Password Generator'}, description:{fa:'ساخت رمز قوی با طول دلخواه و کپی سریع.',en:'Generate strong passwords with custom length and quick copy.'}, url:'#password', category:'امنیت', isPro:false, enabled:true },
-      { id:'slug', title:{fa:'ساخت اسلاگ فارسی/انگلیسی',en:'Slug Builder'}, description:{fa:'تبدیل عنوان به URL تمیز برای بلاگ و محصول.',en:'Turn titles into clean URLs for blogs and products.'}, url:'#slug', category:'متن', isPro:false, enabled:true },
-      { id:'text', title:{fa:'پاک‌سازی متن',en:'Text Cleaner'}, description:{fa:'حذف فاصله اضافه، نیم‌فاصله‌سازی ساده و شمارش کلمات.',en:'Trim extra spaces, simple Persian spacing and word count.'}, url:'#text', category:'متن', isPro:false, enabled:true },
-      { id:'image-checklist', title:{fa:'چک‌لیست بهینه‌سازی تصویر',en:'Image Optimization Checklist'}, description:{fa:'راهنمای سریع فرمت، سایز، alt و lazy-load.',en:'Quick guide for format, size, alt text and lazy loading.'}, url:'#image', category:'تصویر', isPro:false, enabled:true },
     ],
   },
   planner: {

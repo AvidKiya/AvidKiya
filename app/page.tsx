@@ -170,10 +170,10 @@ export default function HomePage() {
               <div className="w-11 h-11 rounded-[14px] bg-amber/10 text-amber flex items-center justify-center"><AppIcon name="tools" size={21} /></div>
               <div>
                 <div className="font-bold">{t('ابزارهای آنلاین بهینه‌شده','Optimized online tools')}</div>
-                <div className="text-[11.5px] text-text-3">JSON • Password • Slug • Text</div>
+                <div className="text-[11.5px] text-text-3">Date • Image • JSON • Hash</div>
               </div>
             </div>
-            <p className="text-[12.8px] text-text-2 leading-relaxed">{t('ابزارها داخل خود سایت اجرا می‌شوند؛ سریع، بدون ثبت‌نام و مناسب کارهای روزانه توسعه و محتوا.', 'Tools run directly in the site; fast, no sign-up and useful for daily development/content tasks.')}</p>
+            <p className="text-[12.8px] text-text-2 leading-relaxed">{t('تبدیل تاریخ، فشرده‌سازی عکس، JSON، هش، Base64 و رمز امن داخل مرورگر اجرا می‌شوند؛ سریع و بدون آپلود فایل.', 'Date conversion, image compression, JSON, hash, Base64 and secure passwords run in-browser; fast and without file uploads.')}</p>
           </GlassCard>
         </Link>
         <Link href="/shop" className="group block">
