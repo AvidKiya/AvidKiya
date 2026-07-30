@@ -70,23 +70,24 @@ export default function HomePage() {
               </div>
             </div>
           </GlassCard>
-        </div>
 
-        <aside className="space-y-3 md:space-y-4 lg:sticky lg:top-[78px] min-w-0 order-first lg:order-none">
-          <CalendarWidget />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
             {stats.map((s, i)=>(
-              <GlassCard key={s.id} className="!p-3.5 sm:!p-4 flex items-center justify-between gap-3 min-w-0">
+              <GlassCard key={s.id} className="!p-4 md:!p-5 flex items-center justify-between gap-3 min-w-0 min-h-[112px]">
                 <div className="min-w-0">
-                  <div className="text-[21px] md:text-[25px] font-black tracking-tight truncate">{s.value}</div>
-                  <div className="text-[11px] text-text-3 mt-0.5 truncate">{tf(s.label)}</div>
+                  <div className="text-[24px] md:text-[30px] font-black tracking-tight truncate">{s.value}</div>
+                  <div className="text-[11.5px] text-text-3 mt-1 truncate">{tf(s.label)}</div>
                 </div>
-                <div className="w-9 h-9 rounded-[13px] bg-white/[0.045] flex items-center justify-center text-primary shrink-0">
-                  <AppIcon name={statIcons[i] || 'chart'} size={18} />
+                <div className="w-10 h-10 rounded-[14px] bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <AppIcon name={statIcons[i] || 'chart'} size={19} />
                 </div>
               </GlassCard>
             ))}
           </div>
+        </div>
+
+        <aside className="space-y-3 md:space-y-4 lg:sticky lg:top-[78px] min-w-0 order-first lg:order-none">
+          <CalendarWidget />
         </aside>
       </section>
 
