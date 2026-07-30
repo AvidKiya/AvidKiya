@@ -11,7 +11,7 @@ import type { Product } from '@/lib/cms/types';
 type CartItem = { id:string; qty:number };
 type SortMode = 'popular' | 'price-asc' | 'price-desc' | 'name';
 
-const currencies: Product['currency'][] = ['USD', 'EUR', 'IRR'];
+const currencies: Product['currency'][] = ['IRR'];
 
 function formatMoney(amount: number, currency: Product['currency']) {
   if (currency === 'IRR') return `${Math.round(amount).toLocaleString('fa-IR')} تومان`;
@@ -201,7 +201,7 @@ export default function ShopClient(){
         <div className="flex flex-wrap gap-2">
           {cats.map(c=>(
             <button key={c} onClick={()=>setCat(c)}
-              className={`px-[14px] py-[7px] rounded-full text-[12.5px] border transition ${cat===c ? 'bg-primary text-[#052e28] border-primary font-[600]' : 'glass-card !px-[14px] !py-[7px] text-text-2 hover:text-text'}`}>
+              className={`px-[14px] py-[7px] rounded-full text-[12.5px] border transition ${cat===c ? 'bg-primary text-[rgb(var(--bg))] border-primary font-[600]' : 'glass-card !px-[14px] !py-[7px] text-text-2 hover:text-text'}`}>
               {c}
             </button>
           ))}
@@ -211,12 +211,13 @@ export default function ShopClient(){
             <Search size={14} className="absolute top-1/2 -translate-y-1/2 right-3 text-text-3" />
             <input value={q} onChange={e=>setQ(e.target.value)} placeholder="جستجوی محصول…" className="glass-input !py-[9px] text-[13px] w-full pe-9" />
           </div>
-          <select value={sort} onChange={e=>setSort(e.target.value as SortMode)} className="glass-input !py-[9px] text-[12.5px] !w-[145px]">
-            <option value="popular">پیشنهادی</option>
-            <option value="price-asc">ارزان‌تر</option>
-            <option value="price-desc">گران‌تر</option>
-            <option value="name">نام</option>
-          </select>
+          <div className="glass-card !p-1 flex rounded-full overflow-x-auto text-[11.5px] shrink-0">
+            {[
+              ['popular','پیشنهادی'],['price-asc','ارزان‌تر'],['price-desc','گران‌تر'],['name','نام']
+            ].map(([id,label])=>(
+              <button key={id} onClick={()=>setSort(id as SortMode)} className={`px-3 py-2 rounded-full whitespace-nowrap ${sort===id ? 'bg-primary text-[rgb(var(--bg))] font-bold' : 'text-text-3 hover:text-text'}`}>{label}</button>
+            ))}
+          </div>
         </div>
       </div>
 

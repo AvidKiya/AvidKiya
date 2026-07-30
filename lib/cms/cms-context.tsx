@@ -27,7 +27,7 @@ interface CmsContextValue {
 }
 
 const CmsContext = createContext<CmsContextValue | null>(null);
-const STORAGE_KEY = 'avidkiya_cms_v1';
+const STORAGE_KEY = 'avidkiya_cms_v3';
 const LANG_KEY = 'avidkiya_lang';
 const THEME_KEY = 'avidkiya_theme';
 

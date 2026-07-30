@@ -33,7 +33,7 @@ export default function BlogClient(){
 
       <div className="flex flex-wrap gap-2 mb-6 text-[12.5px]">
         {cats.map(c=>(
-          <button key={c} onClick={()=>setCat(c)} className={`px-3 py-[7px] rounded-full border transition ${cat===c ? 'bg-primary text-[#052e28] border-primary font-[600]' : 'glass-card !px-3 !py-[7px] text-text-2'}`}>{c}</button>
+          <button key={c} onClick={()=>setCat(c)} className={`px-3 py-[7px] rounded-full border transition ${cat===c ? 'bg-primary text-[rgb(var(--bg))] border-primary font-[600]' : 'glass-card !px-3 !py-[7px] text-text-2'}`}>{c}</button>
         ))}
       </div>
 

@@ -4,9 +4,11 @@ import { useCms } from '@/lib/cms/cms-context';
 import { GlassCard } from '@/components/ui/glass';
 import { AppIcon, type IconName } from '@/components/ui/icons';
 import { useState } from 'react';
-import { Check, Send, ArrowLeft } from 'lucide-react';
+import { Check, Send, ArrowLeft, WalletCards } from 'lucide-react';
 
 const serviceIcons: IconName[] = ['code', 'cloud', 'brain', 'sparkles'];
+const budgets = ['کمتر از ۳۰ میلیون تومان', '۳۰ تا ۱۰۰ میلیون تومان', '۱۰۰ تا ۲۵۰ میلیون تومان', 'بیشتر از ۲۵۰ میلیون تومان'];
+const toman = (value?: number) => value ? `${value.toLocaleString('fa-IR')} تومان` : 'توافقی';
 
 export default function ServicesClient(){
   const { cms, tf, t } = useCms();
@@ -35,7 +37,7 @@ export default function ServicesClient(){
             </div>
             <div className="font-[700] text-[15px] mb-1">{tf(s.title)}</div>
             <div className="text-[12.5px] text-text-2 leading-relaxed min-h-[54px]">{tf(s.description)}</div>
-            <div className="text-[12px] text-text-3 mt-3">از ${s.priceFrom?.toLocaleString()}+</div>
+            <div className="text-[12px] text-text-3 mt-3">از {toman(s.priceFrom)} به بالا</div>
             <a href="#request" className="mt-3 inline-flex items-center gap-1 text-[12.5px] text-primary hover:underline">درخواست پروژه <ArrowLeft size={12} /></a>
           </GlassCard>
         ))}
@@ -74,13 +76,16 @@ export default function ServicesClient(){
           <form onSubmit={submit} className="grid sm:grid-cols-2 gap-3 text-[13.5px]">
             <input required placeholder="نام" className="glass-input" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
             <input required type="email" placeholder="ایمیل" dir="ltr" className="glass-input" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
-            <select className="glass-input sm:col-span-2" value={form.budget} onChange={e=>setForm({...form, budget:e.target.value})}>
-              <option value="">بودجه تقریبی</option>
-              <option>&lt; $1,000</option>
-              <option>$1,000 – $3,000</option>
-              <option>$3,000 – $8,000</option>
-              <option>$8,000+</option>
-            </select>
+            <div className="sm:col-span-2">
+              <div className="text-[12px] text-text-3 mb-2 flex items-center gap-1.5"><WalletCards size={14} /> بودجه تقریبی</div>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {budgets.map(b => (
+                  <button type="button" key={b} onClick={()=>setForm({...form, budget:b})} className={`choice-card text-[12.5px] ${form.budget===b ? 'choice-card-active' : 'text-text-2'}`}>
+                    {b}
+                  </button>
+                ))}
+              </div>
+            </div>
             <textarea required placeholder="توضیح پروژه" rows={4} className="glass-input sm:col-span-2 resize-none"
               value={form.message} onChange={e=>setForm({...form, message:e.target.value})} />
             <button className="glass-btn-primary sm:col-span-2 !py-[12px] flex items-center justify-center gap-2">

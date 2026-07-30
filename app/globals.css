@@ -119,7 +119,14 @@ body {
   .glass-input {
     @apply glass-card w-full px-4 py-[12px] bg-transparent outline-none focus:ring-2 text-[14px];
     --tw-ring-color: rgb(var(--primary) / 0.45);
+    color: rgb(var(--text));
   }
+  .glass-input option { background: rgb(var(--bg-2)); color: rgb(var(--text)); }
+  .choice-card { @apply rounded-[16px] border border-glass-border bg-white/[0.025] px-4 py-3 text-start transition-all hover:bg-white/[0.045]; }
+  .choice-card-active { @apply border-primary/45 bg-primary/10 text-primary ring-1 ring-primary/25; }
+  .file-picker { @apply rounded-[18px] border border-dashed border-glass-border bg-white/[0.025] p-5 text-center transition hover:border-primary/45 hover:bg-primary/5 cursor-pointer; }
+  .safe-primary-text { color: rgb(var(--bg)); }
+  .light .safe-primary-text { color: rgb(var(--bg)); }
   .tab-pill { @apply relative px-[14px] py-[8px] rounded-full text-[13px] font-[500] transition-colors; }
 }
 

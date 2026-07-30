@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, MapPin, Send, ShieldCheck, Clock3, MessageSquare } from 'lucide-react';
+import { Mail, MapPin, Send, ShieldCheck, Clock3, MessageSquare, WalletCards } from 'lucide-react';
 import { GlassCard } from '@/components/ui/glass';
 import { AppIcon } from '@/components/ui/icons';
 import { useCms } from '@/lib/cms/cms-context';
+
+const budgets = ['کمتر از ۳۰ میلیون تومان', '۳۰ تا ۱۰۰ میلیون تومان', '۱۰۰ تا ۲۵۰ میلیون تومان', 'بیشتر از ۲۵۰ میلیون تومان'];
 
 export default function Page() {
   const { cms, tf, t } = useCms();
@@ -81,13 +83,14 @@ export default function Page() {
             <form onSubmit={submit} className="grid sm:grid-cols-2 gap-3">
               <input required className="glass-input" placeholder={t('نام و نام خانوادگی', 'Full name')} value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
               <input required type="email" dir="ltr" className="glass-input" placeholder="email@example.com" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
-              <select className="glass-input sm:col-span-2" value={form.budget} onChange={e=>setForm({...form, budget:e.target.value})}>
-                <option value="">{t('بودجه تقریبی', 'Approximate budget')}</option>
-                <option>{t('کمتر از ۱۰۰۰ دلار', 'Under $1,000')}</option>
-                <option>$1,000 – $3,000</option>
-                <option>$3,000 – $8,000</option>
-                <option>$8,000+</option>
-              </select>
+              <div className="sm:col-span-2">
+                <div className="text-[12px] text-text-3 mb-2 flex items-center gap-1.5"><WalletCards size={14} /> {t('بودجه تقریبی', 'Approximate budget')}</div>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {budgets.map(b => (
+                    <button type="button" key={b} onClick={()=>setForm({...form, budget:b})} className={`choice-card text-[12.5px] ${form.budget===b ? 'choice-card-active' : 'text-text-2'}`}>{b}</button>
+                  ))}
+                </div>
+              </div>
               <textarea required rows={7} className="glass-input sm:col-span-2 resize-none" placeholder={t('درباره پروژه، هدف، زمان‌بندی و لینک‌های مرتبط بنویسید...', 'Describe the project, goals, timeline and related links...')} value={form.message} onChange={e=>setForm({...form, message:e.target.value})} />
               <button className="glass-btn-primary sm:col-span-2 !py-3 flex items-center justify-center gap-2"><Send size={16} /> {t('ارسال درخواست', 'Send request')}</button>
             </form>

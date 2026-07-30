@@ -234,8 +234,8 @@ export function getCalendarGrid(mode: CalendarMode, cal = getTodayCalendar()) {
     cells.push({
       key:`j-${day}`,
       day,
-      label: mode === 'imperial' ? avestan.name : toPersianDigits(day),
-      subLabel: mode === 'imperial' ? toPersianDigits(day) : avestan.name,
+      label: toPersianDigits(day),
+      subLabel: avestan.name,
       isToday: day === cal.jalali.d,
       isFestival: !!festival,
       isRest: !!avestan.rest,

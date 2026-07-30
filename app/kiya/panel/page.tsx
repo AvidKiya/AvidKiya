@@ -1,532 +1,176 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  BarChart3, Briefcase, CalendarDays, CheckCircle2, Database, FileCode2,
+  Home, LogOut, PackagePlus, Save, Search, Settings, ShieldCheck,
+  ShoppingBag, Sparkles, Trash2, UserRound, Wrench
+} from 'lucide-react';
 import { useCms } from '@/lib/cms/cms-context';
 import { GlassCard } from '@/components/ui/glass';
-import Link from 'next/link';
-import {
-  LayoutDashboard, UserCog, Share2, Home, FileCode, FileText, Gift,
-  Megaphone, MessageSquare, ShoppingBag, Briefcase, Wrench, Boxes,
-  Inbox, Image as ImageIcon, CalendarDays, Settings as SettingsIcon,
-  BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search, CircleDashed, ArrowLeft
-} from 'lucide-react';
 
-type SectionKey =
-  'dashboard'|'identity'|'socials'|'homepage'|'about'|'projects'|'resume'|
-  'gifts'|'announcements'|'comments'|'shop'|'freelance'|'tools'|'standalone'|
-  'messages'|'media'|'calendar'|'settings'|'blog'|'coupons'|'emails'|'leadmagnet';
+type SectionKey = 'dashboard'|'identity'|'projects'|'shop'|'services'|'tools'|'calendar'|'security';
 
-const SECTIONS: {key:SectionKey; fa:string; en:string; icon:any}[] = [
-  {key:'dashboard', fa:'نمای کلی', en:'Dashboard', icon:LayoutDashboard},
-  {key:'identity', fa:'هویت', en:'Identity', icon:UserCog},
-  {key:'socials', fa:'شبکه‌های اجتماعی', en:'Socials', icon:Share2},
-  {key:'homepage', fa:'صفحه اصلی', en:'Homepage', icon:Home},
-  {key:'about', fa:'درباره', en:'About', icon:UserCog},
-  {key:'projects', fa:'پروژه‌ها', en:'Projects', icon:FileCode},
-  {key:'resume', fa:'رزومه', en:'Resume', icon:FileText},
-  {key:'gifts', fa:'هدیه‌ها', en:'Gifts', icon:Gift},
-  {key:'announcements', fa:'اعلانات', en:'Announcements', icon:Megaphone},
-  {key:'comments', fa:'نظرات', en:'Comments', icon:MessageSquare},
-  {key:'shop', fa:'فروشگاه', en:'Shop', icon:ShoppingBag},
-  {key:'freelance', fa:'فریلنسرینگ', en:'Freelance', icon:Briefcase},
-  {key:'tools', fa:'ابزارها', en:'Tools', icon:Wrench},
-  {key:'standalone', fa:'پروژه‌های مستقل', en:'Standalone', icon:Boxes},
-  {key:'blog', fa:'بلاگ', en:'Blog', icon:BookOpen},
-  {key:'coupons', fa:'کوپن‌ها', en:'Coupons', icon:Tag},
-  {key:'emails', fa:'ایمیل‌ها', en:'Emails', icon:Mail},
-  {key:'leadmagnet', fa:'Lead Magnet', en:'Lead Magnet', icon:Magnet},
-  {key:'messages', fa:'پیام‌ها', en:'Messages', icon:Inbox},
-  {key:'media', fa:'رسانه', en:'Media', icon:ImageIcon},
-  {key:'calendar', fa:'تقویم', en:'Calendar', icon:CalendarDays},
-  {key:'settings', fa:'تنظیمات', en:'Settings', icon:SettingsIcon},
+const sections: Array<{key:SectionKey; label:string; icon:any; desc:string}> = [
+  {key:'dashboard', label:'داشبورد', icon:BarChart3, desc:'نمای کلی سایت'},
+  {key:'identity', label:'هویت برند', icon:UserRound, desc:'نام، عنوان و معرفی'},
+  {key:'projects', label:'پروژه‌ها', icon:FileCode2, desc:'نمونه‌کارها و کیس‌ها'},
+  {key:'shop', label:'فروشگاه', icon:ShoppingBag, desc:'محصولات و قیمت‌ها'},
+  {key:'services', label:'خدمات', icon:Briefcase, desc:'پکیج‌ها و مبالغ'},
+  {key:'tools', label:'ابزارها', icon:Wrench, desc:'ابزارهای آنلاین'},
+  {key:'calendar', label:'تقویم', icon:CalendarDays, desc:'جملات و گاهشمار'},
+  {key:'security', label:'امنیت', icon:ShieldCheck, desc:'وضعیت محافظت پنل'},
 ];
 
-function Field({label, children}:{label:string; children:React.ReactNode}){
-  return <label className="block text-[12px]"><div className="text-text-3 mb-1">{label}</div>{children}</label>
+const toman = (v?: number) => v ? `${v.toLocaleString('fa-IR')} تومان` : 'توافقی';
+
+function AdminInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={`glass-input !py-[9px] text-[13px] ${props.className || ''}`} />;
 }
-function Input(props: React.InputHTMLAttributes<HTMLInputElement>){
-  return <input {...props} className={`glass-input !py-[9px] text-[13px] ${props.className||''}`} />
+function AdminTextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={`glass-input !py-[10px] text-[13px] resize-y ${props.className || ''}`} />;
 }
-function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>){
-  return <textarea {...props} className={`glass-input !py-[10px] text-[13px] resize-y ${props.className||''}`} />
+function PanelHeader({title, desc}:{title:string; desc:string}){
+  return <div className="mb-4"><h2 className="text-[22px] font-black tracking-[-0.02em]">{title}</h2><p className="text-text-3 text-[12.5px] mt-1">{desc}</p></div>;
 }
 
-export default function AdminPanelV2(){
-  const cmsCtx = useCms();
-  const { cms, updateCms, editMode, setEditMode, exportJson, importJson, syncStatus, tf } = cmsCtx;
-  const [authed, setAuthed] = useState(false);
-  const [pass, setPass] = useState('');
+export default function AdminPanel(){
+  const { cms, updateCms, syncStatus, exportJson, importJson } = useCms();
   const [section, setSection] = useState<SectionKey>('dashboard');
   const [q, setQ] = useState('');
+  const router = useRouter();
+  const filtered = useMemo(()=>sections.filter(s => !q || s.label.includes(q) || s.desc.includes(q)), [q]);
 
-  useEffect(()=>{ if(typeof window!=='undefined' && (sessionStorage.getItem('ak_admin_ok')==='1' || location.hash.includes('kiya/panel'))) {
-    const ok = sessionStorage.getItem('ak_admin_ok')==='1';
-    if(ok) setAuthed(true);
-  } },[]);
-
-  const login = ()=> {
-    const saved = localStorage.getItem('ak_admin_pass') || 'admin';
-    if(pass === saved){ sessionStorage.setItem('ak_admin_ok','1'); setAuthed(true); setEditMode(true);} else alert('رمز اشتباه');
+  const logout = async () => {
+    await fetch('/api/admin/logout', { method:'POST' });
+    router.replace('/kiya/login');
   };
 
-  const filteredSections = useMemo(()=> SECTIONS.filter(s=> !q || s.fa.includes(q) || s.en.toLowerCase().includes(q.toLowerCase())), [q]);
-
-  if(!authed){
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <GlassCard className="w-full max-w-[420px] text-center !p-7">
-          <div className="w-12 h-12 rounded-[14px] bg-primary/12 text-primary flex items-center justify-center mx-auto mb-3">
-            <SettingsIcon size={22} />
-          </div>
-          <div className="text-[18px] font-[800] mb-1">پنل مدیر مخفی</div>
-          <div className="text-[12px] text-text-3 mb-4">#kiya/panel — AvidKiya OS</div>
-          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
-            placeholder="رمز مدیر" className="glass-input text-center mb-3" />
-          <button onClick={login} className="glass-btn-primary w-full">ورود امن →</button>
-          <div className="text-[11px] text-text-3 mt-3">پیش‌فرض: admin — بعد از ورود حتماً عوض کنید</div>
-        </GlassCard>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-[1280px] mx-auto px-3 md:px-5 py-5 md:py-7">
-      {/* top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-[10px]">
-          <div className="w-9 h-9 rounded-[12px] bg-primary/12 text-primary flex items-center justify-center font-black text-[13px]">AK</div>
-          <div>
-            <div className="font-[750] text-[15px]">Admin OS</div>
-            <div className="text-[11px] text-text-3">avidkiya.com • v2.5</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-[11.5px] flex-wrap">
-          <span className={`px-[10px] py-[6px] rounded-full flex items-center gap-1.5 glass-card !p-0 !px-3 !py-[6px] ${syncStatus==='synced'?'text-emerald':syncStatus==='syncing'?'text-amber':'text-rose'}`}>
-            {syncStatus==='synced' ? 'Synced' : syncStatus}
-          </span>
-          <label className="glass-card !px-3 !py-[6px] flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={editMode} onChange={e=>setEditMode(e.target.checked)} />
-            Edit
-          </label>
-          <button onClick={exportJson} className="glass-btn !py-[6px] !px-3 text-[11.5px]">Export</button>
-          <label className="glass-btn !py-[6px] !px-3 text-[11.5px] cursor-pointer">Import
-            <input type="file" accept="application/json" hidden onChange={e=> e.target.files?.[0] && importJson(e.target.files[0])} />
-          </label>
-          <Link href="/" className="glass-btn !py-[6px] !px-3 text-[11.5px]">View site</Link>
-          <button onClick={()=>{sessionStorage.removeItem('ak_admin_ok'); location.href='/'}} className="text-rose text-[11.5px] px-2">خروج</button>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-[250px_1fr] gap-4 items-start">
-        {/* sidebar */}
-        <aside className="glass-card !p-2 lg:sticky lg:top-[84px] max-h-[calc(100vh-110px)] overflow-auto">
-          <div className="p-2 pb-3">
-            <div className="relative">
-              <Search size={13} className="absolute start-3 top-[9px] text-text-3" />
-              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="جستجوی بخش…"
-                className="w-full bg-black/[0.03] dark:bg-white/[0.035] border border-glass-border rounded-[10px] py-[7px] ps-8 text-[12px] outline-none" />
+    <div className="max-w-[1320px] mx-auto px-4 md:px-6 py-6 md:py-8">
+      <GlassCard className="!p-4 md:!p-5 mb-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-[17px] bg-primary/10 text-primary flex items-center justify-center"><Settings size={24}/></div>
+            <div>
+              <h1 className="text-[20px] md:text-[24px] font-black">AvidKiya Admin Console</h1>
+              <p className="text-[12px] text-text-3 mt-1">پنل جدید، امن‌تر، تمیزتر و هماهنگ با طراحی سایت</p>
             </div>
           </div>
-          <nav className="space-y-[3px] px-1 pb-2">
-            {filteredSections.map(s=>{
-              const Icon = s.icon;
-              const active = section===s.key;
-              return (
-                <button key={s.key} onClick={()=>setSection(s.key)}
-                  className={`w-full flex items-center gap-[10px] px-3 py-[9px] rounded-[11px] text-[12.5px] transition text-start ${
-                    active ? 'bg-primary/10 text-primary font-[600]' : 'text-text-2 hover:text-text hover:bg-white/[0.035]'
-                  }`}>
-                  <Icon size={15} />
-                  <span className="truncate">{s.fa}</span>
+          <div className="flex flex-wrap items-center gap-2 text-[12px]">
+            <span className={`rounded-full px-3 py-2 border ${syncStatus==='synced' ? 'bg-emerald/10 text-emerald border-emerald/20' : 'bg-amber/10 text-amber border-amber/20'}`}>{syncStatus==='synced' ? 'ذخیره شده' : syncStatus}</span>
+            <button onClick={exportJson} className="glass-btn !py-2 !px-3">Export JSON</button>
+            <label className="glass-btn !py-2 !px-3 cursor-pointer">Import JSON<input type="file" accept="application/json" hidden onChange={e=> e.target.files?.[0] && importJson(e.target.files[0])}/></label>
+            <Link href="/" className="glass-btn !py-2 !px-3 flex items-center gap-1"><Home size={14}/> سایت</Link>
+            <button onClick={logout} className="glass-btn !py-2 !px-3 text-rose flex items-center gap-1"><LogOut size={14}/> خروج</button>
+          </div>
+        </div>
+      </GlassCard>
+
+      <div className="grid lg:grid-cols-[280px_minmax(0,1fr)] gap-4 items-start">
+        <aside className="lg:sticky lg:top-[84px] space-y-3">
+          <GlassCard className="!p-3">
+            <div className="relative">
+              <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-text-3" />
+              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="جستجوی بخش" className="glass-input !py-2 ps-9 text-[12.5px]" />
+            </div>
+          </GlassCard>
+          <GlassCard className="!p-2">
+            <nav className="space-y-1">
+              {filtered.map(item=>{ const Icon=item.icon; const active=section===item.key; return (
+                <button key={item.key} onClick={()=>setSection(item.key)} className={`w-full rounded-[15px] px-3 py-3 flex items-center gap-3 text-start transition ${active ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'hover:bg-white/[0.04] text-text-2'}`}>
+                  <span className="w-9 h-9 rounded-[12px] bg-white/[0.035] flex items-center justify-center shrink-0"><Icon size={17}/></span>
+                  <span className="min-w-0"><b className="block text-[13px]">{item.label}</b><small className="text-[10.5px] text-text-3">{item.desc}</small></span>
                 </button>
-              )
-            })}
-          </nav>
+              )})}
+            </nav>
+          </GlassCard>
         </aside>
 
-        {/* content */}
-        <main className="min-w-0 space-y-4">
-          <SectionRouter section={section} />
+        <main className="min-w-0">
+          {section === 'dashboard' && <Dashboard />}
+          {section === 'identity' && <Identity />}
+          {section === 'projects' && <Projects />}
+          {section === 'shop' && <Shop />}
+          {section === 'services' && <Services />}
+          {section === 'tools' && <Tools />}
+          {section === 'calendar' && <CalendarSection />}
+          {section === 'security' && <Security />}
         </main>
       </div>
     </div>
   );
 }
 
-/* ---------- Sections ---------- */
-function SectionRouter({section}:{section:SectionKey}){
-  const { cms, updateCms, tf } = useCms();
-  const [newPass, setNewPass] = useState('');
-
-  // DASHBOARD
-  if(section==='dashboard'){
-    const stats = [
-      {l:'بازدید امروز',v:'1,248',d:'+12%'},
-      {l:'بازدید پروژه‌ها',v:'84',d:'+3'}, 
-      {l:'فروش امروز',v:'$129',d:'2 سفارش'},
-      {l:'پیام جدید',v:String(cms.messages.filter(m=>!m.read).length),d:'inbox'},
-    ];
-    return (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map(s=>(
-          <GlassCard key={s.l} className="!p-4">
-            <div className="text-[11.5px] text-text-3">{s.l}</div>
-            <div className="text-[22px] font-[800]">{s.v}</div>
-            <div className="text-[11px] text-emerald">{s.d}</div>
+function Dashboard(){
+  const { cms } = useCms();
+  const cards = [
+    { label:'پروژه‌ها', value: cms.projects.customProjects.length, Icon: FileCode2 },
+    { label:'محصولات', value: cms.shop.products.length, Icon: ShoppingBag },
+    { label:'خدمات', value: cms.freelancing.services.length, Icon: Briefcase },
+    { label:'ابزارها', value: cms.tools.items.length, Icon: Wrench },
+  ];
+  return (
+    <div className="space-y-4">
+      <PanelHeader title="نمای کلی" desc="وضعیت محتوای اصلی سایت در یک نگاه" />
+      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {cards.map(({label, value, Icon}) => (
+          <GlassCard key={label} className="!p-5">
+            <Icon className="text-primary mb-3" size={22}/>
+            <div className="text-[28px] font-black">{value}</div>
+            <div className="text-text-3 text-[12px]">{label}</div>
           </GlassCard>
         ))}
-        <GlassCard className="sm:col-span-2 lg:col-span-4 !p-4">
-          <div className="text-[13px] font-[700] mb-2">Onboarding ادمین</div>
-          <div className="grid sm:grid-cols-3 gap-2 text-[12.5px] text-text-2">
-            {[
-              {label:'لوگو', done:true},
-              {label:'نام', done:true},
-              {label:'شبکه اجتماعی', done:true},
-              {label:'پروژه اول', done:false},
-              {label:'رزومه', done:false},
-              {label:'محصول اول', done:false},
-            ].map(x=> <div key={x.label} className="bg-white/[0.03] rounded-[10px] px-3 py-[8px] border border-glass-border flex items-center gap-2">{x.done ? <Check size={13} className="text-emerald" /> : <CircleDashed size={13} className="text-amber" />}{x.label}</div>)}
-          </div>
-        </GlassCard>
       </div>
-    );
-  }
-
-  // IDENTITY
-  if(section==='identity'){
-    return (
       <GlassCard className="!p-5">
-        <h2 className="font-[700] text-[15px] mb-4">هویت برند</h2>
-        <div className="grid md:grid-cols-2 gap-3 text-[13px]">
-          <Field label="نام فارسی"><Input value={cms.identity.fullName.fa} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, fa:e.target.value}}})} /></Field>
-          <Field label="Name EN"><Input value={cms.identity.fullName.en} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, en:e.target.value}}})} dir="ltr" /></Field>
-          <Field label="عنوان FA"><Input value={cms.identity.title.fa} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, fa:e.target.value}}})} /></Field>
-          <Field label="Title EN"><Input value={cms.identity.title.en} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, en:e.target.value}}})} dir="ltr" /></Field>
-          <Field label="ایمیل"><Input value={cms.identity.email} onChange={e=>updateCms({identity:{...cms.identity, email:e.target.value}})} dir="ltr" /></Field>
-          <Field label="Years Exp"><Input type="number" value={cms.identity.yearsExperience} onChange={e=>updateCms({identity:{...cms.identity, yearsExperience:+e.target.value||0}})} /></Field>
-          <div className="md:col-span-2">
-            <Field label="Bio FA"><TextArea rows={3} value={cms.identity.bio.fa} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, fa:e.target.value}}})} /></Field>
-          </div>
-        </div>
-        <div className="text-[11px] text-emerald mt-3 flex items-center gap-1"><Check size={13}/> Auto-save فعال — 800ms</div>
+        <div className="flex items-center gap-2 text-emerald font-bold mb-2"><CheckCircle2 size={18}/> سیستم آماده است</div>
+        <p className="text-text-2 text-sm leading-8">ورود پنل دیگر سمت کلاینت و با رمز پیش‌فرض نیست؛ مسیر مدیریت با Middleware و Cookie امن محافظت می‌شود.</p>
       </GlassCard>
-    );
-  }
-
-  // SOCIALS
-  if(section==='socials'){
-    return (
-      <GlassCard className="!p-5">
-        <div className="flex justify-between items-center mb-3"><h2 className="font-[700]">شبکه‌های اجتماعی</h2>
-          <button onClick={()=>{
-            const s = [...cms.socials, {id: 's'+Date.now(), platform:'github' as any, url:'https://', label:{fa:'جدید',en:'New'}, enabled:true}];
-            updateCms({socials:s});
-          }} className="glass-btn !py-[7px] !px-3 text-[12px] flex items-center gap-1"><Plus size={14}/> افزودن</button>
-        </div>
-        <div className="space-y-2 max-h-[540px] overflow-auto pe-1">
-          {cms.socials.map((so, i)=>(
-            <div key={so.id} className="grid md:grid-cols-[140px_1fr_120px_40px] gap-2 items-center text-[12.5px] bg-white/[0.022] p-[10px] rounded-[12px] border border-glass-border">
-              <select value={so.platform}
-                onChange={e=>{ const arr=[...cms.socials]; arr[i]={...so, platform:e.target.value as any}; updateCms({socials:arr});}}
-                className="glass-input !py-[8px] text-[12px] bg-transparent">
-                {['github','telegram','instagram','x','linkedin','youtube','email'].map(p=><option key={p} value={p}>{p}</option>)}
-              </select>
-              <input value={so.url} dir="ltr"
-                onChange={e=>{ const arr=[...cms.socials]; arr[i]={...so, url:e.target.value}; updateCms({socials:arr});}}
-                className="glass-input !py-[8px] text-[12px]" placeholder="https://…" />
-              <label className="flex items-center gap-2 text-[11.5px]"><input type="checkbox" checked={so.enabled}
-                onChange={e=>{ const arr=[...cms.socials]; arr[i]={...so, enabled:e.target.checked}; updateCms({socials:arr});}}/> فعال</label>
-              <button onClick={()=> updateCms({socials: cms.socials.filter(x=>x.id!==so.id)})}
-                className="text-rose hover:bg-rose/10 p-[7px] rounded-[8px]"><Trash2 size={14}/></button>
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-    );
-  }
-
-  // PROJECTS
-  if(section==='projects'){
-    const list = cms.projects.customProjects;
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-[700]">پروژه‌ها — {list.length} عدد</h2>
-          <button onClick={()=>{
-            const np = {id:'p'+Date.now(), title:'پروژه جدید', description:'توضیح کوتاه', language:'TypeScript', stars:0, featured:false, url:''};
-            updateCms({projects:{customProjects:[np, ...list]}});
-          }} className="glass-btn-primary !py-[8px] !px-3 text-[12px] flex items-center gap-1"><Plus size={14}/> پروژه جدید</button>
-        </div>
-        <div className="grid md:grid-cols-2 gap-3">
-          {list.map((p,idx)=>(
-            <GlassCard key={p.id} className="!p-4 text-[12.5px] space-y-2">
-              <div className="flex gap-2">
-                <input value={p.title} placeholder="Title"
-                  onChange={e=>{ const a=[...list]; a[idx]={...p, title:e.target.value}; updateCms({projects:{customProjects:a}})}}
-                  className="glass-input !py-[8px] font-[600]" />
-                <input value={p.language||''} placeholder="Lang" 
-                  onChange={e=>{ const a=[...list]; a[idx]={...p, language:e.target.value}; updateCms({projects:{customProjects:a}})}}
-                  className="glass-input !py-[8px] w-[110px]" />
-              </div>
-              <textarea value={p.description} rows={2}
-                onChange={e=>{ const a=[...list]; a[idx]={...p, description:e.target.value}; updateCms({projects:{customProjects:a}}); }}
-                className="glass-input text-[12px]" />
-              <div className="flex items-center gap-3 text-[11.5px]">
-                <label className="flex items-center gap-1.5"><input type="checkbox" checked={!!p.featured}
-                  onChange={e=>{ const a=[...list]; a[idx]={...p, featured:e.target.checked}; updateCms({projects:{customProjects:a}}); }} /> Featured</label>
-                <input type="number" value={p.stars||0}
-                  onChange={e=>{ const a=[...list]; a[idx]={...p, stars:+e.target.value}; updateCms({projects:{customProjects:a}})}}
-                  className="glass-input !py-[6px] w-[90px] text-[11px]" placeholder="stars" />
-                <button onClick={()=> updateCms({projects:{customProjects: list.filter(x=>x.id!==p.id)}})}
-                  className="ms-auto text-rose hover:underline flex items-center gap-1"><Trash2 size={13}/> حذف</button>
-              </div>
-            </GlassCard>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // SHOP
-  if(section==='shop'){
-    const prods = cms.shop.products;
-    return (
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h2 className="font-[700]">فروشگاه — {prods.length} محصول</h2>
-          <button onClick={()=>{
-            const np={id:'pr'+Date.now(), title:{fa:'محصول جدید',en:'New Product'}, description:{fa:'توضیح',en:'desc'}, price:19, currency:'USD' as const, category: cms.shop.categories[0]||'قالب', enabled:true};
-            updateCms({shop:{...cms.shop, products:[np, ...prods]}});
-          }} className="glass-btn-primary !py-[8px] !px-3 text-[12px]">+ محصول</button>
-        </div>
-        <div className="grid md:grid-cols-2 gap-3">
-          {prods.map((p, i)=>(
-            <GlassCard key={p.id} className="!p-4 text-[12.5px] space-y-2">
-              <div className="flex gap-2">
-                <input value={p.title.fa} onChange={e=>{ const a=[...prods]; a[i]={...p, title:{...p.title, fa:e.target.value}}; updateCms({shop:{...cms.shop, products:a}})}} className="glass-input !py-[8px] flex-1" />
-                <input type="number" value={p.price} onChange={e=>{ const a=[...prods]; a[i]={...p, price:+e.target.value||0}; updateCms({shop:{...cms.shop, products:a}})}} className="glass-input !py-[8px] w-[100px]" />
-              </div>
-              <textarea value={p.description.fa} rows={2} onChange={e=>{ const a=[...prods]; a[i]={...p, description:{...p.description, fa:e.target.value}}; updateCms({shop:{...cms.shop, products:a}})}}
-                className="glass-input text-[12px]" />
-              <div className="flex items-center justify-between text-[11.5px]">
-                <label className="flex items-center gap-1.5"><input type="checkbox" checked={p.enabled} onChange={e=>{ const a=[...prods]; a[i]={...p, enabled:e.target.checked}; updateCms({shop:{...cms.shop, products:a}})}}/> فعال</label>
-                <span className="text-text-3">{p.category} • {p.currency}</span>
-                <button onClick={()=> updateCms({shop:{...cms.shop, products: prods.filter(x=>x.id!==p.id)}})} className="text-rose">حذف</button>
-              </div>
-            </GlassCard>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // BLOG
-  if(section==='blog'){
-    return (
-      <GlassCard className="!p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-[700]">مدیریت بلاگ</h2>
-          <button className="glass-btn-primary !py-[8px] !px-3 text-[12px]">+ مقاله جدید</button>
-        </div>
-        <div className="text-[13px] text-text-2 leading-relaxed">
-          ویرایشگر متن غنی (TipTap) — دسته‌بندی، تگ، عکس کاور، SEO per article — انتشار/پیش‌نویس/زمان‌بندی<br/>
-          <span className="text-[11.5px] text-text-3">در این نسخه دمو: لیست مقالات از <code>/blog</code> خوانده می‌شود. پنل کامل Rich Editor در آپدیت بعدی فعال است.</span>
-        </div>
-        <div className="mt-4 grid md:grid-cols-2 gap-3 text-[12.5px]">
-          {[
-            'مغز دوم چیست — منتشر شده',
-            'Next.js روی Cloudflare — پیش‌نویس',
-            'Liquid Glass UI — زمان‌بندی',
-          ].map(ti=> <div key={ti} className="glass-card !p-3 !py-[10px]">{ti}</div>)}
-        </div>
-      </GlassCard>
-    );
-  }
-
-  // STANDALONE PROJECTS
-  if(section==='standalone'){
-    const standaloneProjects = [
-      {code:'kiya-planner-standalone', plan:'Project', exp:'مستقل', user:'KIYA Planner', status:'جدا شده'},
-      {code:'kianet-standalone', plan:'Project', exp:'مستقل', user:'KIANET', status:'جدا شده'},
-      {code:'future-product', plan:'Roadmap', exp:'بعدی', user:'محصول جدید', status:'برنامه‌ریزی'},
-    ];
-    return (
-      <div className="space-y-4">
-        <div className="grid sm:grid-cols-4 gap-3">
-          {[
-            ['پروژه مستقل','2'],
-            ['در پرتفولیو','2'],
-            ['آماده ریپو','2'],
-            ['محصول بعدی','1'], 
-          ].map(([l,v])=>(
-            <GlassCard key={l} className="!p-4 text-center">
-              <div className="text-[11.5px] text-text-3">{l}</div>
-              <div className="text-[20px] font-[800]">{v}</div>
-            </GlassCard>
-          ))}
-        </div>
-        <GlassCard className="!p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="font-[700]">پروژه‌های جداشده از پرتفولیو</div>
-            <div className="flex gap-2">
-              <button className="glass-btn !py-[7px] !px-3 text-[12px]">ثبت پروژه جدید</button>
-              <button className="glass-btn-primary !py-[7px] !px-3 text-[12px]">ساخت کیس‌استادی</button>
-            </div>
-          </div>
-          <div className="overflow-auto">
-            <table className="w-full text-[12.5px]">
-              <thead className="text-text-3 text-[11px] uppercase">
-                <tr className="border-b border-glass-border">
-                  <th className="text-start py-2 px-2">اسلاگ</th>
-                  <th className="text-start py-2 px-2">نوع</th>
-                  <th className="text-start py-2 px-2">عنوان</th>
-                  <th className="text-start py-2 px-2">وضعیت ریپو</th>
-                  <th className="text-start py-2 px-2">نمایش</th>
-                </tr>
-              </thead>
-              <tbody>
-                {standaloneProjects.map(l=>(
-                  <tr key={l.code} className="border-b border-glass-border/60">
-                    <td className="py-[10px] px-2 font-mono text-[11.5px]">{l.code}</td>
-                    <td className="px-2">{l.plan}</td>
-                    <td className="px-2 text-text-2">{l.user}</td>
-                    <td className="px-2">{l.exp}</td>
-                    <td className="px-2"><span className="text-emerald text-[11px]">● {l.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
-      </div>
-    );
-  }
-
-  // COUPONS
-  if(section==='coupons'){
-    return (
-      <GlassCard className="!p-5">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="font-[700]">کوپن‌ها / تخفیف</h2>
-          <button className="glass-btn-primary !py-[7px] !px-3 text-[12px]">+ کوپن جدید</button>
-        </div>
-        <div className="overflow-auto">
-          <table className="w-full text-[12.5px]">
-            <thead className="text-text-3 text-[11px]">
-              <tr><th className="text-start p-2">کد</th><th>نوع</th><th>مقدار</th><th>استفاده</th><th>انقضا</th><th>وضعیت</th></tr>
-            </thead>
-            <tbody>
-              {[
-                ['WELCOME','درصد','15%','42 / 500','۱۴۰۵/۰۶/۳۱','فعال'],
-                ['AVID15','درصد','15%','128 / ∞','—','فعال'], 
-                ['NOWRUZ50','درصد','50%','0 / 100','۱۴۰۵/۰۱/۱۵','غیرفعال'],
-              ].map(r=>(
-                <tr key={r[0]} className="border-t border-glass-border/60">
-                  {r.map((c,i)=><td key={i} className="py-[10px] px-2 text-center first:text-start font-mono text-[12px]">{c}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </GlassCard>
-    );
-  }
-
-  // EMAILS
-  if(section==='emails'){
-    return (
-      <GlassCard className="!p-5">
-        <h2 className="font-[700] mb-3">ایمیل خودکار — Resend</h2>
-        <div className="grid md:grid-cols-2 gap-3 text-[12.5px]">
-          {[
-            ['خوش‌آمد فروشگاه','بعد از خرید — فوری','فعال'], 
-            ['Onboarding Day 2','روز ۲','فعال'],
-            ['انقضا ۷ روز قبل','قبل انقضا','فعال'],
-            ['Win-back 30 روز','۳۰ روز غیرفعال','پیش‌نویس'],
-          ].map(([t,d,s])=>(
-            <div key={t} className="glass-card !p-3">
-              <div className="font-[600]">{t}</div>
-              <div className="text-text-3 text-[11.5px]">{d} • {s}</div>
-              <button className="text-primary text-[11.5px] mt-2 hover:underline">ویرایش قالب →</button>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 text-[12px] text-text-3">API Key Resend: <code className="bg-white/[0.05] px-2 py-1 rounded">re_••••••••••••••••</code> <button className="text-primary ms-2 hover:underline">تغییر</button></div>
-      </GlassCard>
-    );
-  }
-
-  // CALENDAR — quotes
-  if(section==='calendar'){
-    return (
-      <GlassCard className="!p-5">
-        <h2 className="font-[700] mb-3">تقویم — سخنان بزرگان</h2>
-        <div className="grid md:grid-cols-3 gap-4 text-[12.5px]">
-          {(['kourosh','mohammadReza','rezaShah'] as const).map(k=>(
-            <div key={k}>
-              <div className="font-[600] mb-2">{k==='kourosh'?'کوروش بزرگ':k==='mohammadReza'?'محمدرضا شاه':'رضا شاه'} — {cms.quotes[k].length} سخن</div>
-              <div className="space-y-2 max-h-[300px] overflow-auto pe-1">
-                {cms.quotes[k].slice(0,6).map((qt, i)=>(
-                  <div key={i} className="bg-white/[0.03] border border-glass-border rounded-[10px] p-[10px] leading-relaxed">«{qt}»</div>
-                ))}
-              </div>
-              <button className="text-primary text-[11.5px] mt-2 hover:underline">+ افزودن سخن</button>
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-    );
-  }
-
-  // SETTINGS
-  if(section==='settings'){
-    return (
-      <div className="grid md:grid-cols-2 gap-4">
-        <GlassCard className="!p-5">
-          <h3 className="font-[700] mb-3">امنیت</h3>
-          <div className="space-y-3 text-[13px]">
-            <div>
-              <div className="text-[11.5px] text-text-3 mb-1">رمز فعلی: admin</div>
-              <input type="password" value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="رمز جدید…"
-                className="glass-input text-[13px]" />
-              <button onClick={()=>{ if(newPass.length>=4){ localStorage.setItem('ak_admin_pass', newPass); alert('رمز عوض شد'); setNewPass(''); } }}
-                className="glass-btn-primary mt-2 w-full !py-[10px] text-[13px]">ذخیره رمز جدید</button>
-            </div>
-          </div>
-        </GlassCard>
-        <GlassCard className="!p-5">
-          <h3 className="font-[700] mb-3">SEO / Analytics</h3>
-          <div className="space-y-[10px] text-[12.5px]">
-            <input defaultValue={cms.seo.siteName} placeholder="Site Name" className="glass-input !py-[9px]" />
-            <input defaultValue={cms.seo.description} placeholder="Meta description" className="glass-input !py-[9px]" />
-            <input defaultValue={cms.analytics.plausibleDomain} placeholder="plausible.io domain" className="glass-input !py-[9px]" dir="ltr" />
-            <button className="glass-btn w-full !py-[9px]">ذخیره SEO</button>
-          </div>
-        </GlassCard>
-      </div>
-    );
-  }
-
-  // fallback generic editors
+    </div>
+  );
+}
+function Identity(){
+  const { cms, updateCms } = useCms();
   return (
-    <GlassCard className="!p-6">
-      <h2 className="text-[16px] font-[700] mb-2">
-        بخش: {SECTIONS.find(s=>s.key===section)?.fa}
-      </h2>
-      <p className="text-text-2 text-[13px] leading-relaxed">
-        ویرایشگر کامل این بخش در پنل مدیر فعال است.
-        <br />
-        همه فیلدها از <code>CmsState</code> می‌خوانند و Auto-save ۸۰۰ms دارند.
-        <br />
-        Export / Import JSON از نوار بالا در دسترس است.
-      </p>
-      <div className="mt-4 grid sm:grid-cols-3 gap-2 text-[12px]">
-        <div className="glass-card !p-3 flex items-center gap-2"><Check size={14} className="text-emerald" /> Edit-in-place آماده</div>
-        <div className="glass-card !p-3 flex items-center gap-2"><Check size={14} className="text-emerald" /> Cloudflare KV sync</div>
-        <div className="glass-card !p-3 flex items-center gap-2"><Check size={14} className="text-emerald" /> نسخه‌بندی CMS</div>
-      </div>
-      <div className="mt-4">
-        <Link href="/" className="text-primary text-[12.5px] hover:underline">→ مشاهده زنده در سایت</Link>
+    <GlassCard className="!p-5">
+      <PanelHeader title="هویت برند" desc="اطلاعات اصلی برند و معرفی کوتاه" />
+      <div className="grid md:grid-cols-2 gap-3">
+        <AdminInput value={cms.identity.fullName.fa} onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, fa:e.target.value}}})} placeholder="نام فارسی" />
+        <AdminInput value={cms.identity.fullName.en} dir="ltr" onChange={e=>updateCms({identity:{...cms.identity, fullName:{...cms.identity.fullName, en:e.target.value}}})} placeholder="Name" />
+        <AdminInput value={cms.identity.title.fa} onChange={e=>updateCms({identity:{...cms.identity, title:{...cms.identity.title, fa:e.target.value}}})} placeholder="عنوان فارسی" />
+        <AdminInput value={cms.identity.email} dir="ltr" onChange={e=>updateCms({identity:{...cms.identity, email:e.target.value}})} placeholder="Email" />
+        <AdminTextArea className="md:col-span-2" rows={4} value={cms.identity.bio.fa} onChange={e=>updateCms({identity:{...cms.identity, bio:{...cms.identity.bio, fa:e.target.value}}})} />
       </div>
     </GlassCard>
   );
+}
+function Projects(){
+  const { cms, updateCms } = useCms(); const list=cms.projects.customProjects;
+  return <div className="space-y-3"><PanelHeader title="پروژه‌ها" desc="مدیریت نمونه‌کارهای نمایش داده‌شده در سایت" />
+    <button onClick={()=>updateCms({projects:{customProjects:[{id:'p'+Date.now(), title:'پروژه جدید', description:'توضیح پروژه', language:'Next.js', stars:0, url:'#', featured:false}, ...list]}})} className="glass-btn-primary !py-2 !px-4 flex items-center gap-2"><PackagePlus size={16}/> پروژه جدید</button>
+    <div className="grid md:grid-cols-2 gap-3">{list.map((p,i)=><GlassCard key={p.id} className="!p-4 space-y-2"><AdminInput value={p.title} onChange={e=>{const a=[...list]; a[i]={...p,title:e.target.value}; updateCms({projects:{customProjects:a}})}}/><AdminTextArea rows={2} value={p.description} onChange={e=>{const a=[...list]; a[i]={...p,description:e.target.value}; updateCms({projects:{customProjects:a}})}}/><div className="flex gap-2 items-center"><AdminInput className="!w-[120px]" value={p.language||''} onChange={e=>{const a=[...list]; a[i]={...p,language:e.target.value}; updateCms({projects:{customProjects:a}})}}/><label className="text-xs flex items-center gap-2"><input type="checkbox" checked={p.featured} onChange={e=>{const a=[...list]; a[i]={...p,featured:e.target.checked}; updateCms({projects:{customProjects:a}})}}/> منتخب</label><button onClick={()=>updateCms({projects:{customProjects:list.filter(x=>x.id!==p.id)}})} className="ms-auto text-rose"><Trash2 size={16}/></button></div></GlassCard>)}</div>
+  </div>;
+}
+function Shop(){
+  const { cms, updateCms } = useCms(); const list=cms.shop.products;
+  return <div className="space-y-3"><PanelHeader title="فروشگاه" desc="همه قیمت‌ها به تومان ذخیره و نمایش داده می‌شوند" />
+    <div className="grid md:grid-cols-2 gap-3">{list.map((p,i)=><GlassCard key={p.id} className="!p-4 space-y-2"><AdminInput value={p.title.fa} onChange={e=>{const a=[...list]; a[i]={...p,title:{...p.title,fa:e.target.value}}; updateCms({shop:{...cms.shop,products:a}})}}/><AdminInput type="number" value={p.price} onChange={e=>{const a=[...list]; a[i]={...p,price:+e.target.value||0,currency:'IRR'}; updateCms({shop:{...cms.shop,products:a}})}}/><div className="text-xs text-text-3">{toman(p.price)}</div><AdminTextArea rows={2} value={p.description.fa} onChange={e=>{const a=[...list]; a[i]={...p,description:{...p.description,fa:e.target.value}}; updateCms({shop:{...cms.shop,products:a}})}}/></GlassCard>)}</div>
+  </div>;
+}
+function Services(){
+  const { cms, updateCms } = useCms(); const list=cms.freelancing.services;
+  return <div className="space-y-3"><PanelHeader title="خدمات" desc="تعرفه خدمات بر پایه تومان" /><div className="grid md:grid-cols-2 gap-3">{list.map((s,i)=><GlassCard key={s.id} className="!p-4 space-y-2"><AdminInput value={s.title.fa} onChange={e=>{const a=[...list]; a[i]={...s,title:{...s.title,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/><AdminInput type="number" value={s.priceFrom||0} onChange={e=>{const a=[...list]; a[i]={...s,priceFrom:+e.target.value||0}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/><div className="text-xs text-text-3">از {toman(s.priceFrom)}</div><AdminTextArea rows={2} value={s.description.fa} onChange={e=>{const a=[...list]; a[i]={...s,description:{...s.description,fa:e.target.value}}; updateCms({freelancing:{...cms.freelancing,services:a}})}}/></GlassCard>)}</div></div>;
+}
+function Tools(){
+  const { cms } = useCms();
+  return <GlassCard className="!p-5"><PanelHeader title="ابزارها" desc="ابزارهای کاربردی فعال در سایت" /><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{cms.tools.items.map(t=><div key={t.id} className="rounded-[16px] border border-glass-border bg-white/[0.025] p-4"><Sparkles size={18} className="text-amber mb-2"/><b className="text-sm">{t.title.fa}</b><p className="text-xs text-text-3 mt-1 leading-6">{t.description.fa}</p></div>)}</div></GlassCard>;
+}
+function CalendarSection(){
+  const { cms } = useCms();
+  return <GlassCard className="!p-5"><PanelHeader title="تقویم و جملات" desc="تقویم شاهنشاهی/شمسی/میلادی و ۳۶۵ جمله روزانه فعال است" /><div className="grid md:grid-cols-3 gap-3"><div className="rounded-[16px] bg-primary/10 border border-primary/20 p-4"><Database className="text-primary mb-2"/><b>۳۶۵ جمله روزانه</b><p className="text-xs text-text-3 mt-1">بر اساس روز شمسی</p></div><div className="rounded-[16px] bg-white/[0.025] border border-glass-border p-4"><b>کوروش</b><p className="text-xs text-text-3 mt-1">{cms.quotes.kourosh.length} جمله پایه</p></div><div className="rounded-[16px] bg-white/[0.025] border border-glass-border p-4"><b>اوستایی</b><p className="text-xs text-text-3 mt-1">نام روزها، جشن‌ها و نَبُر</p></div></div></GlassCard>;
+}
+function Security(){
+  return <GlassCard className="!p-5"><PanelHeader title="امنیت پنل" desc="پنل از حالت رمز پیش‌فرض و client-side خارج شد" /><div className="space-y-3 text-sm text-text-2 leading-8"><p><b className="text-text">محافظت فعال:</b> Middleware روی مسیر /kiya/panel، کوکی HttpOnly، امضای HMAC و SameSite Strict.</p><p><b className="text-text">تنظیم لازم:</b> در Cloudflare Environment Variables مقدارهای ADMIN_PASSWORD و ADMIN_SECRET را با رشته‌های قوی تنظیم کن.</p><p className="text-amber">هیچ سیستمی «غیرقابل هک مطلق» نیست، اما این ساختار نسبت به رمز قبلی client-side چندین سطح امن‌تر است.</p></div></GlassCard>;
 }

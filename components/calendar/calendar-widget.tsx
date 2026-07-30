@@ -103,33 +103,33 @@ export function CalendarWidget() {
         </div>
       )}
 
-      <div className="mt-3">
-        <div className="grid grid-cols-7 text-[10.5px] text-text-3 mb-1.5 text-center">
+      <div className="mt-3 rounded-[18px] border border-glass-border bg-white/[0.022] p-2.5">
+        <div className="grid grid-cols-7 text-[11px] text-text-3 mb-2 text-center font-bold">
           {grid.weekDays.map(d => <div key={d}>{d}</div>)}
         </div>
-        <div className="grid grid-cols-7 gap-[4px] text-center">
+        <div className="grid grid-cols-7 gap-[5px] text-center">
           {grid.cells.map((d) => (
             <div
               key={d.key}
-              className={`min-h-[38px] rounded-[9px] transition flex flex-col items-center justify-center border ${
+              className={`min-h-[48px] rounded-[12px] transition flex flex-col items-center justify-center border px-1 ${
                 !d.day
                   ? 'border-transparent opacity-0'
                   : d.isToday
-                  ? 'bg-primary text-[#052e28] border-primary shadow-sm font-black'
+                  ? 'bg-primary text-[rgb(var(--bg))] border-primary shadow-sm font-black'
                   : d.isFestival
                   ? 'bg-amber/12 text-amber border-amber/18'
                   : d.isRest
                   ? 'bg-cyan/10 text-cyan border-cyan/15'
                   : d.isNabor
                   ? 'bg-rose/10 text-rose border-rose/15'
-                  : 'hover:bg-white/[0.045] text-text-2 border-transparent'
+                  : 'hover:bg-white/[0.045] text-text-2 border-glass-border/35 bg-white/[0.018]'
               }`}
               title={d.title}
             >
               {d.day && (
                 <>
-                  <span className={`${mode === 'imperial' ? 'text-[9.5px] leading-3 px-0.5' : 'text-[12px]'} font-[800] max-w-full truncate`}>{d.label}</span>
-                  {d.subLabel && <span className={`mt-0.5 max-w-full truncate ${d.isToday ? 'text-[#052e28]/75' : 'text-text-3'} ${mode === 'imperial' ? 'text-[9px]' : 'text-[9.5px]'}`}>{d.subLabel}</span>}
+                  <span className="text-[13px] leading-4 font-[900] max-w-full truncate">{d.label}</span>
+                  {d.subLabel && <span className={`mt-0.5 max-w-full truncate leading-3 ${d.isToday ? 'text-[rgb(var(--bg))]/80' : 'text-text-3'} ${mode === 'imperial' ? 'text-[9.5px]' : 'text-[9px]'}`}>{d.subLabel}</span>}
                 </>
               )}
             </div>
@@ -138,10 +138,17 @@ export function CalendarWidget() {
       </div>
 
       {mode === 'imperial' && (
-        <div className="mt-3 grid grid-cols-3 gap-2 text-[10.5px] text-text-3">
-          <div className="flex items-center gap-1"><Circle size={9} className="text-cyan fill-cyan" /> استراحت</div>
-          <div className="flex items-center gap-1"><Leaf size={11} className="text-rose" /> نَبُر</div>
-          <div className="flex items-center gap-1"><Flame size={11} className="text-amber" /> جشن</div>
+        <div className="mt-3 space-y-2">
+          <div className="rounded-[16px] border border-primary/15 bg-primary/8 p-3 text-[12px] leading-6">
+            <div className="font-bold text-primary mb-1">امروز در گاهشمار اوستایی</div>
+            <div>روز <b>{cal.avestanDay.name}</b>، ماه <b>{cal.imperial.monthName}</b></div>
+            <div className="text-text-3">{cal.avestanDay.meaning} — {cal.avestanDay.concept}</div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-[10.5px] text-text-3">
+            <div className="flex items-center gap-1"><Circle size={9} className="text-cyan fill-cyan" /> استراحت</div>
+            <div className="flex items-center gap-1"><Leaf size={11} className="text-rose" /> نَبُر</div>
+            <div className="flex items-center gap-1"><Flame size={11} className="text-amber" /> جشن</div>
+          </div>
         </div>
       )}
 

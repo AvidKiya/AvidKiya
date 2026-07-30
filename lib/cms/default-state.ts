@@ -2,7 +2,7 @@ import { CmsState } from './types';
 import { QUOTES } from '../calendar';
 
 export const defaultCmsState: CmsState = {
-  version: 2,
+  version: 3,
   identity: {
     fullName: { fa: 'اَوید کیا', en: 'Avid Kiya' },
     title: { fa: 'معمار سیستم و توسعه‌دهنده فول‌استک', en: 'Systems Architect & Full-Stack Developer' },
@@ -140,22 +140,22 @@ export const defaultCmsState: CmsState = {
     enabled:true,
     categories:['قالب','ابزار','آموزش','چک‌لیست'],
     products:[
-      { id:'portfolio-kit', title:{fa:'کیت لانچ پرتفولیو',en:'Portfolio Launch Kit'}, description:{fa:'چک‌لیست، ساختار صفحات، متن آماده و الگوی معرفی حرفه‌ای.',en:'Checklist, page structure, copy blocks and professional positioning templates.'}, price:19, currency:'USD', category:'قالب', enabled:true, image:'' },
-      { id:'devhub-template', title:{fa:'قالب DevHub',en:'DevHub Template'}, description:{fa:'قالب Next.js با طراحی شیشه‌ای، RTL، دارک‌مود و صفحات آماده.',en:'Liquid glass Next.js template with RTL, dark mode and ready pages.'}, price:39, currency:'USD', category:'قالب', enabled:true, image:'' },
-      { id:'edge-starter', title:{fa:'Cloudflare Starter',en:'Cloudflare Starter'}, description:{fa:'استارتر معماری Pages/Workers با ساختار دیپلوی و مستندات.',en:'Pages/Workers architecture starter with deploy structure and docs.'}, price:49, currency:'USD', category:'ابزار', enabled:true, image:'' },
-      { id:'ai-prompts', title:{fa:'پک پرامپت اتوماسیون AI',en:'AI Automation Prompt Pack'}, description:{fa:'پرامپت‌های آماده برای تحلیل، تولید محتوا، فروش و مدیریت پروژه.',en:'Ready prompts for analysis, content, sales and project management.'}, price:15, currency:'USD', category:'آموزش', enabled:true, image:'' },
-      { id:'seo-checklist', title:{fa:'چک‌لیست SEO و لانچ',en:'SEO & Launch Checklist'}, description:{fa:'چک‌لیست ۷۲ موردی قبل از انتشار سایت و محصول دیجیتال.',en:'72-point checklist before publishing a website or digital product.'}, price:9, currency:'USD', category:'چک‌لیست', enabled:true, image:'' },
-      { id:'contract-template', title:{fa:'قالب قرارداد پروژه وب',en:'Web Project Contract Template'}, description:{fa:'نمونه ساختار قرارداد، محدوده کار، پرداخت مرحله‌ای و تحویل.',en:'Contract structure, scope, milestones, payment and delivery clauses.'}, price:12, currency:'USD', category:'چک‌لیست', enabled:true, image:'' },
+      { id:'portfolio-kit', title:{fa:'کیت لانچ پرتفولیو',en:'Portfolio Launch Kit'}, description:{fa:'چک‌لیست، ساختار صفحات، متن آماده و الگوی معرفی حرفه‌ای.',en:'Checklist, page structure, copy blocks and professional positioning templates.'}, price:690000, currency:'IRR', category:'قالب', enabled:true, image:'' },
+      { id:'devhub-template', title:{fa:'قالب DevHub',en:'DevHub Template'}, description:{fa:'قالب Next.js با طراحی شیشه‌ای، RTL، دارک‌مود و صفحات آماده.',en:'Liquid glass Next.js template with RTL, dark mode and ready pages.'}, price:1490000, currency:'IRR', category:'قالب', enabled:true, image:'' },
+      { id:'edge-starter', title:{fa:'Cloudflare Starter',en:'Cloudflare Starter'}, description:{fa:'استارتر معماری Pages/Workers با ساختار دیپلوی و مستندات.',en:'Pages/Workers architecture starter with deploy structure and docs.'}, price:1890000, currency:'IRR', category:'ابزار', enabled:true, image:'' },
+      { id:'ai-prompts', title:{fa:'پک پرامپت اتوماسیون AI',en:'AI Automation Prompt Pack'}, description:{fa:'پرامپت‌های آماده برای تحلیل، تولید محتوا، فروش و مدیریت پروژه.',en:'Ready prompts for analysis, content, sales and project management.'}, price:590000, currency:'IRR', category:'آموزش', enabled:true, image:'' },
+      { id:'seo-checklist', title:{fa:'چک‌لیست SEO و لانچ',en:'SEO & Launch Checklist'}, description:{fa:'چک‌لیست ۷۲ موردی قبل از انتشار سایت و محصول دیجیتال.',en:'72-point checklist before publishing a website or digital product.'}, price:390000, currency:'IRR', category:'چک‌لیست', enabled:true, image:'' },
+      { id:'contract-template', title:{fa:'قالب قرارداد پروژه وب',en:'Web Project Contract Template'}, description:{fa:'نمونه ساختار قرارداد، محدوده کار، پرداخت مرحله‌ای و تحویل.',en:'Contract structure, scope, milestones, payment and delivery clauses.'}, price:490000, currency:'IRR', category:'چک‌لیست', enabled:true, image:'' },
     ],
   },
   freelancing: {
     title:{fa:'خدمات حرفه‌ای',en:'Professional Services'},
     enabled:true,
     services:[
-      { id:'1', title:{fa:'طراحی و توسعه Next.js',en:'Next.js Product Development'}, description:{fa:'وب‌اپ سریع، SEO-ready، ریسپانسیو و قابل توسعه.',en:'Fast, SEO-ready, responsive and scalable web apps.'}, priceFrom:1500, icon:'zap', enabled:true },
-      { id:'2', title:{fa:'معماری Cloudflare / Edge',en:'Cloudflare / Edge Architecture'}, description:{fa:'Pages، Workers، D1، KV، R2 و کاهش هزینه زیرساخت.',en:'Pages, Workers, D1, KV, R2 and infrastructure cost reduction.'}, priceFrom:800, icon:'cloud', enabled:true },
-      { id:'3', title:{fa:'اتوماسیون و AI Agent',en:'Automation & AI Agents'}, description:{fa:'جریان‌های کاری هوشمند، اتصال API، RAG و دستیار اختصاصی.',en:'Smart workflows, API integrations, RAG and custom assistants.'}, priceFrom:1200, icon:'brain', enabled:true },
-      { id:'4', title:{fa:'بازطراحی UI/UX و پرتفولیو',en:'UI/UX & Portfolio Redesign'}, description:{fa:'هویت بصری، صفحات فروش، رزومه و تجربه کاربری حرفه‌ای.',en:'Visual identity, sales pages, resume and polished user experience.'}, priceFrom:600, icon:'sparkles', enabled:true },
+      { id:'1', title:{fa:'طراحی و توسعه Next.js',en:'Next.js Product Development'}, description:{fa:'وب‌اپ سریع، SEO-ready، ریسپانسیو و قابل توسعه.',en:'Fast, SEO-ready, responsive and scalable web apps.'}, priceFrom:45000000, icon:'zap', enabled:true },
+      { id:'2', title:{fa:'معماری Cloudflare / Edge',en:'Cloudflare / Edge Architecture'}, description:{fa:'Pages، Workers، D1، KV، R2 و کاهش هزینه زیرساخت.',en:'Pages, Workers, D1, KV, R2 and infrastructure cost reduction.'}, priceFrom:30000000, icon:'cloud', enabled:true },
+      { id:'3', title:{fa:'اتوماسیون و AI Agent',en:'Automation & AI Agents'}, description:{fa:'جریان‌های کاری هوشمند، اتصال API، RAG و دستیار اختصاصی.',en:'Smart workflows, API integrations, RAG and custom assistants.'}, priceFrom:40000000, icon:'brain', enabled:true },
+      { id:'4', title:{fa:'بازطراحی UI/UX و پرتفولیو',en:'UI/UX & Portfolio Redesign'}, description:{fa:'هویت بصری، صفحات فروش، رزومه و تجربه کاربری حرفه‌ای.',en:'Visual identity, sales pages, resume and polished user experience.'}, priceFrom:25000000, icon:'sparkles', enabled:true },
     ],
     portfolio:[
       {id:'p1', title:'DevHub OS', url:'/projects/devhub-os'},

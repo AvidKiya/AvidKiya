@@ -228,7 +228,7 @@ export default function ToolsClient(){
 
       <div className="flex flex-wrap items-center gap-2 mb-5 text-[12.5px]">
         {cats.map(c=>(
-          <button key={c} onClick={()=>setCat(c)} className={`px-3 py-[7px] rounded-full border transition ${cat===c ? 'bg-primary text-[#052e28] border-primary font-[600]' : 'glass-card !px-3 !py-[7px] text-text-2 hover:text-text'}`}>{c}</button>
+          <button key={c} onClick={()=>setCat(c)} className={`px-3 py-[7px] rounded-full border transition ${cat===c ? 'bg-primary text-[rgb(var(--bg))] border-primary font-[600]' : 'glass-card !px-3 !py-[7px] text-text-2 hover:text-text'}`}>{c}</button>
         ))}
       </div>
 
@@ -259,8 +259,8 @@ export default function ToolsClient(){
             <div id="date-converter">
               <ToolTitle title="تبدیل تاریخ" subtitle="تبدیل شمسی، میلادی و شاهنشاهی همراه با نام روز اوستایی" />
               <div className="glass-card !p-1 flex rounded-full mb-4 max-w-[360px]">
-                <button onClick={()=>setDateSource('jalali')} className={`flex-1 rounded-full py-2 text-[12px] ${dateSource==='jalali' ? 'bg-primary text-[#052e28] font-bold' : 'text-text-3'}`}>ورودی شمسی</button>
-                <button onClick={()=>setDateSource('gregorian')} className={`flex-1 rounded-full py-2 text-[12px] ${dateSource==='gregorian' ? 'bg-primary text-[#052e28] font-bold' : 'text-text-3'}`}>ورودی میلادی</button>
+                <button onClick={()=>setDateSource('jalali')} className={`flex-1 rounded-full py-2 text-[12px] ${dateSource==='jalali' ? 'bg-primary text-[rgb(var(--bg))] font-bold' : 'text-text-3'}`}>ورودی شمسی</button>
+                <button onClick={()=>setDateSource('gregorian')} className={`flex-1 rounded-full py-2 text-[12px] ${dateSource==='gregorian' ? 'bg-primary text-[rgb(var(--bg))] font-bold' : 'text-text-3'}`}>ورودی میلادی</button>
               </div>
               {dateSource === 'jalali' ? (
                 <div className="grid sm:grid-cols-3 gap-3 mb-4">
@@ -291,7 +291,12 @@ export default function ToolsClient(){
           {active === 'image' && (
             <div id="image-compressor">
               <ToolTitle title="فشرده‌سازی عکس" subtitle="کاهش حجم تصویر داخل مرورگر؛ فایل شما آپلود نمی‌شود" />
-              <input type="file" accept="image/*" onChange={e=>{ setImageFile(e.target.files?.[0] || null); setImageResult(null); }} className="glass-input w-full" />
+              <label className="file-picker block">
+                <input type="file" accept="image/*" hidden onChange={e=>{ setImageFile(e.target.files?.[0] || null); setImageResult(null); }} />
+                <ImageIcon size={28} className="mx-auto text-amber mb-2" />
+                <div className="font-bold text-[14px]">{imageFile ? imageFile.name : 'انتخاب تصویر'}</div>
+                <div className="text-[11.5px] text-text-3 mt-1">JPG، PNG یا WebP را انتخاب کن؛ فایل آپلود نمی‌شود.</div>
+              </label>
               <div className="grid sm:grid-cols-3 gap-3 my-4">
                 <label className="text-[12px] text-text-3">کیفیت: {Math.round(imageQuality * 100)}٪<input type="range" min="0.35" max="0.95" step="0.01" value={imageQuality} onChange={e=>setImageQuality(Number(e.target.value))} className="w-full mt-2" /></label>
                 <NumberField label="حداکثر عرض" value={imageMaxWidth} setValue={setImageMaxWidth} dir="ltr" />
