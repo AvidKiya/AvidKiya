@@ -295,3 +295,75 @@ div.neko.ak-neko-pet:hover > img { filter: drop-shadow(0 0 10px rgb(var(--primar
 @media (prefers-reduced-motion: reduce) {
   div.neko.ak-neko-pet::before { animation: none !important; }
 }
+
+/* Ghost WebGL cursor */
+#ghost-cursor {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483645;
+  pointer-events: none;
+  display: block;
+  mix-blend-mode: normal;
+}
+@media (pointer: fine) {
+  .ghost-cursor-enabled body,
+  .ghost-cursor-enabled a,
+  .ghost-cursor-enabled button,
+  .ghost-cursor-enabled label,
+  .ghost-cursor-enabled input,
+  .ghost-cursor-enabled textarea,
+  .ghost-cursor-enabled select,
+  .ghost-cursor-enabled [role="button"] { cursor: none !important; }
+}
+
+/* Polished form controls */
+.fancy-range {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  height: 18px;
+  display: block;
+}
+.fancy-range::-webkit-slider-runnable-track {
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--primary) / .82), rgb(var(--cyan) / .72));
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.22), 0 8px 22px rgb(var(--primary) / .10);
+}
+.fancy-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 23px;
+  height: 23px;
+  border-radius: 999px;
+  margin-top: -7px;
+  background: rgb(var(--bg));
+  border: 3px solid rgb(var(--primary));
+  box-shadow: 0 6px 18px rgba(0,0,0,.18), 0 0 0 5px rgb(var(--primary) / .12);
+}
+.fancy-range::-moz-range-track {
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--primary) / .82), rgb(var(--cyan) / .72));
+}
+.fancy-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgb(var(--bg));
+  border: 3px solid rgb(var(--primary));
+}
+select.glass-input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgb(var(--primary)) 50%), linear-gradient(135deg, rgb(var(--primary)) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-inline-end: 42px;
+}
+html[dir="rtl"] select.glass-input {
+  background-position: 18px 50%, 13px 50%;
+  padding-inline-start: 42px;
+  padding-inline-end: 1rem;
+}

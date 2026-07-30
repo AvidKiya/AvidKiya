@@ -298,9 +298,18 @@ export default function ToolsClient(){
                 <div className="text-[11.5px] text-text-3 mt-1">JPG، PNG یا WebP را انتخاب کن؛ فایل آپلود نمی‌شود.</div>
               </label>
               <div className="grid sm:grid-cols-3 gap-3 my-4">
-                <label className="text-[12px] text-text-3">کیفیت: {Math.round(imageQuality * 100)}٪<input type="range" min="0.35" max="0.95" step="0.01" value={imageQuality} onChange={e=>setImageQuality(Number(e.target.value))} className="w-full mt-2" /></label>
+                <label className="text-[12px] text-text-3 rounded-[18px] border border-glass-border bg-white/[0.025] p-3">کیفیت: <b className="text-text">{Math.round(imageQuality * 100)}٪</b><input type="range" min="0.35" max="0.95" step="0.01" value={imageQuality} onChange={e=>setImageQuality(Number(e.target.value))} className="fancy-range mt-3" /></label>
                 <NumberField label="حداکثر عرض" value={imageMaxWidth} setValue={setImageMaxWidth} dir="ltr" />
-                <label className="text-[12px] text-text-3">فرمت خروجی<select value={imageFormat} onChange={e=>setImageFormat(e.target.value as ImageFormat)} className="glass-input !py-[9px] mt-1"><option value="image/webp">WebP</option><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option></select></label>
+                <div className="text-[12px] text-text-3 rounded-[18px] border border-glass-border bg-white/[0.025] p-3">
+                  <div className="mb-2">فرمت خروجی</div>
+                  <div className="glass-card !p-1 rounded-full grid grid-cols-3 gap-1">
+                    {[
+                      ['image/webp','WebP'], ['image/jpeg','JPEG'], ['image/png','PNG']
+                    ].map(([value,label]) => (
+                      <button key={value} type="button" onClick={()=>setImageFormat(value as ImageFormat)} className={`rounded-full py-2 text-[11.5px] transition ${imageFormat===value ? 'bg-primary text-[rgb(var(--bg))] font-black' : 'text-text-3 hover:text-text hover:bg-white/[0.04]'}`}>{label}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <button onClick={compressImage} disabled={!imageFile || imageBusy} className="glass-btn-primary !py-2 !px-4 text-[12.5px] disabled:opacity-40">{imageBusy ? 'در حال فشرده‌سازی...' : 'فشرده‌سازی'}</button>
               {imageError && <div className="text-rose text-[12.5px] mt-3">{imageError}</div>}
@@ -337,7 +346,11 @@ export default function ToolsClient(){
               <ToolTitle title="تولید هش" subtitle="ساخت SHA-256 یا SHA-1 برای متن، توکن یا checksum" />
               <textarea value={hashInput} onChange={e=>setHashInput(e.target.value)} rows={6} className="glass-input w-full resize-y" />
               <div className="flex flex-wrap gap-2 mt-3">
-                <select value={hashAlg} onChange={e=>setHashAlg(e.target.value as 'SHA-256'|'SHA-1')} className="glass-input !py-2 !w-[130px]"><option>SHA-256</option><option>SHA-1</option></select>
+                <div className="glass-card !p-1 rounded-full inline-grid grid-cols-2 gap-1">
+                  {(['SHA-256','SHA-1'] as const).map(alg => (
+                    <button key={alg} type="button" onClick={()=>setHashAlg(alg)} className={`rounded-full px-4 py-2 text-[12px] transition ${hashAlg===alg ? 'bg-primary text-[rgb(var(--bg))] font-black' : 'text-text-3 hover:text-text hover:bg-white/[0.04]'}`}>{alg}</button>
+                  ))}
+                </div>
                 <button onClick={makeHash} className="glass-btn-primary !py-2 !px-4 text-[12.5px]">ساخت هش</button>
                 <button onClick={()=>copy('hash', hashOutput)} disabled={!hashOutput} className="glass-btn !py-2 !px-4 text-[12.5px] inline-flex items-center gap-1 disabled:opacity-40"><Copy size={13}/> {copied==='hash' ? 'کپی شد' : 'کپی'}</button>
               </div>
@@ -363,7 +376,7 @@ export default function ToolsClient(){
             <div id="password">
               <ToolTitle title="سازنده رمز امن" subtitle="رمز قوی، تصادفی و قابل کپی" />
               <label className="text-[12.5px] text-text-2">طول رمز: {passLength}</label>
-              <input type="range" min={12} max={64} value={passLength} onChange={e=>setPassLength(Number(e.target.value))} className="w-full mt-2" />
+              <input type="range" min={12} max={64} value={passLength} onChange={e=>setPassLength(Number(e.target.value))} className="fancy-range mt-3" />
               <div dir="ltr" className="mt-4 rounded-[16px] border border-glass-border bg-white/[0.035] px-4 py-5 font-mono text-[15px] break-all min-h-[70px] flex items-center">{password || 'Click Generate'}</div>
               <div className="flex flex-wrap gap-2 mt-3">
                 <button onClick={generatePassword} className="glass-btn-primary !py-2 !px-4 text-[12.5px]">Generate</button>
