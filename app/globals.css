@@ -144,7 +144,7 @@ body {
 
 /* edit mode */
 .edit-mode [data-editable="true"]{ outline:1.4px dashed rgb(var(--amber) / 0.7); outline-offset:3px; border-radius:7px; position:relative; cursor:text }
-.edit-mode [data-editable="true"]::after{ content:'✎'; position:absolute; top:-9px; inset-inline-end:-7px; font-size:10px; background:rgb(var(--amber)); color:#111; width:17px;height:17px;border-radius:999px;display:flex;align-items:center;justify-content:center; z-index:20 }
+.edit-mode [data-editable="true"]::after{ content:''; position:absolute; top:-9px; inset-inline-end:-7px; font-size:10px; background:rgb(var(--amber)); color:#111; width:17px;height:17px;border-radius:999px;display:flex;align-items:center;justify-content:center; z-index:20 }
 
 /* menu card — iPhone lift */
 .menu-card { transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s; }

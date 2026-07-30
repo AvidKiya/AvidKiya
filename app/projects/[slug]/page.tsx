@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/glass';
 import { defaultCmsState } from '@/lib/cms/default-state';
 
@@ -117,7 +117,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             <h2 className="text-[18px] font-[800] mb-3">نکات کلیدی</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {meta.highlights.map(item => (
-                <div key={item} className="rounded-[14px] border border-glass-border bg-white/[0.035] p-3 text-[13px] text-text-2 leading-6">✓ {item}</div>
+                <div key={item} className="rounded-[14px] border border-glass-border bg-white/[0.035] p-3 text-[13px] text-text-2 leading-6 flex items-start gap-2"><CheckCircle2 size={15} className="text-emerald mt-1 shrink-0" /> <span>{item}</span></div>
               ))}
             </div>
           </GlassCard>

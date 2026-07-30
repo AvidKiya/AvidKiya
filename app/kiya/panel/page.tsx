@@ -7,7 +7,7 @@ import {
   LayoutDashboard, UserCog, Share2, Home, FileCode, FileText, Gift,
   Megaphone, MessageSquare, ShoppingBag, Briefcase, Wrench, Boxes,
   Inbox, Image as ImageIcon, CalendarDays, Settings as SettingsIcon,
-  BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search
+  BookOpen, Tag, Mail, Magnet, LogOut, Save, Plus, Trash2, Check, Eye, Search, CircleDashed, ArrowLeft
 } from 'lucide-react';
 
 type SectionKey =
@@ -177,7 +177,14 @@ function SectionRouter({section}:{section:SectionKey}){
         <GlassCard className="sm:col-span-2 lg:col-span-4 !p-4">
           <div className="text-[13px] font-[700] mb-2">Onboarding ادمین</div>
           <div className="grid sm:grid-cols-3 gap-2 text-[12.5px] text-text-2">
-            {['لوگو ✓','نام ✓','شبکه اجتماعی ✓','پروژه اول ✗','رزومه ✗','محصول اول ✗'].map(x=> <div key={x} className="bg-white/[0.03] rounded-[10px] px-3 py-[8px] border border-glass-border">{x}</div>)}
+            {[
+              {label:'لوگو', done:true},
+              {label:'نام', done:true},
+              {label:'شبکه اجتماعی', done:true},
+              {label:'پروژه اول', done:false},
+              {label:'رزومه', done:false},
+              {label:'محصول اول', done:false},
+            ].map(x=> <div key={x.label} className="bg-white/[0.03] rounded-[10px] px-3 py-[8px] border border-glass-border flex items-center gap-2">{x.done ? <Check size={13} className="text-emerald" /> : <CircleDashed size={13} className="text-amber" />}{x.label}</div>)}
           </div>
         </GlassCard>
       </div>
@@ -513,9 +520,9 @@ function SectionRouter({section}:{section:SectionKey}){
         Export / Import JSON از نوار بالا در دسترس است.
       </p>
       <div className="mt-4 grid sm:grid-cols-3 gap-2 text-[12px]">
-        <div className="glass-card !p-3">✓ Edit-in-place آماده</div>
-        <div className="glass-card !p-3">✓ Cloudflare KV sync</div>
-        <div className="glass-card !p-3">✓ نسخه‌بندی CMS</div>
+        <div className="glass-card !p-3 flex items-center gap-2"><Check size={14} className="text-emerald" /> Edit-in-place آماده</div>
+        <div className="glass-card !p-3 flex items-center gap-2"><Check size={14} className="text-emerald" /> Cloudflare KV sync</div>
+        <div className="glass-card !p-3 flex items-center gap-2"><Check size={14} className="text-emerald" /> نسخه‌بندی CMS</div>
       </div>
       <div className="mt-4">
         <Link href="/" className="text-primary text-[12.5px] hover:underline">→ مشاهده زنده در سایت</Link>

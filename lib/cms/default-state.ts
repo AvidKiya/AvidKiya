@@ -48,10 +48,10 @@ export const defaultCmsState: CmsState = {
     ctaSecondary: { fa:'تماس', en:'Contact' },
     projects: [],
     stats: [
-      { id:'1', label:{fa:'سال تجربه', en:'Years Experience'}, value:'8+', icon:'⚡' },
+      { id:'1', label:{fa:'سال تجربه', en:'Years Experience'}, value:'8+', icon:'zap' },
       { id:'2', label:{fa:'استک تخصصی', en:'Core Stack'}, value:'Next.js', icon:'▲' },
-      { id:'3', label:{fa:'تمرکز محصول', en:'Product Focus'}, value:'SaaS', icon:'🧩' },
-      { id:'4', label:{fa:'زیرساخت محبوب', en:'Favorite Infra'}, value:'Edge', icon:'☁️' },
+      { id:'3', label:{fa:'تمرکز محصول', en:'Product Focus'}, value:'SaaS', icon:'layers' },
+      { id:'4', label:{fa:'زیرساخت محبوب', en:'Favorite Infra'}, value:'Edge', icon:'cloud' },
     ],
   },
   about: {
@@ -61,8 +61,8 @@ export const defaultCmsState: CmsState = {
       { label:{fa:'تحویل',en:'Delivery'}, value:'Clean & Fast' },
     ],
     quickLinks: [
-      { label:{fa:'گیت‌هاب',en:'GitHub'}, url:'https://github.com/avidkiya', icon:'🐙' },
-      { label:{fa:'رزومه',en:'Resume'}, url:'/resume', icon:'📄' },
+      { label:{fa:'گیت‌هاب',en:'GitHub'}, url:'https://github.com/avidkiya', icon:'github' },
+      { label:{fa:'رزومه',en:'Resume'}, url:'/resume', icon:'resume' },
     ],
     quote: { fa:'سادگی، نهایت پیچیدگی است.', en:'Simplicity is the ultimate sophistication.' },
     welcomeTitle: { fa:'سلام، من اَوید هستم', en:'Hi, I am Avid' },
@@ -152,10 +152,10 @@ export const defaultCmsState: CmsState = {
     title:{fa:'خدمات حرفه‌ای',en:'Professional Services'},
     enabled:true,
     services:[
-      { id:'1', title:{fa:'طراحی و توسعه Next.js',en:'Next.js Product Development'}, description:{fa:'وب‌اپ سریع، SEO-ready، ریسپانسیو و قابل توسعه.',en:'Fast, SEO-ready, responsive and scalable web apps.'}, priceFrom:1500, icon:'⚡', enabled:true },
-      { id:'2', title:{fa:'معماری Cloudflare / Edge',en:'Cloudflare / Edge Architecture'}, description:{fa:'Pages، Workers، D1، KV، R2 و کاهش هزینه زیرساخت.',en:'Pages, Workers, D1, KV, R2 and infrastructure cost reduction.'}, priceFrom:800, icon:'☁️', enabled:true },
-      { id:'3', title:{fa:'اتوماسیون و AI Agent',en:'Automation & AI Agents'}, description:{fa:'جریان‌های کاری هوشمند، اتصال API، RAG و دستیار اختصاصی.',en:'Smart workflows, API integrations, RAG and custom assistants.'}, priceFrom:1200, icon:'🧠', enabled:true },
-      { id:'4', title:{fa:'بازطراحی UI/UX و پرتفولیو',en:'UI/UX & Portfolio Redesign'}, description:{fa:'هویت بصری، صفحات فروش، رزومه و تجربه کاربری حرفه‌ای.',en:'Visual identity, sales pages, resume and polished user experience.'}, priceFrom:600, icon:'🎨', enabled:true },
+      { id:'1', title:{fa:'طراحی و توسعه Next.js',en:'Next.js Product Development'}, description:{fa:'وب‌اپ سریع، SEO-ready، ریسپانسیو و قابل توسعه.',en:'Fast, SEO-ready, responsive and scalable web apps.'}, priceFrom:1500, icon:'zap', enabled:true },
+      { id:'2', title:{fa:'معماری Cloudflare / Edge',en:'Cloudflare / Edge Architecture'}, description:{fa:'Pages، Workers، D1، KV، R2 و کاهش هزینه زیرساخت.',en:'Pages, Workers, D1, KV, R2 and infrastructure cost reduction.'}, priceFrom:800, icon:'cloud', enabled:true },
+      { id:'3', title:{fa:'اتوماسیون و AI Agent',en:'Automation & AI Agents'}, description:{fa:'جریان‌های کاری هوشمند، اتصال API، RAG و دستیار اختصاصی.',en:'Smart workflows, API integrations, RAG and custom assistants.'}, priceFrom:1200, icon:'brain', enabled:true },
+      { id:'4', title:{fa:'بازطراحی UI/UX و پرتفولیو',en:'UI/UX & Portfolio Redesign'}, description:{fa:'هویت بصری، صفحات فروش، رزومه و تجربه کاربری حرفه‌ای.',en:'Visual identity, sales pages, resume and polished user experience.'}, priceFrom:600, icon:'sparkles', enabled:true },
     ],
     portfolio:[
       {id:'p1', title:'DevHub OS', url:'/projects/devhub-os'},

@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { GlassCard } from '@/components/ui/glass';
 import { AppIcon } from '@/components/ui/icons';
 import { useCms } from '@/lib/cms/cms-context';
-import { Star, ExternalLink, Folder, FileCode, Search } from 'lucide-react';
+import { Star, ExternalLink, Folder, FileCode, Search, CheckCircle2, ArrowLeft } from 'lucide-react';
 
 interface GHRepo {
   id: number;
@@ -123,7 +123,7 @@ export default function ProjectsClient() {
               </div>
             </div>
             <div className="px-3 text-[11px] text-text-3 mb-1 flex gap-3">
-              <button onClick={()=>setTab('featured')} className={tab==='featured' ? 'text-primary' : 'hover:text-text-2'}>★ Featured</button>
+              <button onClick={()=>setTab('featured')} className={`${tab==='featured' ? 'text-primary' : 'hover:text-text-2'} inline-flex items-center gap-1`}><Star size={11} /> Featured</button>
               <button onClick={()=>setTab('all')} className={tab==='all' ? 'text-primary' : 'hover:text-text-2'}>All</button>
               <span className="ms-auto">{list.length}</span>
             </div>
@@ -177,7 +177,7 @@ export default function ProjectsClient() {
             {/* Code / Preview */}
             <div className="flex-1 p-4 md:p-6 overflow-auto">
               {!current ? (
-                <div className="text-text-3 text-sm">Select a file from Explorer →</div>
+                <div className="text-text-3 text-sm">Select a file from Explorer</div>
               ) : (
                 <div>
                   <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
@@ -258,7 +258,7 @@ const app = init({
               <div className="px-3 py-[9px] font-mono text-[11.5px] text-emerald" dir="ltr">
                 <span className="text-text-3">avidkiya@devhub</span> <span className="text-cyan">~/projects</span> $ pnpm dev
                 <br />▲ Next.js 15.1.6 — <span className="text-text-2">http://localhost:3000</span>
-                <br />✓ Ready
+                <br /><span className="inline-flex items-center gap-1"><CheckCircle2 size={12} /> Ready</span>
               </div>
             </div>
           </div>
@@ -277,7 +277,7 @@ const app = init({
             <div className="flex items-center gap-3 mt-2 text-[11px] text-text-3">
               <span className="flex items-center gap-1"><Star size={12} />{p.stars}</span>
               <span>{p.language}</span>
-              <a href={p.url} className="ms-auto text-primary hover:underline">مشاهده →</a>
+              <a href={p.url} className="ms-auto text-primary hover:underline inline-flex items-center gap-1">مشاهده <ArrowLeft size={12} /></a>
             </div>
           </GlassCard>
         ))}

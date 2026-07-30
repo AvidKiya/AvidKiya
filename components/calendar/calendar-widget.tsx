@@ -20,7 +20,7 @@ export function CalendarWidget() {
   const monthDays = getMonthCalendar(cal.jalali.y, cal.jalali.m, cal.jalali.d);
 
   return (
-    <GlassCard className="relative overflow-hidden !p-4 md:!p-5">
+    <GlassCard className="relative overflow-hidden !p-4 md:!p-5 min-w-0">
       <div className="scan-line" />
       <div className="flex items-center gap-2 mb-3 text-[13px] text-text-2">
         <AppIcon name="calendar" size={15} className="text-primary" />
@@ -37,9 +37,9 @@ export function CalendarWidget() {
           <span className="text-text-3 flex items-center gap-1.5"><AppIcon name="clock" size={13} /> {t('میلادی','Gregorian')}</span>
           <span dir="ltr" className="tabular-nums">{cal.gregorian.y}-{String(cal.gregorian.m).padStart(2,'0')}-{String(cal.gregorian.d).padStart(2,'0')}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-3">{t('شمسی','Jalali')}</span>
-          <span className="font-[600]">{toPersianDigits(`${cal.jalali.y}/${cal.jalali.m}/${cal.jalali.d}`)} — {cal.jalali.monthName}</span>
+        <div className="flex justify-between gap-3">
+          <span className="text-text-3 shrink-0">{t('شمسی','Jalali')}</span>
+          <span className="font-[600] text-end min-w-0">{toPersianDigits(`${cal.jalali.y}/${cal.jalali.m}/${cal.jalali.d}`)} — {cal.jalali.monthName}</span>
         </div>
         <div className="flex justify-between text-[12.5px] text-text-2">
           <span>{t('شاهنشاهی','Imperial')}</span>

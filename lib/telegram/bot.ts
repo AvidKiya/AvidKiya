@@ -7,7 +7,7 @@ export interface TgUpdate {
 }
 
 const COMMANDS: Record<string, string> = {
-  '/start': `سلام! من دستیار تلگرام اَوید کیا هستم 👋
+  '/start': `سلام! من دستیار تلگرام اَوید کیا هستم 
 
 دستورات:
 /status — وضعیت همکاری
@@ -19,9 +19,9 @@ const COMMANDS: Record<string, string> = {
 
 هر پیامی بفرستی = به‌عنوان درخواست یا ایده پروژه ثبت می‌شود.`,
   '/help': 'راهنما: /status /services /projects /idea /search',
-  '/status': '📊 وضعیت: آماده بررسی پروژه‌های وب، AI و Cloudflare Edge\n⏱ پاسخ معمول: کمتر از ۱۲ ساعت',
-  '/services': '🛠 خدمات:\n• Next.js Product Development\n• Cloudflare Edge Architecture\n• Automation & AI Agents\n• UI/UX & Portfolio Redesign',
-  '/projects': '💼 نمونه‌کارها:\navidkiya.com/projects\n• DevHub OS\n• Shop & Tools Suite\n• Cloudflare Edge Architecture',
+  '/status': 'وضعیت: وضعیت: آماده بررسی پروژه‌های وب، AI و Cloudflare Edge\nزمان پاسخ: پاسخ معمول: کمتر از ۱۲ ساعت',
+  '/services': 'خدمات: خدمات:\n• Next.js Product Development\n• Cloudflare Edge Architecture\n• Automation & AI Agents\n• UI/UX & Portfolio Redesign',
+  '/projects': 'نمونه‌کارها: نمونه‌کارها:\navidkiya.com/projects\n• DevHub OS\n• Shop & Tools Suite\n• Cloudflare Edge Architecture',
 };
 
 export async function handleTelegramUpdate(update: TgUpdate, env: { KIYA_DB?: any; BOT_TOKEN?: string }) {
@@ -34,12 +34,12 @@ export async function handleTelegramUpdate(update: TgUpdate, env: { KIYA_DB?: an
   if (COMMANDS[text.split(' ')[0]]) {
     reply = COMMANDS[text.split(' ')[0]];
   } else if (text.startsWith('/idea')) {
-    reply = `✅ ایده ثبت شد\n💡 ${text.replace('/idea','').trim().slice(0,80) || 'بدون عنوان'}\n\nبرای شروع رسمی، فرم تماس سایت را هم پر کن: avidkiya.com/contact`;
+    reply = `انجام شد: ایده ثبت شد\nایده: ${text.replace('/idea','').trim().slice(0,80) || 'بدون عنوان'}\n\nبرای شروع رسمی، فرم تماس سایت را هم پر کن: avidkiya.com/contact`;
   } else if (text.startsWith('/search ')) {
     const q = text.replace('/search ','');
-    reply = `🔍 نتیجه برای «${q}»:\n۱. نمونه‌کارها: avidkiya.com/projects\n۲. خدمات: avidkiya.com/services\n۳. ابزارها: avidkiya.com/tools`;
+    reply = `جستجو: نتیجه برای «${q}»:\n۱. نمونه‌کارها: avidkiya.com/projects\n۲. خدمات: avidkiya.com/services\n۳. ابزارها: avidkiya.com/tools`;
   } else if (text.length > 0) {
-    reply = `✅ پیام دریافت شد\n📋 ${text.slice(0,80)}\n\nبرای پاسخ سریع‌تر: avidkiya.com/contact`;
+    reply = `انجام شد: پیام دریافت شد\nپیام: ${text.slice(0,80)}\n\nبرای پاسخ سریع‌تر: avidkiya.com/contact`;
   } else {
     reply = COMMANDS['/start'];
   }
@@ -51,8 +51,8 @@ export async function handleTelegramUpdate(update: TgUpdate, env: { KIYA_DB?: an
     text: reply,
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🌐 باز کردن سایت', url: 'https://avidkiya.com' }],
-        [{ text: '💼 نمونه‌کارها', url: 'https://avidkiya.com/projects' }, { text: '✉️ تماس', url: 'https://avidkiya.com/contact' }]
+        [{ text: 'باز کردن سایت باز کردن سایت', url: 'https://avidkiya.com' }],
+        [{ text: 'نمونه‌کارها: نمونه‌کارها', url: 'https://avidkiya.com/projects' }, { text: 'تماس تماس', url: 'https://avidkiya.com/contact' }]
       ]
     }
   };
