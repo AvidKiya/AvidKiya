@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AdminGate } from "@/components/layout/admin-gate-client";
 import { CustomCursor } from "@/components/ui/custom-cursor";
-import { OrangeCatPet } from "@/components/ui/orange-cat-pet";
+import { NekoPet } from "@/components/ui/neko-pet";
 
 export const metadata: Metadata = {
   title: "اَوید کیا — Avid Kiya — Portfolio",
@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Footer />
-          <OrangeCatPet />
+          <NekoPet />
           <CustomCursor />
           <AdminGate />
         </CmsProvider>

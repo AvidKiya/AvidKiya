@@ -254,3 +254,44 @@ html[dir="ltr"] body { direction: ltr; }
 @keyframes cat-blink { 0%,92%,100%{ transform:scaleY(1) } 95%{ transform:scaleY(.15) } }
 @keyframes cat-z { to { transform:translateY(-10px); opacity:0; } }
 @media (max-width: 768px) { .orange-cat-pet { transform: scale(.82); opacity:.92; } }
+
+/* Neko pixel pet — subtle 3D upgrade based on Neko.js sprite */
+div.neko.ak-neko-pet {
+  isolation: isolate;
+  transition: filter .18s ease;
+}
+div.neko.ak-neko-pet::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 28px;
+  width: 30px;
+  height: 7px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(18, 9, 24, .36), rgba(18, 9, 24, 0) 70%);
+  filter: blur(1.5px);
+  pointer-events: none;
+  animation: neko-shadow 1.8s ease-in-out infinite;
+}
+div.neko.ak-neko-pet > img {
+  position: relative !important;
+  z-index: 1;
+  filter:
+    drop-shadow(0 2px 1px rgba(255,255,255,.22))
+    drop-shadow(0 4px 3px rgba(11,5,18,.26))
+    saturate(1.08)
+    contrast(1.04);
+}
+div.neko.ak-neko-pet:hover > img { filter: drop-shadow(0 0 10px rgb(var(--primary) / .28)) saturate(1.18) contrast(1.06); }
+@keyframes neko-shadow {
+  0%, 100% { transform: translateX(-50%) scaleX(.88); opacity: .62; }
+  50% { transform: translateX(-50%) scaleX(1.05); opacity: .4; }
+}
+@media (max-width: 768px) {
+  div.neko.ak-neko-pet { transform: scale(1.35) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  div.neko.ak-neko-pet::before { animation: none !important; }
+}
