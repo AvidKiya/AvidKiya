@@ -2,7 +2,7 @@ import { CmsState } from './types';
 import { QUOTES } from '../calendar';
 
 export const defaultCmsState: CmsState = {
-  version: 4,
+  version: 5,
   identity: {
     fullName: { fa: 'اَوید کیا', en: 'Avid Kiya' },
     title: { fa: 'معمار سیستم و توسعه‌دهنده فول‌استک', en: 'Systems Architect & Full-Stack Developer' },
@@ -27,6 +27,16 @@ export const defaultCmsState: CmsState = {
     defaultTheme: 'dark',
     githubUsername: 'avidkiya',
     editMode: false,
+  },
+  cursor: {
+    enabled: true,
+    size: 0.03,
+    tailDots: 18,
+    spring: 1.25,
+    friction: 0.34,
+    mainColor: '#f7f3ea',
+    borderColor: '#004741',
+    flatColor: false,
   },
   socials: [
     { id:'gh', platform:'github', url:'https://github.com/avidkiya', label:{fa:'گیت‌هاب',en:'GitHub'}, enabled:true },

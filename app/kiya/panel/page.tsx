@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BarChart3, Briefcase, CalendarDays, CheckCircle2, Database, FileCode2,
-  Globe2, Home, Image as ImageIcon, LogOut, PackagePlus, Save, Search, Settings, ShieldCheck,
+  Globe2, Home, Image as ImageIcon, LogOut, MousePointer2, PackagePlus, Save, Search, Settings, ShieldCheck,
   ShoppingBag, Sparkles, Trash2, UserRound, Wrench
 } from 'lucide-react';
 import { useCms } from '@/lib/cms/cms-context';
 import { GlassCard } from '@/components/ui/glass';
 
-type SectionKey = 'dashboard'|'identity'|'sites'|'projects'|'shop'|'services'|'tools'|'calendar'|'security';
+type SectionKey = 'dashboard'|'identity'|'sites'|'projects'|'shop'|'services'|'tools'|'cursor'|'calendar'|'security';
 
 const sections: Array<{key:SectionKey; label:string; icon:any; desc:string}> = [
   {key:'dashboard', label:'داشبورد', icon:BarChart3, desc:'نمای کلی سایت'},
@@ -21,6 +21,7 @@ const sections: Array<{key:SectionKey; label:string; icon:any; desc:string}> = [
   {key:'shop', label:'فروشگاه', icon:ShoppingBag, desc:'محصولات و قیمت‌ها'},
   {key:'services', label:'خدمات', icon:Briefcase, desc:'پکیج‌ها و مبالغ'},
   {key:'tools', label:'ابزارها', icon:Wrench, desc:'ابزارهای آنلاین'},
+  {key:'cursor', label:'نشانگر موس', icon:MousePointer2, desc:'سایز، رنگ و دنباله'},
   {key:'calendar', label:'تقویم', icon:CalendarDays, desc:'جملات و گاهشمار'},
   {key:'security', label:'امنیت', icon:ShieldCheck, desc:'وضعیت محافظت پنل'},
 ];
@@ -98,6 +99,7 @@ export default function AdminPanel(){
           {section === 'shop' && <Shop />}
           {section === 'services' && <Services />}
           {section === 'tools' && <Tools />}
+          {section === 'cursor' && <CursorSettings />}
           {section === 'calendar' && <CalendarSection />}
           {section === 'security' && <Security />}
         </main>
@@ -260,6 +262,51 @@ function Tools(){
   const { cms } = useCms();
   return <GlassCard className="!p-5"><PanelHeader title="ابزارها" desc="ابزارهای کاربردی فعال در سایت" /><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{cms.tools.items.map(t=><div key={t.id} className="rounded-[16px] border border-glass-border bg-white/[0.025] p-4"><Sparkles size={18} className="text-amber mb-2"/><b className="text-sm">{t.title.fa}</b><p className="text-xs text-text-3 mt-1 leading-6">{t.description.fa}</p></div>)}</div></GlassCard>;
 }
+function CursorSettings(){
+  const { cms, updateCms } = useCms();
+  const cursor = cms.cursor || { enabled:true, size:0.03, tailDots:18, spring:1.25, friction:0.34, mainColor:'#f7f3ea', borderColor:'#004741', flatColor:false };
+  const patch = (next: Partial<typeof cursor>) => updateCms({ cursor:{...cursor, ...next} } as any);
+  return (
+    <div className="space-y-4">
+      <GlassCard className="!p-5">
+        <PanelHeader title="نشانگر موس WebGL" desc="سایز را کوچک گذاشتم؛ از اینجا می‌توانی اندازه، رنگ، دنباله و حالت فلت را تغییر بدهی." />
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="rounded-[18px] border border-glass-border bg-white/[0.025] p-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <div className="font-bold text-[14px]">فعال بودن نشانگر</div>
+                <div className="text-[11.5px] text-text-3 mt-1">روی موبایل خودکار غیرفعال است.</div>
+              </div>
+              <button onClick={()=>patch({enabled:!cursor.enabled})} className={`rounded-full px-4 py-2 text-[12px] font-bold ${cursor.enabled ? 'bg-primary text-[rgb(var(--bg))]' : 'glass-btn !py-2'}`}>{cursor.enabled ? 'فعال' : 'غیرفعال'}</button>
+            </div>
+            <div className="space-y-4">
+              <label className="block text-[12px] text-text-3">سایز: <b className="text-text">{Number(cursor.size).toFixed(3)}</b><input type="range" min="0.015" max="0.10" step="0.005" value={cursor.size} onChange={e=>patch({size:Number(e.target.value)})} className="fancy-range mt-3" /></label>
+              <label className="block text-[12px] text-text-3">تعداد دنباله: <b className="text-text">{cursor.tailDots}</b><input type="range" min="8" max="35" step="1" value={cursor.tailDots} onChange={e=>patch({tailDots:Number(e.target.value)})} className="fancy-range mt-3" /></label>
+              <label className="block text-[12px] text-text-3">Spring: <b className="text-text">{Number(cursor.spring).toFixed(2)}</b><input type="range" min="0.3" max="2.5" step="0.05" value={cursor.spring} onChange={e=>patch({spring:Number(e.target.value)})} className="fancy-range mt-3" /></label>
+              <label className="block text-[12px] text-text-3">Friction: <b className="text-text">{Number(cursor.friction).toFixed(2)}</b><input type="range" min="0.08" max="0.8" step="0.02" value={cursor.friction} onChange={e=>patch({friction:Number(e.target.value)})} className="fancy-range mt-3" /></label>
+            </div>
+          </div>
+          <div className="rounded-[18px] border border-glass-border bg-white/[0.025] p-4 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-[12px] text-text-3">رنگ اصلی<input type="color" value={cursor.mainColor} onChange={e=>patch({mainColor:e.target.value})} className="w-full h-12 mt-2 rounded-[14px] bg-transparent border border-glass-border p-1" /></label>
+              <label className="text-[12px] text-text-3">رنگ حاشیه<input type="color" value={cursor.borderColor} onChange={e=>patch({borderColor:e.target.value})} className="w-full h-12 mt-2 rounded-[14px] bg-transparent border border-glass-border p-1" /></label>
+            </div>
+            <label className="choice-card flex items-center justify-between gap-3 cursor-pointer">
+              <span><b className="block text-[13px]">Flat Color</b><small className="text-text-3">حالت ساده‌تر و کم‌جزئیات‌تر</small></span>
+              <input type="checkbox" checked={cursor.flatColor} onChange={e=>patch({flatColor:e.target.checked})} />
+            </label>
+            <div className="rounded-[18px] border border-glass-border bg-[rgb(var(--bg))] min-h-[150px] flex items-center justify-center overflow-hidden relative">
+              <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_center,rgb(var(--primary)/.18),transparent_45%)]" />
+              <div className="relative w-16 h-16 rounded-full blur-[1px]" style={{background:cursor.mainColor, boxShadow:`0 18px 45px ${cursor.borderColor}55`}} />
+              <div className="absolute text-[11px] text-text-3 bottom-3">Preview تقریبی — تغییر واقعی روی سایت اعمال می‌شود</div>
+            </div>
+          </div>
+        </div>
+      </GlassCard>
+    </div>
+  );
+}
+
 function CalendarSection(){
   const { cms } = useCms();
   return <GlassCard className="!p-5"><PanelHeader title="تقویم و جملات" desc="تقویم شاهنشاهی/شمسی/میلادی و ۳۶۵ جمله روزانه فعال است" /><div className="grid md:grid-cols-3 gap-3"><div className="rounded-[16px] bg-primary/10 border border-primary/20 p-4"><Database className="text-primary mb-2"/><b>۳۶۵ جمله روزانه</b><p className="text-xs text-text-3 mt-1">بر اساس روز شمسی</p></div><div className="rounded-[16px] bg-white/[0.025] border border-glass-border p-4"><b>کوروش</b><p className="text-xs text-text-3 mt-1">{cms.quotes.kourosh.length} جمله پایه</p></div><div className="rounded-[16px] bg-white/[0.025] border border-glass-border p-4"><b>اوستایی</b><p className="text-xs text-text-3 mt-1">نام روزها، جشن‌ها و نَبُر</p></div></div></GlassCard>;

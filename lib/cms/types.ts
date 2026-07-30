@@ -122,6 +122,16 @@ export interface CmsState {
     githubUsername: string;
     editMode: boolean;
   };
+  cursor: {
+    enabled: boolean;
+    size: number;
+    tailDots: number;
+    spring: number;
+    friction: number;
+    mainColor: string;
+    borderColor: string;
+    flatColor: boolean;
+  };
   socials: SocialAccount[];
   dashboard: {
     heroTag: I18nText;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useCms } from '@/lib/cms/cms-context';
 
 const vertShader = `
 precision mediump float;
@@ -108,12 +109,24 @@ void main() {
 }
 `;
 
+const hexToRgb01 = (hex: string, fallback: [number, number, number]): [number, number, number] => {
+  const clean = String(hex || '').replace('#','').trim();
+  if (!/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(clean)) return fallback;
+  const full = clean.length === 3 ? clean.split('').map(x=>x+x).join('') : clean;
+  return [0,2,4].map(i => parseInt(full.slice(i, i+2), 16) / 255) as [number, number, number];
+};
+
 export function CustomCursor() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { cms } = useCms();
+  const cursor = cms.cursor || {
+    enabled: true, size: 0.03, tailDots: 18, spring: 1.25, friction: 0.34,
+    mainColor: '#f7f3ea', borderColor: '#004741', flatColor: false,
+  };
 
   useEffect(() => {
     const fine = window.matchMedia('(pointer: fine)').matches;
-    if (!fine) return;
+    if (!fine || !cursor.enabled) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false }) || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
@@ -123,12 +136,17 @@ export function CustomCursor() {
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const params = {
-      size: 0.072,
-      tail: { dotsNumber: 22, spring: 1.35, friction: 0.32, gravity: 0 },
+      size: Math.max(0.015, Math.min(0.12, Number(cursor.size) || 0.03)),
+      tail: {
+        dotsNumber: Math.max(8, Math.min(35, Math.round(Number(cursor.tailDots) || 18))),
+        spring: Math.max(0.3, Math.min(2.5, Number(cursor.spring) || 1.25)),
+        friction: Math.max(0.08, Math.min(0.8, Number(cursor.friction) || 0.34)),
+        gravity: 0,
+      },
       smile: 1,
-      mainColor: [0.98, 0.96, 0.92],
-      borderColor: [0.0, 0.28, 0.25],
-      isFlatColor: false,
+      mainColor: hexToRgb01(cursor.mainColor, [0.97, 0.95, 0.92]),
+      borderColor: hexToRgb01(cursor.borderColor, [0.0, 0.28, 0.25]),
+      isFlatColor: !!cursor.flatColor,
     };
     const mouse = {
       x: .5 * window.innerWidth,
@@ -278,7 +296,7 @@ export function CustomCursor() {
       window.removeEventListener('touchmove', onTouch);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  }, [cursor.enabled, cursor.size, cursor.tailDots, cursor.spring, cursor.friction, cursor.mainColor, cursor.borderColor, cursor.flatColor]);
 
   return <canvas ref={canvasRef} id="ghost-cursor" aria-hidden="true" />;
 }
