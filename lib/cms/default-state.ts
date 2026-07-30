@@ -2,7 +2,7 @@ import { CmsState } from './types';
 import { QUOTES } from '../calendar';
 
 export const defaultCmsState: CmsState = {
-  version: 3,
+  version: 4,
   identity: {
     fullName: { fa: 'اَوید کیا', en: 'Avid Kiya' },
     title: { fa: 'معمار سیستم و توسعه‌دهنده فول‌استک', en: 'Systems Architect & Full-Stack Developer' },
@@ -176,6 +176,14 @@ export const defaultCmsState: CmsState = {
       { id:'hash', title:{fa:'تولید هش SHA',en:'SHA Hash Generator'}, description:{fa:'ساخت SHA-256 و SHA-1 برای متن، توکن و checksum.',en:'Generate SHA-256 and SHA-1 for text, tokens and checksums.'}, url:'#hash', category:'امنیت', isPro:false, enabled:true },
       { id:'base64', title:{fa:'Base64 Encode / Decode',en:'Base64 Encode / Decode'}, description:{fa:'تبدیل متن فارسی و انگلیسی به Base64 و برعکس.',en:'Encode and decode Persian/English text to and from Base64.'}, url:'#base64', category:'توسعه', isPro:false, enabled:true },
       { id:'password', title:{fa:'سازنده رمز امن',en:'Secure Password Generator'}, description:{fa:'ساخت رمز قوی با طول دلخواه و کپی سریع.',en:'Generate strong passwords with custom length and quick copy.'}, url:'#password', category:'امنیت', isPro:false, enabled:true },
+    ],
+  },
+  externalSites: {
+    title:{fa:'وب‌سایت‌های دیگر من',en:'My other websites'},
+    enabled:true,
+    items:[
+      { id:'kiya-planner', title:{fa:'KIYA Planner',en:'KIYA Planner'}, description:{fa:'پلنر و مغز دوم هوشمند برای مدیریت کارها، ایده‌ها و روزهای مهم.',en:'Smart planner and second brain for tasks, ideas and important days.'}, url:'/projects/kiya-planner-standalone', icon:'calendar', accent:'primary', enabled:true },
+      { id:'kianet', title:{fa:'KIANET',en:'KIANET'}, description:{fa:'کافی‌نت آنلاین و سرویس سفارش خدمات دیجیتال به‌صورت مستقل.',en:'Standalone online café-net and digital service ordering product.'}, url:'/projects/kianet-standalone', icon:'services', accent:'cyan', enabled:true },
     ],
   },
   planner: {

@@ -5,17 +5,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BarChart3, Briefcase, CalendarDays, CheckCircle2, Database, FileCode2,
-  Home, LogOut, PackagePlus, Save, Search, Settings, ShieldCheck,
+  Globe2, Home, LogOut, PackagePlus, Save, Search, Settings, ShieldCheck,
   ShoppingBag, Sparkles, Trash2, UserRound, Wrench
 } from 'lucide-react';
 import { useCms } from '@/lib/cms/cms-context';
 import { GlassCard } from '@/components/ui/glass';
 
-type SectionKey = 'dashboard'|'identity'|'projects'|'shop'|'services'|'tools'|'calendar'|'security';
+type SectionKey = 'dashboard'|'identity'|'sites'|'projects'|'shop'|'services'|'tools'|'calendar'|'security';
 
 const sections: Array<{key:SectionKey; label:string; icon:any; desc:string}> = [
   {key:'dashboard', label:'داشبورد', icon:BarChart3, desc:'نمای کلی سایت'},
   {key:'identity', label:'هویت برند', icon:UserRound, desc:'نام، عنوان و معرفی'},
+  {key:'sites', label:'سایت‌های دیگر', icon:Globe2, desc:'باکس‌های زیر معرفی'},
   {key:'projects', label:'پروژه‌ها', icon:FileCode2, desc:'نمونه‌کارها و کیس‌ها'},
   {key:'shop', label:'فروشگاه', icon:ShoppingBag, desc:'محصولات و قیمت‌ها'},
   {key:'services', label:'خدمات', icon:Briefcase, desc:'پکیج‌ها و مبالغ'},
@@ -92,6 +93,7 @@ export default function AdminPanel(){
         <main className="min-w-0">
           {section === 'dashboard' && <Dashboard />}
           {section === 'identity' && <Identity />}
+          {section === 'sites' && <Sites />}
           {section === 'projects' && <Projects />}
           {section === 'shop' && <Shop />}
           {section === 'services' && <Services />}
@@ -146,6 +148,38 @@ function Identity(){
     </GlassCard>
   );
 }
+function Sites(){
+  const { cms, updateCms } = useCms();
+  const current = cms.externalSites || { title:{fa:'وب‌سایت‌های دیگر من', en:'My other websites'}, enabled:true, items:[] };
+  const list = current.items || [];
+  const add = () => updateCms({ externalSites:{...current, items:[...list, {id:'site'+Date.now(), title:{fa:'سایت جدید',en:'New Site'}, description:{fa:'توضیح کوتاه سایت',en:'Short website description'}, url:'https://', icon:'external', accent:'primary', enabled:true}] } as any });
+  return (
+    <div className="space-y-3">
+      <PanelHeader title="سایت‌های دیگر" desc="این باکس‌ها زیر معرفی صفحه اصلی نمایش داده می‌شوند؛ اگر خالی باشند باکس‌های پیش‌فرض ابزارها و فروشگاه جایگزین می‌شوند." />
+      <button onClick={add} className="glass-btn-primary !py-2 !px-4 flex items-center gap-2"><PackagePlus size={16}/> افزودن سایت</button>
+      <div className="grid md:grid-cols-2 gap-3">
+        {list.map((site:any, i:number)=>(
+          <GlassCard key={site.id} className="!p-4 space-y-2">
+            <div className="grid grid-cols-[1fr_120px] gap-2">
+              <AdminInput value={site.title.fa} onChange={e=>{const a=[...list]; a[i]={...site,title:{...site.title,fa:e.target.value}}; updateCms({externalSites:{...current,items:a}} as any)}} placeholder="نام سایت" />
+              <AdminInput value={site.icon||'external'} onChange={e=>{const a=[...list]; a[i]={...site,icon:e.target.value}; updateCms({externalSites:{...current,items:a}} as any)}} placeholder="icon" dir="ltr" />
+            </div>
+            <AdminInput value={site.url} onChange={e=>{const a=[...list]; a[i]={...site,url:e.target.value}; updateCms({externalSites:{...current,items:a}} as any)}} placeholder="https://" dir="ltr" />
+            <AdminTextArea rows={2} value={site.description.fa} onChange={e=>{const a=[...list]; a[i]={...site,description:{...site.description,fa:e.target.value}}; updateCms({externalSites:{...current,items:a}} as any)}} placeholder="توضیحات" />
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <label className="flex items-center gap-2"><input type="checkbox" checked={site.enabled} onChange={e=>{const a=[...list]; a[i]={...site,enabled:e.target.checked}; updateCms({externalSites:{...current,items:a}} as any)}}/> فعال</label>
+              <select value={site.accent||'primary'} onChange={e=>{const a=[...list]; a[i]={...site,accent:e.target.value}; updateCms({externalSites:{...current,items:a}} as any)}} className="glass-input !py-2 !w-[130px] text-xs">
+                {['primary','cyan','emerald','violet','amber','rose'].map(x=><option key={x}>{x}</option>)}
+              </select>
+              <button onClick={()=>updateCms({externalSites:{...current,items:list.filter((x:any)=>x.id!==site.id)}} as any)} className="text-rose"><Trash2 size={16}/></button>
+            </div>
+          </GlassCard>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Projects(){
   const { cms, updateCms } = useCms(); const list=cms.projects.customProjects;
   return <div className="space-y-3"><PanelHeader title="پروژه‌ها" desc="مدیریت نمونه‌کارهای نمایش داده‌شده در سایت" />

@@ -77,6 +77,17 @@ export interface ToolItem {
   enabled: boolean;
 }
 
+
+export interface ExternalSiteItem {
+  id: string;
+  title: I18nText;
+  description: I18nText;
+  url: string;
+  icon?: string;
+  accent?: 'primary'|'cyan'|'emerald'|'violet'|'amber'|'rose';
+  enabled: boolean;
+}
+
 export interface Plan {
   id: string;
   name: I18nText;
@@ -172,6 +183,11 @@ export interface CmsState {
     enabled: boolean;
     categories: string[];
     items: ToolItem[];
+  };
+  externalSites: {
+    title: I18nText;
+    enabled: boolean;
+    items: ExternalSiteItem[];
   };
   planner: {
     enabled: boolean;

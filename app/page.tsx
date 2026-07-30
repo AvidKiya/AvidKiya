@@ -34,6 +34,14 @@ export default function HomePage() {
     { icon:'check' as IconName, title: t('تحویل تمیز', 'Clean Delivery'), text: t('کد قابل نگهداری، مستندات، تست پایه و دیپلوی پایدار تحویل می‌دهم.', 'Ship maintainable code, docs, basic tests and stable deployment.') },
   ];
 
+  const fallbackSites = [
+    { id:'tools-fallback', title:{fa:'ابزارهای آنلاین',en:'Online Tools'}, description:{fa:'تبدیل تاریخ، فشرده‌سازی عکس، JSON، هش و Base64؛ سریع و داخل مرورگر.',en:'Date conversion, image compression, JSON, hash and Base64; fast and in-browser.'}, url:'/tools', icon:'tools', accent:'amber' },
+    { id:'shop-fallback', title:{fa:'فروشگاه دیجیتال',en:'Digital Shop'}, description:{fa:'قالب‌ها، کیت‌ها، چک‌لیست‌ها و فایل‌های آماده برای شروع سریع‌تر.',en:'Templates, kits, checklists and ready files to start faster.'}, url:'/shop', icon:'shop', accent:'emerald' },
+  ];
+  const siteBoxes = (cms.externalSites?.enabled && cms.externalSites.items.filter(x=>x.enabled).length
+    ? cms.externalSites.items.filter(x=>x.enabled)
+    : fallbackSites).slice(0, 4);
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-5 md:px-6 py-5 md:py-10">
       <section className="grid xl:grid-cols-[minmax(0,1fr)_390px] lg:grid-cols-[minmax(0,1fr)_360px] gap-4 md:gap-6 items-start mb-7 md:mb-10">
@@ -83,6 +91,32 @@ export default function HomePage() {
                 </div>
               </GlassCard>
             ))}
+          </div>
+
+
+          <div className="grid md:grid-cols-2 gap-3">
+            {siteBoxes.map((site, i) => {
+              const accent = site.accent || (i % 2 ? 'cyan' : 'primary');
+              const accentClass = accent === 'amber' ? 'bg-amber/10 text-amber' : accent === 'emerald' ? 'bg-emerald/10 text-emerald' : accent === 'cyan' ? 'bg-cyan/10 text-cyan' : accent === 'violet' ? 'bg-violet/10 text-violet' : accent === 'rose' ? 'bg-rose/10 text-rose' : 'bg-primary/10 text-primary';
+              return (
+                <GlassCard key={site.id} className="!p-5 min-h-[168px] flex flex-col justify-between overflow-hidden relative hover:shadow-glass-lg transition-all">
+                  <div className="absolute -top-16 -end-16 w-32 h-32 rounded-full bg-primary/5 blur-2xl" />
+                  <div className="relative z-10">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center ${accentClass}`}>
+                        <AppIcon name={(site.icon || 'external') as IconName} size={22} />
+                      </div>
+                      <span className="text-[10px] rounded-full border border-glass-border bg-white/[0.035] px-2 py-1 text-text-3">Website</span>
+                    </div>
+                    <h3 className="font-black text-[17px] mb-1">{tf(site.title)}</h3>
+                    <p className="text-[12.8px] text-text-2 leading-7 line-clamp-2">{tf(site.description)}</p>
+                  </div>
+                  <Link href={site.url} target={site.url.startsWith('http') ? '_blank' : undefined} className="relative z-10 mt-4 glass-btn-primary !py-2.5 !px-4 text-[12.5px] inline-flex items-center justify-center gap-2 w-full">
+                    {t('ورود به سایت','Open website')} <ArrowUpRight size={14} />
+                  </Link>
+                </GlassCard>
+              );
+            })}
           </div>
         </div>
 
@@ -162,33 +196,6 @@ export default function HomePage() {
             </GlassCard>
           ))}
         </div>
-      </section>
-
-      <section className="grid md:grid-cols-2 gap-4 mb-9">
-        <Link href="/tools" className="group block">
-          <GlassCard className="!p-5 h-full hover:shadow-glass-lg transition-all">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-11 h-11 rounded-[14px] bg-amber/10 text-amber flex items-center justify-center"><AppIcon name="tools" size={21} /></div>
-              <div>
-                <div className="font-bold">{t('ابزارهای آنلاین بهینه‌شده','Optimized online tools')}</div>
-                <div className="text-[11.5px] text-text-3">Date • Image • JSON • Hash</div>
-              </div>
-            </div>
-            <p className="text-[12.8px] text-text-2 leading-relaxed">{t('تبدیل تاریخ، فشرده‌سازی عکس، JSON، هش، Base64 و رمز امن داخل مرورگر اجرا می‌شوند؛ سریع و بدون آپلود فایل.', 'Date conversion, image compression, JSON, hash, Base64 and secure passwords run in-browser; fast and without file uploads.')}</p>
-          </GlassCard>
-        </Link>
-        <Link href="/shop" className="group block">
-          <GlassCard className="!p-5 h-full hover:shadow-glass-lg transition-all">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-11 h-11 rounded-[14px] bg-emerald/10 text-emerald flex items-center justify-center"><AppIcon name="shop" size={21} /></div>
-              <div>
-                <div className="font-bold">{t('فروشگاه مرتب‌تر','Cleaner shop')}</div>
-                <div className="text-[11.5px] text-text-3">Search • Sort • Cart • Coupon</div>
-              </div>
-            </div>
-            <p className="text-[12.8px] text-text-2 leading-relaxed">{t('فیلتر، جستجو، مرتب‌سازی، سبد خرید و نمایش مبلغ‌ها حرفه‌ای‌تر شده‌اند.', 'Filtering, search, sorting, cart and money display are more polished now.')}</p>
-          </GlassCard>
-        </Link>
       </section>
 
       <div className="flex justify-center gap-5 mt-8 text-text-3 flex-wrap">
